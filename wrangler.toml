@@ -1,0 +1,11 @@
+name = "snowmanbot-api"
+main = "worker.js"
+compatibility_date = "2026-03-27"
+
+[env.production]
+kv_namespaces = [
+  { binding = "USER_DATA", id = "YOUR_KV_NAMESPACE_ID" }
+]
+
+[vars]
+# BOT_TOKEN will be read from Cloudflare Secrets
