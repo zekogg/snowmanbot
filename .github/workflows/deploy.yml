@@ -11,13 +11,10 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2️⃣ Build & Deploy Worker
-      - name: Build & Deploy Worker
+      - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}   # Global API Key
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }} # Account ID
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
