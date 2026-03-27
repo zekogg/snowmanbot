@@ -1,9 +1,8 @@
 name = "snowmanbot"
-type = "javascript"
-account_id = "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-workers_dev = true
+main = "worker.js"
 compatibility_date = "2026-03-28"
+workers_dev = true
 
 [[kv_namespaces]]
 binding = "USER_DATA"
-id = "${{ secrets.CLOUDFLARE_KV_NAMESPACE_ID }}"
+id = "a6f263a398c0452bb245f903b77656ff"
