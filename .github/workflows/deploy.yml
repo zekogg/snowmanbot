@@ -16,7 +16,15 @@ jobs:
         run: npm install -g wrangler
 
       - name: Deploy Worker
+        id: deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: wrangler deploy
+
+      - name: Show Wrangler logs on failure
+        if: failure()
+        run: |
+          echo "=== Wrangler logs ==="
+          ls -la /home/runner/.config/.wrangler/logs || true
+          cat /home/runner/.config/.wrangler/logs/*.log || true
