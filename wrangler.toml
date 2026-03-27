@@ -1,11 +1,9 @@
-name = "snowmanbot-api"
-main = "worker.js"
-compatibility_date = "2026-03-27"
+name = "snowmanbot"
+type = "javascript"
+account_id = "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+workers_dev = true
+compatibility_date = "2026-03-28"
 
-[env.production]
-kv_namespaces = [
-  { binding = "USER_DATA", id = "a6f263a398c0452bb245f903b77656ff" }
-]
-
-[vars]
-# BOT_TOKEN will be read from Cloudflare Secrets
+[[kv_namespaces]]
+binding = "USER_DATA"
+id = "${{ secrets.CLOUDFLARE_KV_NAMESPACE_ID }}"
