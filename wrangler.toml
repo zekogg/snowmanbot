@@ -1,6 +1,6 @@
 name = "snowmanbot-api"
 main = "worker.js"
-compatibility_date = "2026-03-27"
+compatibility_date = "2026-03-28"
 workers_dev = true
 
 [assets]
