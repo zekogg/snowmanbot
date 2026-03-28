@@ -1,1 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SnowMan Empire Mini App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+        if (window.eruda) {
+            eruda.init();
+        }
+    </script>
 
+    <style>
+        :root {
+            --bg1: #E0F7FA;
+            --bg2: #B3E5FC;
+            --text: #01579B;
+            --cyan: #00838F;
+            --cyan-dark: #006064;
+            --cyan-soft: #4DD0E1;
+            --white: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.12);
+            --hatch-blue: #67D9FF;
+            --hatch-blue-dark: #1C9ED8;
+            --mint-purple: #C15CFF;
+            --mint-purple-dark: #7A2CFF;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle, var(--bg1) 0%, var(--bg2) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .top-bar {
+            width: 92%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 12px 12px 10px;
+            margin-top: 10px;
+            background: rgba(77, 208, 225, 0.18);
+            border: 1px solid rgba(0, 131, 143, 0.08);
+            border-radius: 28px;
+            backdrop-filter: blur(6px);
+        }
+
+        .status-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 7px 13px;
+            border-radius: 20px;
+            height: 42px;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        .icon-small {
+            font-size: 22px;
+            margin-right: 10px;
+            line-height: 1;
+        }
+
+        .value-text {
+            font-weight: 800;
+            font-size: 16px;
+            color: #0B4F6C;
+        }
+
+        .center-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .timer-text {
+            color: #D32F2F;
+            font-size: 11px;
+            font-weight: 800;
+            margin-top: 3px;
+        }
+
+        .add-button-blue {
+            width: 48px;
+            height: 48px;
+            background-color: #007aff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        .minting-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .limited-text {
+            color: #00ACC1;
+            font-size: 17px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 2px;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+        }
+
+        .minting-container {
+            width: 82%;
+            max-width: 360px;
+            background: rgba(255, 255, 255, 0.62);
+            border-radius: 22px;
+            padding: 10px 14px;
+            text-align: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .minting-bar {
+            font-size: 19px;
+            font-weight: 900;
+            color: #004d4d;
+            letter-spacing: 1px;
+        }
+
+        .character-area {
+            flex: 1.15;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding-top: 4px;
+        }
+
+        .snowman-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            animation: snowmanFloat 3.8s ease-in-out infinite;
+            transform-origin: center center;
+        }
+
+        .snowman-core {
+            font-size: 200px;
+            line-height: 1;
+            user-select: none;
+            text-shadow: 0 0 14px rgba(129, 212, 250, 0.55);
+            filter: drop-shadow(0 0 12px rgba(129, 212, 250, 0.55));
+            transition: transform 0.12s ease, filter 0.12s ease;
+            will-change: transform;
+        }
+
+        .snowman-stage.pressed .snowman-core {
+            transform: scale(0.94);
+            filter: drop-shadow(0 0 16px rgba(129, 212, 250, 0.75));
+        }
+
+        .mining-counter {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0B4F6C;
+            background: rgba(255, 255, 255, 0.48);
+            padding: 7px 14px;
+            border-radius: 999px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .action-buttons {
+            width: 92%;
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 84px;
+        }
+
+        .btn {
+            width: 50%;
+            border: none;
+            border-radius: 18px;
+            padding: 22px 0;
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+            transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+            will-change: transform;
+        }
+
+        .btn-hatch {
+            background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
+            box-shadow: 0 6px 14px rgba(28, 158, 216, 0.28);
+        }
+
+        .btn-mint {
+            background: linear-gradient(180deg, var(--mint-purple) 0%, var(--mint-purple-dark) 100%);
+            box-shadow: 0 6px 14px rgba(122, 44, 255, 0.28);
+        }
+
+        .btn:active,
+        .add-button-blue:active,
+        .final-hatch-btn:active,
+        .close-mint:active,
+        .close-hatch:active,
+        .pct-btn:active,
+        .nav-icon:active {
+            transform: scale(0.96);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 10px;
+            width: 90%;
+            height: 60px;
+            background-color: #4DD0E1;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+            z-index: 500;
+        }
+
+        .nav-icon {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            font-size: 24px;
+            color: white;
+            padding: 0;
+            user-select: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.14s ease, background-color 0.14s ease, filter 0.14s ease;
+        }
+
+        .nav-icon.active {
+            background-color: #00838F;
+            border-radius: 50%;
+            transform: scale(1.06);
+        }
+
+        #mintModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .mint-content {
+            background: #1A237E;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 25px;
+            padding: 20px;
+            border: 2px solid #B24DFF;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .mint-title {
+            color: #D07BFF;
+            margin: 0 0 18px 0;
+            font-size: 24px;
+        }
+
+        .pack-box {
+            background: #283593;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #3949AB;
+        }
+
+        .pack-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+
+        .pack-price {
+            color: #4CAF50;
+            font-weight: 800;
+            margin: 5px 0;
+        }
+
+        .pack-speed {
+            font-size: 12px;
+            color: #B0BEC5;
+            margin: 0;
+        }
+
+        .close-mint {
+            background: none;
+            border: none;
+            color: #EF5350;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 6px;
+            transition: transform 0.14s ease;
+        }
+
+        #hatchModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .hatch-content {
+            background-color: #006064;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 25px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            border: 2px solid #81D4FA;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-hatch {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.14s ease;
+        }
+
+        .hatch-header {
+            text-align: center;
+            color: #81D4FA;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .ratio-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border: 1px solid rgba(129, 212, 250, 0.3);
+        }
+
+        .hatch-input-section {
+            margin-bottom: 15px;
+        }
+
+        .input-label-row {
+            display: flex;
+            justify-content: space-between;
+            color: #B2EBF2;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .hatch-input {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 2px solid #4DD0E1;
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .hatch-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .pct-btn-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .pct-btn {
+            flex: 1;
+            border: 1px solid #4DD0E1;
+            background-color: rgba(129, 212, 250, 0.1);
+            color: #E0F7FA;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            user-select: none;
+            transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
+        }
+
+        .available-text {
+            color: #B2EBF2;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .calc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            font-size: 14px;
+            color: #E0F7FA;
+        }
+
+        .calc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(129, 212, 250, 0.1);
+        }
+
+        .calc-item.total {
+            font-weight: bold;
+            color: white;
+            border-bottom: none;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .final-hatch-btn {
+            width: 100%;
+            background: linear-gradient(180deg, #00ACC1 0%, #00838F 100%);
+            border: 2px solid #81D4FA;
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+        }
+
+        button,
+        .pct-btn,
+        .nav-icon {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:hover,
+        .add-button-blue:hover,
+        .final-hatch-btn:hover,
+        .close-mint:hover,
+        .close-hatch:hover,
+        .pct-btn:hover,
+        .nav-icon:hover {
+            filter: brightness(1.03);
+        }
+
+        @keyframes snowmanFloat {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .value-text {
+                font-size: 14px;
+            }
+
+            .icon-small {
+                font-size: 20px;
+                margin-right: 6px;
+            }
+
+            .limited-text {
+                font-size: 15px;
+            }
+
+            .minting-container {
+                width: 84%;
+            }
+
+            .minting-bar {
+                font-size: 18px;
+            }
+
+            .snowman-core {
+                font-size: 170px;
+            }
+
+            .mining-counter {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .btn {
+                font-size: 18px;
+                padding: 20px 0;
+            }
+
+            .action-buttons {
+                margin-bottom: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="status-card">
+            <span class="icon-small">☃️</span>
+            <span class="value-text">0</span>
+        </div>
+
+        <div class="center-card">
+            <div class="status-card">
+                <span class="icon-small">❄️</span>
+                <span class="value-text">0</span>
+            </div>
+            <div class="timer-text">60:00</div>
+        </div>
+
+        <div class="status-card">
+            <span class="icon-small">🔷</span>
+            <span class="value-text">0</span>
+        </div>
+
+        <button class="add-button-blue" type="button">+</button>
+    </div>
+
+    <div class="minting-section">
+        <div class="limited-text">LIMITED</div>
+        <div class="minting-container">
+            <div class="minting-bar">0 / 25M</div>
+        </div>
+    </div>
+
+    <div class="character-area">
+        <div class="snowman-stage" id="snowmanStage">
+            <div class="snowman-core">☃️</div>
+            <div class="mining-counter">0.00 ❄️/hr</div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-hatch" id="openHatchBtn" type="button">Hatch ❄️</button>
+        <button class="btn btn-mint" id="openMintBtn" type="button">Mint 💎</button>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-icon" type="button">📋</button>
+        <button class="nav-icon active" type="button">🏠</button>
+        <button class="nav-icon" type="button">🛒</button>
+        <button class="nav-icon" type="button">🎲</button>
+        <button class="nav-icon" type="button">👤</button>
+    </div>
+
+    <div id="mintModal">
+        <div class="mint-content">
+            <h2 class="mint-title">Mint Snowmen 💎</h2>
+
+            <div class="pack-box">
+                <h3>Starter Pack</h3>
+                <p class="pack-price">1 TON ➔ 2240 ☃️</p>
+                <p class="pack-speed">Mining Speed: 7.00 ❄️/hr</p>
+            </div>
+
+            <div class="pack-box">
+                <h3>Pro Pack</h3>
+                <p class="pack-price">3 TON ➔ 5120 ☃️</p>
+                <p class="pack-speed">Mining Speed: 16.00 ❄️/hr</p>
+            </div>
+
+            <div class="pack-box" style="margin-bottom: 18px;">
+                <h3>Whale Pack</h3>
+                <p class="pack-price">99 TON ➔ 160,000 ☃️</p>
+                <p class="pack-speed">Mining Speed: 500.00 ❄️/hr</p>
+            </div>
+
+            <button class="close-mint" id="closeMintBtn" type="button">CANCEL</button>
+        </div>
+    </div>
+
+    <div id="hatchModal">
+        <div class="hatch-content">
+            <button class="close-hatch" id="closeHatchBtn" type="button">×</button>
+
+            <h2 class="hatch-header">Hatch Snowmen ❄️</h2>
+
+            <div class="ratio-box">
+                <span>❄️ 1</span>
+                <span>➜</span>
+                <span>☃️ 1</span>
+            </div>
+
+            <div class="hatch-input-section">
+                <div class="input-label-row">
+                    <span>☃️ Snowmen to Hatch</span>
+                    <span>max. 0</span>
+                </div>
+                <input type="number" class="hatch-input" placeholder="Enter amount (min. 100)">
+            </div>
+
+            <div class="pct-btn-row">
+                <button class="pct-btn" type="button">25%</button>
+                <button class="pct-btn" type="button">50%</button>
+                <button class="pct-btn" type="button">75%</button>
+                <button class="pct-btn" type="button">MAX</button>
+            </div>
+
+            <div class="available-text">
+                ❄️ Available: <span id="hatch-avail-snowflakes">0</span> snowflakes
+            </div>
+
+            <ul class="calc-list">
+                <li class="calc-item">
+                    <span>Base Snowflakes</span>
+                    <span>-</span>
+                </li>
+                <li class="calc-item">
+                    <span>Craft fee (6%)</span>
+                    <span>-</span>
+                </li>
+                <li class="calc-item total">
+                    <span>❄️ Total required</span>
+                    <span>-</span>
+                </li>
+            </ul>
+
+            <button class="final-hatch-btn" type="button">Hatch ❄️</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mintModal = document.getElementById('mintModal');
+            const hatchModal = document.getElementById('hatchModal');
+
+            const openMintBtn = document.getElementById('openMintBtn');
+            const closeMintBtn = document.getElementById('closeMintBtn');
+
+            const openHatchBtn = document.getElementById('openHatchBtn');
+            const closeHatchBtn = document.getElementById('closeHatchBtn');
+
+            const snowmanStage = document.getElementById('snowmanStage');
+
+            openMintBtn.addEventListener('click', () => {
+                mintModal.style.display = 'flex';
+            });
+
+            closeMintBtn.addEventListener('click', () => {
+                mintModal.style.display = 'none';
+            });
+
+            openHatchBtn.addEventListener('click', () => {
+                hatchModal.style.display = 'flex';
+            });
+
+            closeHatchBtn.addEventListener('click', () => {
+                hatchModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === mintModal) {
+                    mintModal.style.display = 'none';
+                }
+                if (event.target === hatchModal) {
+                    hatchModal.style.display = 'none';
+                }
+            });
+
+            if (snowmanStage) {
+                const pressSnowman = () => {
+                    snowmanStage.classList.add('pressed');
+                };
+
+                const releaseSnowman = () => {
+                    snowmanStage.classList.remove('pressed');
+                };
+
+                snowmanStage.addEventListener('pointerdown', pressSnowman);
+                snowmanStage.addEventListener('pointerup', releaseSnowman);
+                snowmanStage.addEventListener('pointerleave', releaseSnowman);
+                snowmanStage.addEventListener('pointercancel', releaseSnowman);
+            }
+        });
+    </script>
+</body>
+</html>
