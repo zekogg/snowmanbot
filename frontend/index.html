@@ -236,18 +236,18 @@
         }
 
         .bottom-nav {
-            position: fixed;
-            bottom: 10px;
-            width: 90%;
-            height: 60px;
-            background-color: #4DD0E1;
-            border-radius: 30px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
-            z-index: 500;
-        }
+    position: fixed;
+    bottom: 10px;
+    width: 90%;
+    height: 60px;
+    background-color: #4DD0E1;
+    border-radius: 30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+    z-index: 1000;
+}
 
         .nav-icon {
             width: 44px;
@@ -565,17 +565,17 @@
         }
 
         .tasks-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 900;
-            display: none;
-            flex-direction: column;
-            padding: 18px 16px 110px;
-            overflow-y: auto;
-            background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
-            color: #ffffff;
-            backdrop-filter: blur(10px);
-        }
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    display: none;
+    flex-direction: column;
+    padding: 18px 16px 110px;
+    overflow-y: auto;
+    background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+}
 
         .tasks-screen.show {
             display: flex;
