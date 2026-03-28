@@ -563,6 +563,140 @@
                 margin-bottom: 80px;
             }
         }
+
+        .tasks-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            display: none;
+            flex-direction: column;
+            padding: 18px 16px 110px;
+            overflow-y: auto;
+            background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+        }
+
+        .tasks-screen.show {
+            display: flex;
+        }
+
+        .tasks-top {
+            margin-top: 6px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .tasks-title {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        .tasks-subtitle {
+            margin-top: 6px;
+            font-size: 13px;
+            color: rgba(224, 247, 250, 0.72);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
+            border: 1px solid rgba(129, 212, 250, 0.18);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .task-emoji {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .task-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .task-meta {
+            margin-top: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #67d9ff;
+        }
+
+        .task-join-btn {
+            border: none;
+            min-width: 88px;
+            padding: 12px 18px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
+        }
+
+        .floating-add-task {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 82px;
+            z-index: 950;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #c15cff 0%, #7a2cff 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 900;
+            box-shadow: 0 10px 20px rgba(122, 44, 255, 0.32);
+            cursor: pointer;
+        }
+
+        .floating-add-task .plus {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.16);
+            font-size: 20px;
+            line-height: 1;
+        }
     </style>
 </head>
 <body>
@@ -609,8 +743,8 @@
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-icon" type="button">📋</button>
-        <button class="nav-icon active" type="button">🏠</button>
+        <button class="nav-icon" id="tasksNavBtn" type="button">📋</button>
+        <button class="nav-icon active" id="homeNavBtn" type="button">🏠</button>
         <button class="nav-icon" type="button">🛒</button>
         <button class="nav-icon" type="button">🎲</button>
         <button class="nav-icon" type="button">👤</button>
@@ -692,10 +826,40 @@
         </div>
     </div>
 
-<script>
-const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
+    <div id="tasksScreen" class="tasks-screen" aria-hidden="true">
+        <div class="tasks-top">
+            <div class="tasks-title">Tasks</div>
+            <div class="tasks-subtitle">Complete simple actions to earn rewards.</div>
+        </div>
 
-document.addEventListener('DOMContentLoaded', () => {
+        <div class="task-list">
+            <div class="task-card">
+                <div class="task-left">
+                    <div class="task-emoji">📣</div>
+                    <div>
+                        <div class="task-name">Join Our Channel</div>
+                        <div class="task-meta">+30 ❄️</div>
+                    </div>
+                </div>
+                <button class="task-join-btn" type="button">Join</button>
+            </div>
+        </div>
+
+        <button id="floatingAddTaskBtn" class="floating-add-task" type="button">
+            <span class="plus">+</span>
+            <span>Add a Task</span>
+        </button>
+    </div>
+
+    <script>
+        const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tasksScreen = document.getElementById('tasksScreen');
+            const tasksNavBtn = document.getElementById('tasksNavBtn');
+            const homeNavBtn = document.getElementById('homeNavBtn');
+            const floatingAddTaskBtn = document.getElementById('floatingAddTaskBtn');
+
             const mintModal = document.getElementById('mintModal');
             const hatchModal = document.getElementById('hatchModal');
 
@@ -707,19 +871,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const snowmanStage = document.getElementById('snowmanStage');
 
-            openMintBtn.addEventListener('click', () => {
+            function showTasksScreen() {
+                if (!tasksScreen) return;
+                tasksScreen.classList.add('show');
+                tasksNavBtn?.classList.add('active');
+                homeNavBtn?.classList.remove('active');
+            }
+
+            function showHomeScreen() {
+                if (!tasksScreen) return;
+                tasksScreen.classList.remove('show');
+                tasksNavBtn?.classList.remove('active');
+                homeNavBtn?.classList.add('active');
+            }
+
+            tasksNavBtn?.addEventListener('click', showTasksScreen);
+            homeNavBtn?.addEventListener('click', showHomeScreen);
+
+            floatingAddTaskBtn?.addEventListener('click', () => {
+                console.log('Add a Task clicked');
+            });
+
+            openMintBtn?.addEventListener('click', () => {
                 mintModal.style.display = 'flex';
             });
 
-            closeMintBtn.addEventListener('click', () => {
+            closeMintBtn?.addEventListener('click', () => {
                 mintModal.style.display = 'none';
             });
 
-            openHatchBtn.addEventListener('click', () => {
+            openHatchBtn?.addEventListener('click', () => {
                 hatchModal.style.display = 'flex';
             });
 
-            closeHatchBtn.addEventListener('click', () => {
+            closeHatchBtn?.addEventListener('click', () => {
                 hatchModal.style.display = 'none';
             });
 
