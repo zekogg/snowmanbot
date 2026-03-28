@@ -3,6 +3,11 @@ main = "worker.js"
 compatibility_date = "2026-03-27"
 workers_dev = true
 
+[assets]
+directory = "./frontend"
+binding = "ASSETS"
+run_worker_first = true
+
 [[kv_namespaces]]
 binding = "USER_DATA"
 id = "a6f263a398c0452bb245f903b77656ff"
