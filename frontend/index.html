@@ -26,11 +26,10 @@
             --hatch-blue-dark: #1C9ED8;
             --mint-purple: #C15CFF;
             --mint-purple-dark: #7A2CFF;
+            --panel-bg: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -231,7 +230,11 @@
         .close-mint:active,
         .close-hatch:active,
         .pct-btn:active,
-        .nav-icon:active {
+        .nav-icon:active,
+        .market-tab:active,
+        .btn-action-small:active,
+        .task-join-btn:active,
+        .create-btn-large:active {
             transform: scale(0.96);
         }
 
@@ -495,9 +498,7 @@
             transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
         }
 
-        button,
-        .pct-btn,
-        .nav-icon {
+        button, .pct-btn, .nav-icon, .market-tab, .btn-action-small, .task-join-btn, .create-btn-large {
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -507,64 +508,34 @@
         .close-mint:hover,
         .close-hatch:hover,
         .pct-btn:hover,
-        .nav-icon:hover {
+        .nav-icon:hover,
+        .market-tab:hover,
+        .btn-action-small:hover,
+        .task-join-btn:hover,
+        .create-btn-large:hover {
             filter: brightness(1.03);
         }
 
         @keyframes snowmanFloat {
-            0% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-6px);
-            }
-            100% {
-                transform: translateY(0px);
-            }
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
         }
 
         @media (max-width: 380px) {
-            .value-text {
-                font-size: 14px;
-            }
-
-            .icon-small {
-                font-size: 20px;
-                margin-right: 6px;
-            }
-
-            .limited-text {
-                font-size: 15px;
-            }
-
-            .minting-container {
-                width: 84%;
-            }
-
-            .minting-bar {
-                font-size: 18px;
-            }
-
-            .snowman-core {
-                font-size: 170px;
-            }
-
-            .mining-counter {
-                font-size: 13px;
-                padding: 6px 12px;
-            }
-
-            .btn {
-                font-size: 18px;
-                padding: 20px 0;
-            }
-
-            .action-buttons {
-                margin-bottom: 80px;
-            }
+            .value-text { font-size: 14px; }
+            .icon-small { font-size: 20px; margin-right: 6px; }
+            .limited-text { font-size: 15px; }
+            .minting-container { width: 84%; }
+            .minting-bar { font-size: 18px; }
+            .snowman-core { font-size: 170px; }
+            .mining-counter { font-size: 13px; padding: 6px 12px; }
+            .btn { font-size: 18px; padding: 20px 0; }
+            .action-buttons { margin-bottom: 80px; }
         }
 
-        .tasks-screen {
+        .tasks-screen,
+        .market-screen {
             position: fixed;
             inset: 0;
             z-index: 900;
@@ -572,33 +543,38 @@
             flex-direction: column;
             padding: 18px 16px 110px;
             overflow-y: auto;
-            background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
+            background: var(--panel-bg);
             color: #ffffff;
             backdrop-filter: blur(10px);
         }
 
-        .tasks-screen.show {
+        .tasks-screen.show,
+        .market-screen.show {
             display: flex;
         }
 
-        .tasks-top {
+        .tasks-top,
+        .market-top {
             margin-top: 6px;
             margin-bottom: 18px;
             text-align: center;
         }
 
-        .tasks-title {
+        .tasks-title,
+        .market-title {
             font-size: 30px;
             font-weight: 900;
             letter-spacing: 0.5px;
             color: #ffffff;
         }
 
-        .tasks-subtitle {
+        .tasks-subtitle,
+        .market-subtitle {
             display: none;
         }
 
-        .channel-submit-card {
+        .channel-submit-card,
+        .market-panel {
             background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
             border: 1px solid rgba(129, 212, 250, 0.18);
             border-radius: 28px;
@@ -650,17 +626,18 @@
             box-shadow: 0 6px 14px rgba(28, 158, 216, 0.3);
         }
 
-        .submit-channel-btn:active {
-            transform: scale(0.97);
-        }
+        .submit-channel-btn:active { transform: scale(0.97); }
 
-        .task-list {
+        .task-list,
+        .market-content-area {
             display: flex;
             flex-direction: column;
             gap: 14px;
+            width: 100%;
         }
 
-        .task-card {
+        .task-card,
+        .order-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -693,21 +670,26 @@
             flex-shrink: 0;
         }
 
-        .task-name {
+        .task-name,
+        .order-info h4 {
             font-size: 17px;
             font-weight: 800;
             color: #ffffff;
             line-height: 1.1;
+            margin: 0;
         }
 
-        .task-meta {
+        .task-meta,
+        .order-info p {
             margin-top: 4px;
             font-size: 13px;
             font-weight: 700;
             color: #67d9ff;
         }
 
-        .task-join-btn {
+        .task-join-btn,
+        .btn-action-small,
+        .create-btn-large {
             border: none;
             min-width: 88px;
             padding: 12px 18px;
@@ -718,6 +700,122 @@
             font-size: 15px;
             cursor: pointer;
             box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 6px;
+            margin-bottom: 18px;
+            gap: 6px;
+        }
+
+        .market-tab {
+            flex: 1;
+            padding: 11px 8px;
+            text-align: center;
+            border-radius: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            color: rgba(255, 255, 255, 0.62);
+            user-select: none;
+        }
+
+        .market-tab.active {
+            background: #00838F;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 131, 143, 0.5);
+        }
+
+        .market-sub-page {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .market-sub-page.active {
+            display: flex;
+        }
+
+        .order-card {
+            align-items: center;
+        }
+
+        .order-info {
+            min-width: 0;
+            flex: 1;
+            text-align: left;
+        }
+
+        .market-panel-title {
+            margin: 0 0 14px 0;
+            color: #81D4FA;
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #4DD0E1;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(77, 208, 225, 0.5);
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .form-input:disabled {
+            opacity: 0.75;
+        }
+
+        .yours-footer {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            display: flex;
+            gap: 10px;
+            z-index: 910;
+        }
+
+        .yours-empty {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .yours-empty-icon {
+            font-size: 50px;
+        }
+
+        .create-btn-large.secondary {
+            background: #283593;
+            flex: 1;
+        }
+
+        .create-btn-large.primary {
+            flex: 2;
+        }
+
+        .market-create-footer-spacer {
+            height: 16px;
         }
 
         .floating-add-task {
@@ -751,112 +849,11 @@
             font-size: 20px;
             line-height: 1;
         }
-
-        /* --- New Market Styles Start --- */
-        .market-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 900;
-            display: none;
-            flex-direction: column;
-            padding: 18px 16px 110px;
-            overflow-y: auto;
-            background: radial-gradient(circle at top, rgba(13, 71, 161, 0.98), rgba(1, 22, 39, 0.98));
-            color: #ffffff;
-            backdrop-filter: blur(10px);
-        }
-
-        .market-screen.show {
-            display: flex;
-        }
-
-        .market-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            padding-bottom: 20px;
-        }
-
-        .market-card {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(77, 208, 225, 0.3);
-            border-radius: 20px;
-            padding: 16px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .market-item-icon {
-            font-size: 34px;
-            margin-bottom: 10px;
-        }
-
-        .market-item-name {
-            font-weight: 800;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .market-item-price {
-            color: #4DD0E1;
-            font-weight: 700;
-            font-size: 13px;
-            margin-bottom: 12px;
-        }
-
-        .market-buy-btn {
-            background: #00838F;
-            border: none;
-            border-radius: 12px;
-            color: white;
-            padding: 8px 0;
-            width: 100%;
-            font-weight: 800;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        #marketOrderModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .order-content {
-            background: #0D47A1;
-            width: 100%;
-            max-width: 360px;
-            border-radius: 25px;
-            padding: 24px;
-            border: 2px solid #4DD0E1;
-            text-align: center;
-            color: white;
-        }
-
-        .order-confirm-btn {
-            width: 100%;
-            background: #4DD0E1;
-            color: #01579B;
-            border: none;
-            padding: 14px;
-            border-radius: 15px;
-            font-weight: 900;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        /* --- New Market Styles End --- */
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
+    <div class="top-bar" id="mainContent">
         <div class="status-card">
             <span class="icon-small">☃️</span>
             <span class="value-text">0</span>
@@ -878,21 +875,21 @@
         <button class="add-button-blue" type="button">+</button>
     </div>
 
-    <div class="minting-section">
+    <div class="minting-section" id="mainMintSection">
         <div class="limited-text">LIMITED</div>
         <div class="minting-container">
             <div class="minting-bar">0 / 25M</div>
         </div>
     </div>
 
-    <div class="character-area">
+    <div class="character-area" id="mainCharacterArea">
         <div class="snowman-stage" id="snowmanStage">
             <div class="snowman-core">☃️</div>
             <div class="mining-counter">0.00 ❄️/hr</div>
         </div>
     </div>
 
-    <div class="action-buttons">
+    <div class="action-buttons" id="mainActionButtons">
         <button class="btn btn-hatch" id="openHatchBtn" type="button">Hatch ❄️</button>
         <button class="btn btn-mint" id="openMintBtn" type="button">Mint 💎</button>
     </div>
@@ -993,7 +990,7 @@
                 Submit your channel where you'll promote our bot and get a task reward when approved!
             </div>
             <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
-            <button class="submit-channel-btn" id="submitChannelBtn">Submit Channel</button>
+            <button class="submit-channel-btn" id="submitChannelBtn" type="button">Submit Channel</button>
         </div>
 
         <div class="task-list">
@@ -1015,107 +1012,179 @@
         </button>
     </div>
 
-    <div id="marketScreen" class="market-screen">
-        <div class="tasks-top">
-            <div class="tasks-title">Market</div>
+    <div id="marketScreen" class="market-screen" aria-hidden="true">
+        <div class="market-top">
+            <div class="market-title">Market</div>
+            <div class="market-subtitle">(hidden)</div>
         </div>
 
-        <div class="market-grid">
-            <div class="market-card">
-                <div class="market-item-icon">⚡</div>
-                <div class="market-item-name">Speed Boost</div>
-                <div class="market-item-price">500 ❄️</div>
-                <button class="market-buy-btn" onclick="openMarketOrder('Speed Boost', 500)">Buy</button>
+        <div class="market-header">
+            <div class="market-tab active" data-market-tab="buy">Buy</div>
+            <div class="market-tab" data-market-tab="sell">Sell</div>
+            <div class="market-tab" data-market-tab="yours">Yours</div>
+        </div>
+
+        <div class="market-content-area">
+            <div id="market-buy" class="market-sub-page active">
+                <div class="order-card">
+                    <div class="order-info">
+                        <h4>❄️ 5,000 Snow</h4>
+                        <p>Seller: PolarBear_99</p>
+                    </div>
+                    <button class="btn-action-small" type="button">Buy</button>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-info">
+                        <h4>❄️ 12,500 Snow</h4>
+                        <p>Seller: IceKing</p>
+                    </div>
+                    <button class="btn-action-small" type="button">Buy</button>
+                </div>
             </div>
-            <div class="market-card">
-                <div class="market-item-icon">📦</div>
-                <div class="market-item-name">Hatch Pack</div>
-                <div class="market-item-price">1200 ❄️</div>
-                <button class="market-buy-btn" onclick="openMarketOrder('Hatch Pack', 1200)">Buy</button>
+
+            <div id="market-sell" class="market-sub-page">
+                <div class="market-panel">
+                    <h3 class="market-panel-title">Sell Snow</h3>
+                    <div class="form-group">
+                        <label>Amount of Snow ❄️</label>
+                        <input type="number" class="form-input" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Price per 1000 ❄️</label>
+                        <input type="number" class="form-input" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Value</label>
+                        <input type="text" class="form-input" value="0.00" disabled>
+                    </div>
+                    <button class="create-btn-large" type="button">Confirm Sale</button>
+                </div>
             </div>
-            <div class="market-card">
-                <div class="market-item-icon">🧪</div>
-                <div class="market-item-name">Freeze Potion</div>
-                <div class="market-item-price">300 ❄️</div>
-                <button class="market-buy-btn" onclick="openMarketOrder('Freeze Potion', 300)">Buy</button>
+
+            <div id="market-yours" class="market-sub-page">
+                <div class="yours-empty">
+                    <div class="yours-empty-icon">❄️</div>
+                    <p>No active orders yet.</p>
+                </div>
+
+                <div class="yours-footer">
+                    <button class="create-btn-large secondary" type="button">History</button>
+                    <button class="create-btn-large primary" id="openCreateOrderBtn" type="button">Create Order</button>
+                </div>
             </div>
-            <div class="market-card">
-                <div class="market-item-icon">🧤</div>
-                <div class="market-item-name">Warm Gloves</div>
-                <div class="market-item-price">800 ❄️</div>
-                <button class="market-buy-btn" onclick="openMarketOrder('Warm Gloves', 800)">Buy</button>
+
+            <div id="market-create" class="market-sub-page">
+                <div class="market-panel">
+                    <h3 class="market-panel-title">New Snow Order</h3>
+                    <div class="form-group">
+                        <label>Amount of Snow ❄️</label>
+                        <input type="number" class="form-input" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Price per 1000 ❄️</label>
+                        <input type="number" class="form-input" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Value</label>
+                        <input type="text" class="form-input" value="0.00" disabled>
+                    </div>
+                    <button class="create-btn-large" type="button">Confirm Order</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="marketOrderModal">
-        <div class="order-content">
-            <h2 id="orderItemName">Item Name</h2>
-            <p>Confirm your purchase for <span id="orderItemPrice">0</span> ❄️?</p>
-            <button class="order-confirm-btn">CONFIRM ORDER</button>
-            <button class="close-mint" onclick="document.getElementById('marketOrderModal').style.display='none'">CANCEL</button>
-        </div>
-    </div>
     <script>
         const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
 
-        /* Market Functions for HTML integration */
-        function openMarketOrder(name, price) {
-            document.getElementById('orderItemName').innerText = name;
-            document.getElementById('orderItemPrice').innerText = price;
-            document.getElementById('marketOrderModal').style.display = 'flex';
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             const tasksScreen = document.getElementById('tasksScreen');
-            const marketScreen = document.getElementById('marketScreen'); // New
+            const marketScreen = document.getElementById('marketScreen');
+
             const tasksNavBtn = document.getElementById('tasksNavBtn');
             const homeNavBtn = document.getElementById('homeNavBtn');
-            const marketNavBtn = document.getElementById('marketNavBtn'); // New
+            const marketNavBtn = document.getElementById('marketNavBtn');
 
+            const floatingAddTaskBtn = document.getElementById('floatingAddTaskBtn');
             const mintModal = document.getElementById('mintModal');
             const hatchModal = document.getElementById('hatchModal');
-            const marketOrderModal = document.getElementById('marketOrderModal'); // New
 
             const openMintBtn = document.getElementById('openMintBtn');
             const closeMintBtn = document.getElementById('closeMintBtn');
-
             const openHatchBtn = document.getElementById('openHatchBtn');
             const closeHatchBtn = document.getElementById('closeHatchBtn');
-
             const snowmanStage = document.getElementById('snowmanStage');
 
             const submitChannelBtn = document.getElementById('submitChannelBtn');
             const channelLinkInput = document.getElementById('channelLinkInput');
 
-            function hideAllScreens() {
-                tasksScreen?.classList.remove('show');
-                marketScreen?.classList.remove('show');
-                homeNavBtn?.classList.remove('active');
-                tasksNavBtn?.classList.remove('active');
-                marketNavBtn?.classList.remove('active');
+            const marketTabs = document.querySelectorAll('.market-tab');
+            const marketPages = document.querySelectorAll('.market-sub-page');
+            const openCreateOrderBtn = document.getElementById('openCreateOrderBtn');
+
+            function setActiveNav(activeBtn) {
+                [tasksNavBtn, homeNavBtn, marketNavBtn].forEach(btn => btn?.classList.remove('active'));
+                activeBtn?.classList.add('active');
             }
 
-            function showTasksScreen() {
-                hideAllScreens();
-                tasksScreen.classList.add('show');
-                tasksNavBtn?.classList.add('active');
+            function hideOverlays() {
+                tasksScreen?.classList.remove('show');
+                marketScreen?.classList.remove('show');
             }
 
             function showHomeScreen() {
-                hideAllScreens();
-                homeNavBtn?.classList.add('active');
+                hideOverlays();
+                setActiveNav(homeNavBtn);
+            }
+
+            function showTasksScreen() {
+                hideOverlays();
+                tasksScreen?.classList.add('show');
+                setActiveNav(tasksNavBtn);
             }
 
             function showMarketScreen() {
-                hideAllScreens();
-                marketScreen.classList.add('show');
-                marketNavBtn?.classList.add('active');
+                hideOverlays();
+                marketScreen?.classList.add('show');
+                setActiveNav(marketNavBtn);
+                switchMarketTab('buy');
+            }
+
+            function switchMarketTab(tabName) {
+                marketTabs.forEach(tab => tab.classList.remove('active'));
+                marketPages.forEach(page => page.classList.remove('active'));
+
+                if (tabName === 'buy') {
+                    document.querySelector('.market-tab[data-market-tab="buy"]')?.classList.add('active');
+                    document.getElementById('market-buy')?.classList.add('active');
+                } else if (tabName === 'sell') {
+                    document.querySelector('.market-tab[data-market-tab="sell"]')?.classList.add('active');
+                    document.getElementById('market-sell')?.classList.add('active');
+                } else if (tabName === 'yours') {
+                    document.querySelector('.market-tab[data-market-tab="yours"]')?.classList.add('active');
+                    document.getElementById('market-yours')?.classList.add('active');
+                } else if (tabName === 'create') {
+                    document.getElementById('market-create')?.classList.add('active');
+                }
             }
 
             tasksNavBtn?.addEventListener('click', showTasksScreen);
             homeNavBtn?.addEventListener('click', showHomeScreen);
-            marketNavBtn?.addEventListener('click', showMarketScreen); // New Navigation
+            marketNavBtn?.addEventListener('click', showMarketScreen);
+
+            marketTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-market-tab');
+                    switchMarketTab(target);
+                });
+            });
+
+            openCreateOrderBtn?.addEventListener('click', () => {
+                marketScreen?.classList.add('show');
+                setActiveNav(marketNavBtn);
+                switchMarketTab('create');
+            });
 
             floatingAddTaskBtn?.addEventListener('click', () => {
                 console.log('Add a Task clicked');
@@ -1157,25 +1226,19 @@
                 if (event.target === hatchModal) {
                     hatchModal.style.display = 'none';
                 }
-                if (event.target === marketOrderModal) {
-                    marketOrderModal.style.display = 'none';
-                }
             });
 
             if (snowmanStage) {
-                const pressSnowman = () => {
-                    snowmanStage.classList.add('pressed');
-                };
-
-                const releaseSnowman = () => {
-                    snowmanStage.classList.remove('pressed');
-                };
+                const pressSnowman = () => snowmanStage.classList.add('pressed');
+                const releaseSnowman = () => snowmanStage.classList.remove('pressed');
 
                 snowmanStage.addEventListener('pointerdown', pressSnowman);
                 snowmanStage.addEventListener('pointerup', releaseSnowman);
                 snowmanStage.addEventListener('pointerleave', releaseSnowman);
                 snowmanStage.addEventListener('pointercancel', releaseSnowman);
             }
+
+            showHomeScreen();
         });
     </script>
 </body>
