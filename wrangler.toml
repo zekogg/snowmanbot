@@ -8,6 +8,7 @@ directory = "./frontend"
 binding = "ASSETS"
 run_worker_first = true
 
-[[kv_namespaces]]
-binding = "USER_DATA"
-id = "a6f263a398c0452bb245f903b77656ff"
+[[d1_databases]]
+binding = "DB"
+database_name = "<user_data>"
+database_id = "<8ede3654-b27d-4648-9eb6-163cb803df73>"
