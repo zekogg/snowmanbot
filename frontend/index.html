@@ -27,8 +27,6 @@
             --mint-purple: #C15CFF;
             --mint-purple-dark: #7A2CFF;
             --panel-bg: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
-            --market-green: #7CFF4E;
-            --market-green-dark: #28B31C;
             --market-card: rgba(163, 94, 152, 0.16);
             --market-card-border: rgba(255, 255, 255, 0.22);
             --market-pill: rgba(255, 255, 255, 0.10);
@@ -868,7 +866,7 @@
         .market-create-cta {
             width: 100%;
             border: 4px solid rgba(255, 255, 255, 0.92);
-            background: linear-gradient(180deg, var(--market-green) 0%, var(--market-green-dark) 100%);
+            background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
             color: white;
             font-size: 24px;
             font-weight: 900;
@@ -876,7 +874,7 @@
             border-radius: 22px;
             padding: 18px 18px;
             cursor: pointer;
-            box-shadow: 0 10px 22px rgba(30, 180, 20, 0.34);
+            box-shadow: 0 10px 22px rgba(28, 158, 216, 0.34);
             text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
         }
 
@@ -893,19 +891,19 @@
         .market-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
+            gap: 12px;
             width: 100%;
             padding-bottom: 6px;
         }
 
         .market-card {
-            background: linear-gradient(180deg, rgba(163, 74, 139, 0.36), rgba(105, 39, 94, 0.42));
+            background: linear-gradient(180deg, rgba(163, 74, 139, 0.30), rgba(105, 39, 94, 0.38));
             border: 1px solid var(--market-card-border);
-            border-radius: 26px;
-            padding: 18px 14px 14px;
+            border-radius: 24px;
+            padding: 14px 12px 12px;
             box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
             backdrop-filter: blur(10px);
-            min-height: 300px;
+            min-height: 270px;
             display: flex;
             flex-direction: column;
         }
@@ -913,72 +911,64 @@
         .market-badge {
             color: rgba(255, 255, 255, 0.78);
             font-weight: 900;
-            font-size: 18px;
+            font-size: 16px;
             letter-spacing: 1px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .market-pill {
             width: 100%;
-            min-height: 66px;
-            border-radius: 20px;
+            min-height: 58px;
+            border-radius: 18px;
             background: var(--market-pill);
-            border: 2px solid rgba(255, 255, 255, 0.22);
+            border: 2px solid rgba(255, 255, 255, 0.20);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             color: #ffffff;
             font-weight: 900;
-            margin-bottom: 12px;
-            padding: 10px 12px;
+            margin-bottom: 10px;
+            padding: 8px 10px;
         }
 
         .market-snow-pill {
-            font-size: 18px;
-            letter-spacing: 0.4px;
-            background: linear-gradient(180deg, rgba(204, 64, 155, 0.35), rgba(180, 44, 125, 0.35));
+            font-size: 16px;
+            letter-spacing: 0.3px;
+            background: linear-gradient(180deg, rgba(204, 64, 155, 0.28), rgba(180, 44, 125, 0.32));
         }
 
         .market-price-pill {
-            font-size: 18px;
-            background: linear-gradient(180deg, rgba(194, 76, 162, 0.22), rgba(164, 32, 131, 0.30));
+            font-size: 16px;
+            background: linear-gradient(180deg, rgba(194, 76, 162, 0.18), rgba(164, 32, 131, 0.26));
         }
 
         .market-price-pill .ton-icon {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             background: #179CFF;
             color: #ffffff;
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 900;
             flex: 0 0 auto;
-        }
-
-        .market-seller {
-            color: rgba(255, 255, 255, 0.70);
-            font-size: 13px;
-            font-weight: 700;
-            margin: 4px 0 14px;
-            min-height: 36px;
         }
 
         .market-buy-btn {
             margin-top: auto;
             width: 100%;
             border: 2px solid rgba(255, 255, 255, 0.88);
-            border-radius: 16px;
-            background: linear-gradient(180deg, var(--market-green) 0%, var(--market-green-dark) 100%);
+            border-radius: 14px;
+            background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
             color: #ffffff;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
-            padding: 14px 12px;
+            padding: 12px 10px;
             cursor: pointer;
-            box-shadow: 0 8px 18px rgba(40, 179, 28, 0.28);
+            box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
         }
 
         .market-empty {
@@ -1080,13 +1070,13 @@
             width: 100%;
             border: none;
             border-radius: 18px;
-            background: linear-gradient(180deg, var(--market-green) 0%, var(--market-green-dark) 100%);
+            background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
             color: #ffffff;
             font-size: 18px;
             font-weight: 900;
             padding: 15px 18px;
             cursor: pointer;
-            box-shadow: 0 8px 18px rgba(40, 179, 28, 0.28);
+            box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
         }
 
         .market-smooth-space {
@@ -1118,12 +1108,12 @@
             }
 
             .market-card {
-                min-height: 286px;
-                padding: 16px 12px 12px;
+                min-height: 270px;
+                padding: 14px 12px 12px;
             }
 
             .market-pill {
-                min-height: 62px;
+                min-height: 58px;
             }
         }
 
@@ -1133,7 +1123,7 @@
             }
 
             .market-card {
-                min-height: 272px;
+                min-height: 262px;
             }
 
             .market-create-cta {
@@ -1350,7 +1340,6 @@
                     <div class="market-badge">SNOW</div>
                     <div class="market-pill market-snow-pill">☃️ 5,000</div>
                     <div class="market-pill market-price-pill"><span class="ton-icon">🔷</span><span>1.2</span></div>
-                    <div class="market-seller">Seller: PolarBear_99</div>
                     <button class="market-buy-btn" type="button">Buy</button>
                 </div>
 
@@ -1358,23 +1347,6 @@
                     <div class="market-badge">SNOW</div>
                     <div class="market-pill market-snow-pill">☃️ 12,500</div>
                     <div class="market-pill market-price-pill"><span class="ton-icon">🔷</span><span>2.8</span></div>
-                    <div class="market-seller">Seller: IceKing</div>
-                    <button class="market-buy-btn" type="button">Buy</button>
-                </div>
-
-                <div class="market-card">
-                    <div class="market-badge">SNOW</div>
-                    <div class="market-pill market-snow-pill">☃️ 24,000</div>
-                    <div class="market-pill market-price-pill"><span class="ton-icon">🔷</span><span>5.1</span></div>
-                    <div class="market-seller">Seller: FrostByte</div>
-                    <button class="market-buy-btn" type="button">Buy</button>
-                </div>
-
-                <div class="market-card">
-                    <div class="market-badge">SNOW</div>
-                    <div class="market-pill market-snow-pill">☃️ 48,000</div>
-                    <div class="market-pill market-price-pill"><span class="ton-icon">🔷</span><span>9.4</span></div>
-                    <div class="market-seller">Seller: SnowVault</div>
                     <button class="market-buy-btn" type="button">Buy</button>
                 </div>
             </div>
@@ -1489,7 +1461,6 @@
                     document.querySelector('.market-mode[data-market-mode="yours"]')?.classList.add('active');
                 } else if (mode === 'create') {
                     document.getElementById('market-create')?.classList.add('active');
-                    document.querySelector(`.market-mode[data-market-mode="${currentMarketView === 'yours' ? 'yours' : 'all'}"]`)?.classList.add('active');
                 }
             }
 
@@ -1500,9 +1471,9 @@
                 setMarketMode(mode);
             }
 
-            marketNavBtn?.addEventListener('click', () => showMarketScreen('all'));
             tasksNavBtn?.addEventListener('click', showTasksScreen);
             homeNavBtn?.addEventListener('click', showHomeScreen);
+            marketNavBtn?.addEventListener('click', () => showMarketScreen('all'));
 
             marketModes.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1512,24 +1483,15 @@
             });
 
             marketCreateBtn?.addEventListener('click', () => {
-                showMarketScreen(currentMarketView);
-                setMarketMode('create');
+                showMarketScreen('create');
             });
 
             openCreateOrderBtn?.addEventListener('click', () => {
-                showMarketScreen('yours');
-                setMarketMode('create');
+                showMarketScreen('create');
             });
 
             backToMarketBtn?.addEventListener('click', () => {
-                setMarketMode(currentMarketView === 'create' ? 'all' : currentMarketView);
-                if (!marketScreen?.classList.contains('show')) {
-                    showMarketScreen(currentMarketView || 'all');
-                }
-                if (currentMarketView === 'create') {
-                    setMarketMode('all');
-                    currentMarketView = 'all';
-                }
+                showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all');
             });
 
             marketRefreshBtn?.addEventListener('click', () => {
