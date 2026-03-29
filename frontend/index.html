@@ -26,11 +26,6 @@
             --hatch-blue-dark: #1C9ED8;
             --mint-purple: #C15CFF;
             --mint-purple-dark: #7A2CFF;
-            /* Market Specific Colors */
-            --market-bg: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
-            --market-card-bg: rgba(255, 255, 255, 0.08);
-            --market-pink: #D07BFF;
-            --market-green: #4CAF50;
         }
 
         * {
@@ -53,7 +48,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- Global Reusable UI --- */
         .top-bar {
             width: 92%;
             display: flex;
@@ -66,7 +60,6 @@
             border: 1px solid rgba(0, 131, 143, 0.08);
             border-radius: 28px;
             backdrop-filter: blur(6px);
-            z-index: 10;
         }
 
         .status-card {
@@ -120,7 +113,6 @@
             box-shadow: 0 4px 10px var(--shadow);
         }
 
-        /* --- Home Screen --- */
         .minting-section {
             display: flex;
             flex-direction: column;
@@ -208,246 +200,6 @@
             margin-bottom: 84px;
         }
 
-        /* --- Market Screen UI --- */
-        .market-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 850;
-            display: none;
-            flex-direction: column;
-            padding: 18px 16px 110px;
-            overflow-y: auto;
-            background: var(--market-bg);
-            color: #ffffff;
-            backdrop-filter: blur(10px);
-        }
-
-        .market-screen.show {
-            display: flex;
-        }
-
-        .market-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-
-        .market-title {
-            font-size: 30px;
-            font-weight: 900;
-            text-align: center;
-        }
-
-        .refresh-btn {
-            font-size: 24px;
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-
-        .market-tabs-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-
-        .tabs-container {
-            display: flex;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 4px;
-            flex: 1;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 8px;
-            border-radius: 16px;
-            border: none;
-            background: transparent;
-            color: #ccc;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .tab-btn.active {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        .filter-select {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 15px;
-            font-weight: bold;
-        }
-
-        .sort-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            padding: 10px;
-            border-radius: 12px;
-            font-size: 18px;
-        }
-
-        .create-order-btn-big {
-            width: 100%;
-            background: linear-gradient(90deg, #4CAF50 0%, #81C784 100%);
-            border: 2px solid #ffffff33;
-            border-radius: 20px;
-            padding: 15px;
-            color: white;
-            font-size: 20px;
-            font-weight: 900;
-            margin-bottom: 20px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-        }
-
-        .market-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .market-card {
-            background: linear-gradient(180deg, rgba(208, 123, 255, 0.15) 0%, rgba(122, 44, 255, 0.1) 100%);
-            border: 1px solid rgba(208, 123, 255, 0.3);
-            border-radius: 24px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .card-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 8px;
-            text-align: left;
-        }
-
-        .card-value-box {
-            background: rgba(208, 123, 255, 0.3);
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 12px;
-        }
-
-        .card-buy-btn {
-            width: 100%;
-            background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 10px;
-            color: white;
-            font-weight: 900;
-            cursor: pointer;
-        }
-
-        .price-per-unit {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 8px;
-        }
-
-        .empty-market {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding-top: 50px;
-            color: rgba(255, 255, 255, 0.5);
-            text-align: center;
-        }
-
-        .empty-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        /* --- Create Order Modal --- */
-        #marketOrderModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .order-content {
-            background: #2a1b4d;
-            width: 100%;
-            max-width: 400px;
-            border-radius: 25px;
-            padding: 25px;
-            border: 2px solid var(--market-pink);
-            position: relative;
-        }
-
-        .order-header {
-            text-align: center;
-            font-size: 22px;
-            font-weight: 900;
-            color: white;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #ccc;
-            margin-bottom: 5px;
-        }
-
-        .order-input {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #ffffff33;
-            border-radius: 12px;
-            padding: 12px;
-            color: white;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .fee-info {
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 10px;
-            margin-top: 10px;
-            font-size: 13px;
-            color: #ccc;
-        }
-
-        .fee-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        /* --- Reuseable Buttons --- */
         .btn {
             width: 50%;
             border: none;
@@ -471,6 +223,16 @@
         .btn-mint {
             background: linear-gradient(180deg, var(--mint-purple) 0%, var(--mint-purple-dark) 100%);
             box-shadow: 0 6px 14px rgba(122, 44, 255, 0.28);
+        }
+
+        .btn:active,
+        .add-button-blue:active,
+        .final-hatch-btn:active,
+        .close-mint:active,
+        .close-hatch:active,
+        .pct-btn:active,
+        .nav-icon:active {
+            transform: scale(0.96);
         }
 
         .bottom-nav {
@@ -509,16 +271,8 @@
             transform: scale(1.06);
         }
 
-        /* Modal Styles Placeholder */
-        #mintModal, #hatchModal, #tasksScreen {
-            display: none;
-        }
-
-        #mintModal.show, #hatchModal.show, #tasksScreen.show {
-            display: flex;
-        }
-
         #mintModal {
+            display: none;
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.8);
@@ -537,26 +291,567 @@
             border: 2px solid #B24DFF;
             color: white;
             text-align: center;
+            position: relative;
         }
 
-        /* Animations */
-        @keyframes snowmanFloat {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-            100% { transform: translateY(0px); }
+        .mint-title {
+            color: #D07BFF;
+            margin: 0 0 18px 0;
+            font-size: 24px;
         }
 
-        .close-modal-x {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+        .pack-box {
+            background: #283593;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #3949AB;
+        }
+
+        .pack-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+
+        .pack-price {
+            color: #4CAF50;
+            font-weight: 800;
+            margin: 5px 0;
+        }
+
+        .pack-speed {
+            font-size: 12px;
+            color: #B0BEC5;
+            margin: 0;
+        }
+
+        .close-mint {
             background: none;
             border: none;
+            color: #EF5350;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 6px;
+            transition: transform 0.14s ease;
+        }
+
+        #hatchModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .hatch-content {
+            background-color: #006064;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 25px;
+            padding: 25px;
             color: white;
-            font-size: 22px;
+            position: relative;
+            border: 2px solid #81D4FA;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-hatch {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.14s ease;
         }
+
+        .hatch-header {
+            text-align: center;
+            color: #81D4FA;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .ratio-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border: 1px solid rgba(129, 212, 250, 0.3);
+        }
+
+        .hatch-input-section {
+            margin-bottom: 15px;
+        }
+
+        .input-label-row {
+            display: flex;
+            justify-content: space-between;
+            color: #B2EBF2;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .hatch-input {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 2px solid #4DD0E1;
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .hatch-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .pct-btn-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .pct-btn {
+            flex: 1;
+            border: 1px solid #4DD0E1;
+            background-color: rgba(129, 212, 250, 0.1);
+            color: #E0F7FA;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            user-select: none;
+            transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
+        }
+
+        .available-text {
+            color: #B2EBF2;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .calc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            font-size: 14px;
+            color: #E0F7FA;
+        }
+
+        .calc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(129, 212, 250, 0.1);
+        }
+
+        .calc-item.total {
+            font-weight: bold;
+            color: white;
+            border-bottom: none;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .final-hatch-btn {
+            width: 100%;
+            background: linear-gradient(180deg, #00ACC1 0%, #00838F 100%);
+            border: 2px solid #81D4FA;
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+        }
+
+        button,
+        .pct-btn,
+        .nav-icon {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:hover,
+        .add-button-blue:hover,
+        .final-hatch-btn:hover,
+        .close-mint:hover,
+        .close-hatch:hover,
+        .pct-btn:hover,
+        .nav-icon:hover {
+            filter: brightness(1.03);
+        }
+
+        @keyframes snowmanFloat {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .value-text {
+                font-size: 14px;
+            }
+
+            .icon-small {
+                font-size: 20px;
+                margin-right: 6px;
+            }
+
+            .limited-text {
+                font-size: 15px;
+            }
+
+            .minting-container {
+                width: 84%;
+            }
+
+            .minting-bar {
+                font-size: 18px;
+            }
+
+            .snowman-core {
+                font-size: 170px;
+            }
+
+            .mining-counter {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .btn {
+                font-size: 18px;
+                padding: 20px 0;
+            }
+
+            .action-buttons {
+                margin-bottom: 80px;
+            }
+        }
+
+        .tasks-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            display: none;
+            flex-direction: column;
+            padding: 18px 16px 110px;
+            overflow-y: auto;
+            background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+        }
+
+        .tasks-screen.show {
+            display: flex;
+        }
+
+        .tasks-top {
+            margin-top: 6px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .tasks-title {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        .tasks-subtitle {
+            display: none;
+        }
+
+        .channel-submit-card {
+            background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
+            border: 1px solid rgba(129, 212, 250, 0.18);
+            border-radius: 28px;
+            padding: 20px 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .channel-submit-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(224, 247, 250, 0.9);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .channel-input {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(129, 212, 250, 0.4);
+            border-radius: 20px;
+            padding: 14px 18px;
+            font-size: 14px;
+            color: white;
+            outline: none;
+            margin-bottom: 14px;
+            transition: border 0.2s;
+        }
+
+        .channel-input:focus {
+            border-color: #67d9ff;
+        }
+
+        .channel-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .submit-channel-btn {
+            background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
+            border: none;
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.14s ease;
+            box-shadow: 0 6px 14px rgba(28, 158, 216, 0.3);
+        }
+
+        .submit-channel-btn:active {
+            transform: scale(0.97);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
+            border: 1px solid rgba(129, 212, 250, 0.18);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .task-emoji {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .task-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .task-meta {
+            margin-top: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #67d9ff;
+        }
+
+        .task-join-btn {
+            border: none;
+            min-width: 88px;
+            padding: 12px 18px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
+        }
+
+        .floating-add-task {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 82px;
+            z-index: 950;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #c15cff 0%, #7a2cff 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 900;
+            box-shadow: 0 10px 20px rgba(122, 44, 255, 0.32);
+            cursor: pointer;
+        }
+
+        .floating-add-task .plus {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.16);
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        /* --- New Market Styles Start --- */
+        .market-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            display: none;
+            flex-direction: column;
+            padding: 18px 16px 110px;
+            overflow-y: auto;
+            background: radial-gradient(circle at top, rgba(13, 71, 161, 0.98), rgba(1, 22, 39, 0.98));
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+        }
+
+        .market-screen.show {
+            display: flex;
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            padding-bottom: 20px;
+        }
+
+        .market-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(77, 208, 225, 0.3);
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .market-item-icon {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        .market-item-name {
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .market-item-price {
+            color: #4DD0E1;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .market-buy-btn {
+            background: #00838F;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 8px 0;
+            width: 100%;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        #marketOrderModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .order-content {
+            background: #0D47A1;
+            width: 100%;
+            max-width: 360px;
+            border-radius: 25px;
+            padding: 24px;
+            border: 2px solid #4DD0E1;
+            text-align: center;
+            color: white;
+        }
+
+        .order-confirm-btn {
+            width: 100%;
+            background: #4DD0E1;
+            color: #01579B;
+            border: none;
+            padding: 14px;
+            border-radius: 15px;
+            font-weight: 900;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        /* --- New Market Styles End --- */
     </style>
 </head>
 <body>
@@ -566,6 +861,7 @@
             <span class="icon-small">☃️</span>
             <span class="value-text">0</span>
         </div>
+
         <div class="center-card">
             <div class="status-card">
                 <span class="icon-small">❄️</span>
@@ -573,137 +869,32 @@
             </div>
             <div class="timer-text">60:00</div>
         </div>
+
         <div class="status-card">
             <span class="icon-small">🔷</span>
             <span class="value-text">0</span>
         </div>
+
         <button class="add-button-blue" type="button">+</button>
     </div>
 
-    <div id="homeScreen" style="display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1;">
-        <div class="minting-section">
-            <div class="limited-text">LIMITED</div>
-            <div class="minting-container">
-                <div class="minting-bar">0 / 25M</div>
-            </div>
-        </div>
-
-        <div class="character-area">
-            <div class="snowman-stage" id="snowmanStage">
-                <div class="snowman-core">☃️</div>
-                <div class="mining-counter">0.00 ❄️/hr</div>
-            </div>
-        </div>
-
-        <div class="action-buttons">
-            <button class="btn btn-hatch" id="openHatchBtn" type="button">Hatch ❄️</button>
-            <button class="btn btn-mint" id="openMintBtn" type="button">Mint 💎</button>
+    <div class="minting-section">
+        <div class="limited-text">LIMITED</div>
+        <div class="minting-container">
+            <div class="minting-bar">0 / 25M</div>
         </div>
     </div>
 
-    <div id="marketScreen" class="market-screen">
-        <div class="market-header">
-            <div class="market-title">Market</div>
-            <button class="refresh-btn">🔄</button>
-        </div>
-
-        <div class="market-tabs-row">
-            <div class="tabs-container">
-                <button class="tab-btn active" id="marketAllTab">All</button>
-                <button class="tab-btn" id="marketYoursTab">Yours</button>
-            </div>
-            <select class="filter-select">
-                <option>Value</option>
-            </select>
-            <button class="sort-btn">▲</button>
-        </div>
-
-        <button class="create-order-btn-big" id="openCreateOrderBtn">+ Create Order</button>
-
-        <div id="marketAllContent" class="market-grid">
-            <div class="market-card">
-                <div class="card-label">SNOW</div>
-                <div class="card-value-box">
-                    <span>❄️</span>
-                    <span>121</span>
-                </div>
-                <div class="card-label">PRICE</div>
-                <div class="card-value-box">
-                    <span>💎</span>
-                    <span>0</span>
-                </div>
-                <div class="price-per-unit">0.00002 TON/Snow</div>
-                <button class="card-buy-btn">Buy</button>
-            </div>
-            <div class="market-card">
-                <div class="card-label">SNOW</div>
-                <div class="card-value-box">
-                    <span>❄️</span>
-                    <span>150</span>
-                </div>
-                <div class="card-label">PRICE</div>
-                <div class="card-value-box">
-                    <span>💎</span>
-                    <span>0</span>
-                </div>
-                <div class="price-per-unit">0.00002 TON/Snow</div>
-                <button class="card-buy-btn">Buy</button>
-            </div>
-        </div>
-
-        <div id="marketYoursContent" class="empty-market" style="display: none;">
-            <div class="empty-icon">📥</div>
-            <p>You have no listings. Create your first listing to start trading!</p>
+    <div class="character-area">
+        <div class="snowman-stage" id="snowmanStage">
+            <div class="snowman-core">☃️</div>
+            <div class="mining-counter">0.00 ❄️/hr</div>
         </div>
     </div>
 
-    <div id="marketOrderModal">
-        <div class="order-content">
-            <button class="close-modal-x" id="closeOrderModal">×</button>
-            <div class="order-header">Create Order</div>
-            
-            <div class="input-group">
-                <div class="input-header">
-                    <span>Amount</span>
-                    <span>min. 100</span>
-                </div>
-                <input type="number" class="order-input" placeholder="Enter snow amount (min. 100)">
-            </div>
-
-            <div class="pct-btn-row" style="display:flex; gap:8px; margin-bottom:15px;">
-                <button class="tab-btn active" style="background:rgba(255,255,255,0.1)">25%</button>
-                <button class="tab-btn active" style="background:rgba(255,255,255,0.1)">50%</button>
-                <button class="tab-btn active" style="background:rgba(255,255,255,0.1)">75%</button>
-                <button class="tab-btn active" style="background:rgba(255,255,255,0.1)">MAX</button>
-            </div>
-
-            <div class="input-group">
-                <div class="input-header">Total Price (TON)</div>
-                <input type="number" class="order-input" placeholder="Enter total price in TON">
-            </div>
-
-            <div class="fee-info">
-                <div class="fee-row">
-                    <span>Seller fee (5%)</span>
-                    <span>-</span>
-                </div>
-                <div class="fee-row" style="color:white; font-weight:bold;">
-                    <span>You will receive</span>
-                    <span>-</span>
-                </div>
-            </div>
-
-            <button class="create-order-btn-big" style="margin-top:20px; margin-bottom:0;">Create Order</button>
-        </div>
-    </div>
-
-    <div id="tasksScreen" class="market-screen">
-        <div class="market-header">
-            <div class="market-title">Tasks</div>
-        </div>
-        <div class="empty-market">
-            <p>Task content here...</p>
-        </div>
+    <div class="action-buttons">
+        <button class="btn btn-hatch" id="openHatchBtn" type="button">Hatch ❄️</button>
+        <button class="btn btn-mint" id="openMintBtn" type="button">Mint 💎</button>
     </div>
 
     <div class="bottom-nav">
@@ -714,80 +905,277 @@
         <button class="nav-icon" type="button">👤</button>
     </div>
 
+    <div id="mintModal">
+        <div class="mint-content">
+            <h2 class="mint-title">Mint Snowmen 💎</h2>
+
+            <div class="pack-box">
+                <h3>Starter Pack</h3>
+                <p class="pack-price">1 TON ➔ 2240 ☃️</p>
+                <p class="pack-speed">Mining Speed: 7.00 ❄️/hr</p>
+            </div>
+
+            <div class="pack-box">
+                <h3>Pro Pack</h3>
+                <p class="pack-price">3 TON ➔ 5120 ☃️</p>
+                <p class="pack-speed">Mining Speed: 16.00 ❄️/hr</p>
+            </div>
+
+            <div class="pack-box" style="margin-bottom: 18px;">
+                <h3>Whale Pack</h3>
+                <p class="pack-price">99 TON ➔ 160,000 ☃️</p>
+                <p class="pack-speed">Mining Speed: 500.00 ❄️/hr</p>
+            </div>
+
+            <button class="close-mint" id="closeMintBtn" type="button">CANCEL</button>
+        </div>
+    </div>
+
+    <div id="hatchModal">
+        <div class="hatch-content">
+            <button class="close-hatch" id="closeHatchBtn" type="button">×</button>
+
+            <h2 class="hatch-header">Hatch Snowmen ❄️</h2>
+
+            <div class="ratio-box">
+                <span>❄️ 1</span>
+                <span>➜</span>
+                <span>☃️ 1</span>
+            </div>
+
+            <div class="hatch-input-section">
+                <div class="input-label-row">
+                    <span>☃️ Snowmen to Hatch</span>
+                    <span>max. 0</span>
+                </div>
+                <input type="number" class="hatch-input" placeholder="Enter amount (min. 100)">
+            </div>
+
+            <div class="pct-btn-row">
+                <button class="pct-btn" type="button">25%</button>
+                <button class="pct-btn" type="button">50%</button>
+                <button class="pct-btn" type="button">75%</button>
+                <button class="pct-btn" type="button">MAX</button>
+            </div>
+
+            <div class="available-text">
+                ❄️ Available: <span id="hatch-avail-snowflakes">0</span> snowflakes
+            </div>
+
+            <ul class="calc-list">
+                <li class="calc-item">
+                    <span>Base Snowflakes</span>
+                    <span>-</span>
+                </li>
+                <li class="calc-item">
+                    <span>Craft fee (6%)</span>
+                    <span>-</span>
+                </li>
+                <li class="calc-item total">
+                    <span>❄️ Total required</span>
+                    <span>-</span>
+                </li>
+            </ul>
+
+            <button class="final-hatch-btn" type="button">Hatch ❄️</button>
+        </div>
+    </div>
+
+    <div id="tasksScreen" class="tasks-screen" aria-hidden="true">
+        <div class="tasks-top">
+            <div class="tasks-title">Tasks</div>
+            <div class="tasks-subtitle">(hidden)</div>
+        </div>
+
+        <div class="channel-submit-card">
+            <div class="channel-submit-text">
+                Have a Telegram channel?<br>
+                Submit your channel where you'll promote our bot and get a task reward when approved!
+            </div>
+            <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
+            <button class="submit-channel-btn" id="submitChannelBtn">Submit Channel</button>
+        </div>
+
+        <div class="task-list">
+            <div class="task-card">
+                <div class="task-left">
+                    <div class="task-emoji">📣</div>
+                    <div>
+                        <div class="task-name">Join Our Channel</div>
+                        <div class="task-meta">+30 ❄️</div>
+                    </div>
+                </div>
+                <button class="task-join-btn" type="button">Join</button>
+            </div>
+        </div>
+
+        <button id="floatingAddTaskBtn" class="floating-add-task" type="button">
+            <span class="plus">+</span>
+            <span>Add a Task</span>
+        </button>
+    </div>
+
+    <div id="marketScreen" class="market-screen">
+        <div class="tasks-top">
+            <div class="tasks-title">Market</div>
+        </div>
+
+        <div class="market-grid">
+            <div class="market-card">
+                <div class="market-item-icon">⚡</div>
+                <div class="market-item-name">Speed Boost</div>
+                <div class="market-item-price">500 ❄️</div>
+                <button class="market-buy-btn" onclick="openMarketOrder('Speed Boost', 500)">Buy</button>
+            </div>
+            <div class="market-card">
+                <div class="market-item-icon">📦</div>
+                <div class="market-item-name">Hatch Pack</div>
+                <div class="market-item-price">1200 ❄️</div>
+                <button class="market-buy-btn" onclick="openMarketOrder('Hatch Pack', 1200)">Buy</button>
+            </div>
+            <div class="market-card">
+                <div class="market-item-icon">🧪</div>
+                <div class="market-item-name">Freeze Potion</div>
+                <div class="market-item-price">300 ❄️</div>
+                <button class="market-buy-btn" onclick="openMarketOrder('Freeze Potion', 300)">Buy</button>
+            </div>
+            <div class="market-card">
+                <div class="market-item-icon">🧤</div>
+                <div class="market-item-name">Warm Gloves</div>
+                <div class="market-item-price">800 ❄️</div>
+                <button class="market-buy-btn" onclick="openMarketOrder('Warm Gloves', 800)">Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="marketOrderModal">
+        <div class="order-content">
+            <h2 id="orderItemName">Item Name</h2>
+            <p>Confirm your purchase for <span id="orderItemPrice">0</span> ❄️?</p>
+            <button class="order-confirm-btn">CONFIRM ORDER</button>
+            <button class="close-mint" onclick="document.getElementById('marketOrderModal').style.display='none'">CANCEL</button>
+        </div>
+    </div>
     <script>
+        const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
+
+        /* Market Functions for HTML integration */
+        function openMarketOrder(name, price) {
+            document.getElementById('orderItemName').innerText = name;
+            document.getElementById('orderItemPrice').innerText = price;
+            document.getElementById('marketOrderModal').style.display = 'flex';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Screen Elements
-            const homeScreen = document.getElementById('homeScreen');
-            const marketScreen = document.getElementById('marketScreen');
             const tasksScreen = document.getElementById('tasksScreen');
-            
-            // Nav Buttons
-            const homeNavBtn = document.getElementById('homeNavBtn');
-            const marketNavBtn = document.getElementById('marketNavBtn');
+            const marketScreen = document.getElementById('marketScreen'); // New
             const tasksNavBtn = document.getElementById('tasksNavBtn');
+            const homeNavBtn = document.getElementById('homeNavBtn');
+            const marketNavBtn = document.getElementById('marketNavBtn'); // New
 
-            // Market Specifics
-            const marketAllTab = document.getElementById('marketAllTab');
-            const marketYoursTab = document.getElementById('marketYoursTab');
-            const marketAllContent = document.getElementById('marketAllContent');
-            const marketYoursContent = document.getElementById('marketYoursContent');
-            const openCreateOrderBtn = document.getElementById('openCreateOrderBtn');
-            const marketOrderModal = document.getElementById('marketOrderModal');
-            const closeOrderModal = document.getElementById('closeOrderModal');
+            const mintModal = document.getElementById('mintModal');
+            const hatchModal = document.getElementById('hatchModal');
+            const marketOrderModal = document.getElementById('marketOrderModal'); // New
 
-            // --- Navigation Logic ---
+            const openMintBtn = document.getElementById('openMintBtn');
+            const closeMintBtn = document.getElementById('closeMintBtn');
+
+            const openHatchBtn = document.getElementById('openHatchBtn');
+            const closeHatchBtn = document.getElementById('closeHatchBtn');
+
+            const snowmanStage = document.getElementById('snowmanStage');
+
+            const submitChannelBtn = document.getElementById('submitChannelBtn');
+            const channelLinkInput = document.getElementById('channelLinkInput');
+
             function hideAllScreens() {
-                homeScreen.style.display = 'none';
-                marketScreen.classList.remove('show');
-                tasksScreen.classList.remove('show');
-                [homeNavBtn, marketNavBtn, tasksNavBtn].forEach(btn => btn.classList.remove('active'));
+                tasksScreen?.classList.remove('show');
+                marketScreen?.classList.remove('show');
+                homeNavBtn?.classList.remove('active');
+                tasksNavBtn?.classList.remove('active');
+                marketNavBtn?.classList.remove('active');
             }
 
-            homeNavBtn.addEventListener('click', () => {
-                hideAllScreens();
-                homeScreen.style.display = 'flex';
-                homeNavBtn.classList.add('active');
-            });
-
-            marketNavBtn.addEventListener('click', () => {
-                hideAllScreens();
-                marketScreen.classList.add('show');
-                marketNavBtn.classList.add('active');
-            });
-
-            tasksNavBtn.addEventListener('click', () => {
+            function showTasksScreen() {
                 hideAllScreens();
                 tasksScreen.classList.add('show');
-                tasksNavBtn.classList.add('active');
+                tasksNavBtn?.classList.add('active');
+            }
+
+            function showHomeScreen() {
+                hideAllScreens();
+                homeNavBtn?.classList.add('active');
+            }
+
+            function showMarketScreen() {
+                hideAllScreens();
+                marketScreen.classList.add('show');
+                marketNavBtn?.classList.add('active');
+            }
+
+            tasksNavBtn?.addEventListener('click', showTasksScreen);
+            homeNavBtn?.addEventListener('click', showHomeScreen);
+            marketNavBtn?.addEventListener('click', showMarketScreen); // New Navigation
+
+            floatingAddTaskBtn?.addEventListener('click', () => {
+                console.log('Add a Task clicked');
             });
 
-            // --- Market Tabs Logic ---
-            marketAllTab.addEventListener('click', () => {
-                marketAllTab.classList.add('active');
-                marketYoursTab.classList.remove('active');
-                marketAllContent.style.display = 'grid';
-                marketYoursContent.style.display = 'none';
+            if (submitChannelBtn && channelLinkInput) {
+                submitChannelBtn.addEventListener('click', () => {
+                    const channelUrl = channelLinkInput.value.trim();
+                    if (!channelUrl) {
+                        alert('Please enter your Telegram channel link');
+                        return;
+                    }
+                    console.log('Channel submitted:', channelUrl);
+                    alert('Channel submitted for review!');
+                    channelLinkInput.value = '';
+                });
+            }
+
+            openMintBtn?.addEventListener('click', () => {
+                mintModal.style.display = 'flex';
             });
 
-            marketYoursTab.addEventListener('click', () => {
-                marketYoursTab.classList.add('active');
-                marketAllTab.classList.remove('active');
-                marketAllContent.style.display = 'none';
-                marketYoursContent.style.display = 'flex';
+            closeMintBtn?.addEventListener('click', () => {
+                mintModal.style.display = 'none';
             });
 
-            // --- Modal Logic ---
-            openCreateOrderBtn.addEventListener('click', () => {
-                marketOrderModal.style.display = 'flex';
+            openHatchBtn?.addEventListener('click', () => {
+                hatchModal.style.display = 'flex';
             });
 
-            closeOrderModal.addEventListener('click', () => {
-                marketOrderModal.style.display = 'none';
+            closeHatchBtn?.addEventListener('click', () => {
+                hatchModal.style.display = 'none';
             });
 
-            window.addEventListener('click', (e) => {
-                if (e.target === marketOrderModal) marketOrderModal.style.display = 'none';
+            window.addEventListener('click', (event) => {
+                if (event.target === mintModal) {
+                    mintModal.style.display = 'none';
+                }
+                if (event.target === hatchModal) {
+                    hatchModal.style.display = 'none';
+                }
+                if (event.target === marketOrderModal) {
+                    marketOrderModal.style.display = 'none';
+                }
             });
+
+            if (snowmanStage) {
+                const pressSnowman = () => {
+                    snowmanStage.classList.add('pressed');
+                };
+
+                const releaseSnowman = () => {
+                    snowmanStage.classList.remove('pressed');
+                };
+
+                snowmanStage.addEventListener('pointerdown', pressSnowman);
+                snowmanStage.addEventListener('pointerup', releaseSnowman);
+                snowmanStage.addEventListener('pointerleave', releaseSnowman);
+                snowmanStage.addEventListener('pointercancel', releaseSnowman);
+            }
         });
     </script>
 </body>
