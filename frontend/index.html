@@ -236,18 +236,18 @@
         }
 
         .bottom-nav {
-    position: fixed;
-    bottom: 10px;
-    width: 90%;
-    height: 60px;
-    background-color: #9CD0E6;
-    border-radius: 30px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
-    z-index: 1000;
-}
+            position: fixed;
+            bottom: 10px;
+            width: 90%;
+            height: 60px;
+            background-color: #9CD0E6;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+            z-index: 1000;
+        }
 
         .nav-icon {
             width: 44px;
@@ -565,17 +565,17 @@
         }
 
         .tasks-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 900;
-    display: none;
-    flex-direction: column;
-    padding: 18px 16px 110px;
-    overflow-y: auto;
-    background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
-    color: #ffffff;
-    backdrop-filter: blur(10px);
-}
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            display: none;
+            flex-direction: column;
+            padding: 18px 16px 110px;
+            overflow-y: auto;
+            background: radial-gradient(circle at top, rgba(35, 40, 76, 0.98), rgba(10, 12, 24, 0.98));
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+        }
 
         .tasks-screen.show {
             display: flex;
@@ -595,9 +595,63 @@
         }
 
         .tasks-subtitle {
-            margin-top: 6px;
-            font-size: 13px;
-            color: rgba(224, 247, 250, 0.72);
+            display: none;
+        }
+
+        .channel-submit-card {
+            background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
+            border: 1px solid rgba(129, 212, 250, 0.18);
+            border-radius: 28px;
+            padding: 20px 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .channel-submit-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(224, 247, 250, 0.9);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .channel-input {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(129, 212, 250, 0.4);
+            border-radius: 20px;
+            padding: 14px 18px;
+            font-size: 14px;
+            color: white;
+            outline: none;
+            margin-bottom: 14px;
+            transition: border 0.2s;
+        }
+
+        .channel-input:focus {
+            border-color: #67d9ff;
+        }
+
+        .channel-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .submit-channel-btn {
+            background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
+            border: none;
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.14s ease;
+            box-shadow: 0 6px 14px rgba(28, 158, 216, 0.3);
+        }
+
+        .submit-channel-btn:active {
+            transform: scale(0.97);
         }
 
         .task-list {
@@ -829,7 +883,16 @@
     <div id="tasksScreen" class="tasks-screen" aria-hidden="true">
         <div class="tasks-top">
             <div class="tasks-title">Tasks</div>
-            <div class="tasks-subtitle">Complete simple actions to earn rewards.</div>
+            <div class="tasks-subtitle">(hidden)</div>
+        </div>
+
+        <div class="channel-submit-card">
+            <div class="channel-submit-text">
+                Have a Telegram channel?<br>
+                Submit your channel where you'll promote our bot and get a task reward when approved!
+            </div>
+            <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
+            <button class="submit-channel-btn" id="submitChannelBtn">Submit Channel</button>
         </div>
 
         <div class="task-list">
@@ -871,6 +934,9 @@
 
             const snowmanStage = document.getElementById('snowmanStage');
 
+            const submitChannelBtn = document.getElementById('submitChannelBtn');
+            const channelLinkInput = document.getElementById('channelLinkInput');
+
             function showTasksScreen() {
                 if (!tasksScreen) return;
                 tasksScreen.classList.add('show');
@@ -891,6 +957,19 @@
             floatingAddTaskBtn?.addEventListener('click', () => {
                 console.log('Add a Task clicked');
             });
+
+            if (submitChannelBtn && channelLinkInput) {
+                submitChannelBtn.addEventListener('click', () => {
+                    const channelUrl = channelLinkInput.value.trim();
+                    if (!channelUrl) {
+                        alert('Please enter your Telegram channel link');
+                        return;
+                    }
+                    console.log('Channel submitted:', channelUrl);
+                    alert('Channel submitted for review!');
+                    channelLinkInput.value = '';
+                });
+            }
 
             openMintBtn?.addEventListener('click', () => {
                 mintModal.style.display = 'flex';
