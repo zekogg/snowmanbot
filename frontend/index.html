@@ -3464,525 +3464,524 @@ color: #ffffff;
 
 <script>
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
+const currentUserId = "999"; // مؤقت للتجربة
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const addTaskModal = document.getElementById('addTaskModal');
-const closeAddTaskModalBtn = document.getElementById('closeAddTaskModalBtn');
-const confirmCreateTaskBtn = document.getElementById('confirmCreateTaskBtn');
-const taskTargetUsers = document.getElementById('taskTargetUsers');
-const taskTotalCost = document.getElementById('taskTotalCost');
-const taskPresetBtns = document.querySelectorAll('.task-preset-btn');
-const taskTelegramLink = document.getElementById('taskTelegramLink');
+document.addEventListener('DOMContentLoaded', () => {
+    // ========== المتغيرات الأساسية ==========
+    const addTaskModal = document.getElementById('addTaskModal');
+    const closeAddTaskModalBtn = document.getElementById('closeAddTaskModalBtn');
+    const confirmCreateTaskBtn = document.getElementById('confirmCreateTaskBtn');
+    const taskTargetUsers = document.getElementById('taskTargetUsers');
+    const taskTotalCost = document.getElementById('taskTotalCost');
+    const taskPresetBtns = document.querySelectorAll('.task-preset-btn');
+    const taskTelegramLink = document.getElementById('taskTelegramLink');
 
-        const tasksScreen = document.getElementById('tasksScreen');
-        const marketScreen = document.getElementById('marketScreen');
-        const friendsScreen = document.getElementById('friendsScreen');
-        const profileScreen = document.getElementById('profileScreen');
+    const tasksScreen = document.getElementById('tasksScreen');
+    const marketScreen = document.getElementById('marketScreen');
+    const friendsScreen = document.getElementById('friendsScreen');
+    const profileScreen = document.getElementById('profileScreen');
 
-        const tasksNavBtn = document.getElementById('tasksNavBtn');
-        const homeNavBtn = document.getElementById('homeNavBtn');
-        const marketNavBtn = document.getElementById('marketNavBtn');
-        const friendsNavBtn = document.getElementById('friendsNavBtn');
-        const profileNavBtn = document.getElementById('profileNavBtn');
+    const tasksNavBtn = document.getElementById('tasksNavBtn');
+    const homeNavBtn = document.getElementById('homeNavBtn');
+    const marketNavBtn = document.getElementById('marketNavBtn');
+    const friendsNavBtn = document.getElementById('friendsNavBtn');
+    const profileNavBtn = document.getElementById('profileNavBtn');
 
-        const floatingAddTaskBtn = document.getElementById('floatingAddTaskBtn');
+    const floatingAddTaskBtn = document.getElementById('floatingAddTaskBtn');
 
-        const mintModal = document.getElementById('mintModal');
-        const hatchModal = document.getElementById('hatchModal');
+    const mintModal = document.getElementById('mintModal');
+    const hatchModal = document.getElementById('hatchModal');
 
-        const openMintBtn = document.getElementById('openMintBtn');
-        const closeMintBtn = document.getElementById('closeMintBtn');
+    const openMintBtn = document.getElementById('openMintBtn');
+    const closeMintBtn = document.getElementById('closeMintBtn');
 
-        const openHatchBtn = document.getElementById('openHatchBtn');
-        const closeHatchBtn = document.getElementById('closeHatchBtn');
+    const openHatchBtn = document.getElementById('openHatchBtn');
+    const closeHatchBtn = document.getElementById('closeHatchBtn');
 
-        const submitChannelBtn = document.getElementById('submitChannelBtn');
-        const channelLinkInput = document.getElementById('channelLinkInput');
+    const submitChannelBtn = document.getElementById('submitChannelBtn');
+    const channelLinkInput = document.getElementById('channelLinkInput');
 
-        const marketModes = document.querySelectorAll('.market-mode');
-        const marketPages = document.querySelectorAll('.market-sub-page');
-        const marketCreateBtn = document.getElementById('marketCreateBtn');
-        const openCreateOrderBtn = document.getElementById('openCreateOrderBtn');
-        const backToMarketBtn = document.getElementById('backToMarketBtn');
-        const marketRefreshBtn = document.getElementById('marketRefreshBtn');
-        const marketFilterBtn = document.getElementById('marketFilterBtn');
-        const marketSortBtn = document.getElementById('marketSortBtn');
-        
-const pvpBtn = document.getElementById('pvpBtn');
-const pvpScreen = document.getElementById('pvpScreen');
-const pvpWheel = document.getElementById('pvpWheel');
-const pvpAmountInput = document.getElementById('pvpAmountInput');
-const pvpSetBtn = document.getElementById('pvpSetBtn');
-const pvpTotalValue = document.getElementById('pvpTotalValue');
+    const marketModes = document.querySelectorAll('.market-mode');
+    const marketPages = document.querySelectorAll('.market-sub-page');
+    const marketCreateBtn = document.getElementById('marketCreateBtn');
+    const openCreateOrderBtn = document.getElementById('openCreateOrderBtn');
+    const backToMarketBtn = document.getElementById('backToMarketBtn');
+    const marketRefreshBtn = document.getElementById('marketRefreshBtn');
+    const marketFilterBtn = document.getElementById('marketFilterBtn');
+    const marketSortBtn = document.getElementById('marketSortBtn');
+    
+    const pvpBtn = document.getElementById('pvpBtn');
+    const pvpScreen = document.getElementById('pvpScreen');
+    const pvpWheel = document.getElementById('pvpWheel');
+    const pvpAmountInput = document.getElementById('pvpAmountInput');
+    const pvpSetBtn = document.getElementById('pvpSetBtn');
+    const pvpTotalValue = document.getElementById('pvpTotalValue');
 
-const exchangeBtn = document.getElementById('exchangeBtn');
-const exchangeModal = document.getElementById('exchangeModal');
-const closeExchangeModalBtn = document.getElementById('closeExchangeModalBtn');
+    const exchangeBtn = document.getElementById('exchangeBtn');
+    const exchangeModal = document.getElementById('exchangeModal');
+    const closeExchangeModalBtn = document.getElementById('closeExchangeModalBtn');
 
-const transferModal = document.getElementById('transferModal');
-const closeTransferModalBtn = document.getElementById('closeTransferModalBtn');
-const depositTabBtn = document.getElementById('depositTabBtn');
-const withdrawTabBtn = document.getElementById('withdrawTabBtn');
-const depositPanel = document.getElementById('depositPanel');
-const withdrawPanel = document.getElementById('withdrawPanel');
-const openDepositBtn = document.getElementById('openDepositBtn');
-const profileDepositBtn = document.getElementById('profileDepositBtn');
-const profileWithdrawBtn = document.getElementById('profileWithdrawBtn');
+    const transferModal = document.getElementById('transferModal');
+    const closeTransferModalBtn = document.getElementById('closeTransferModalBtn');
+    const depositTabBtn = document.getElementById('depositTabBtn');
+    const withdrawTabBtn = document.getElementById('withdrawTabBtn');
+    const depositPanel = document.getElementById('depositPanel');
+    const withdrawPanel = document.getElementById('withdrawPanel');
+    const openDepositBtn = document.getElementById('openDepositBtn');
+    const profileDepositBtn = document.getElementById('profileDepositBtn');
+    const profileWithdrawBtn = document.getElementById('profileWithdrawBtn');
 
-function setTransferMode(mode) {
-    const depositMode = mode === 'deposit';
-    depositTabBtn?.classList.toggle('active', depositMode);
-    withdrawTabBtn?.classList.toggle('active', !depositMode);
-    depositPanel?.classList.toggle('active', depositMode);
-    withdrawPanel?.classList.toggle('active', !depositMode);
-}
+    // ========== دوال API والتعدين ==========
+    function updateUI(user) {
+        document.querySelectorAll('.first-col .value-text').forEach(el => el.textContent = user.snowmen.toFixed(2));
+        document.querySelectorAll('.center-card .value-text').forEach(el => el.textContent = user.snowflakes.toFixed(2));
+        document.querySelector('.mining-counter').textContent = `${user.miningSpeed.toFixed(2)} ❄️/hr`;
+        const totalSnowmen = user.snowmen;
+        const maxSnowmen = 25000000;
+        const percent = (totalSnowmen / maxSnowmen) * 100;
+        document.querySelector('.minting-bar').textContent = `${totalSnowmen.toFixed(0)} / 25M (${percent.toFixed(2)}%)`;
+        document.getElementById('hatch-avail-snowflakes').textContent = user.snowflakes.toFixed(2);
+    }
 
-function openTransferModal(mode) {
-    transferModal?.classList.add('show');
-    setTransferMode(mode);
-}
-
-function closeTransferModal() {
-    transferModal?.classList.remove('show');
-}
-
-openDepositBtn?.addEventListener('click', () => openTransferModal('deposit'));
-profileDepositBtn?.addEventListener('click', () => openTransferModal('deposit'));
-profileWithdrawBtn?.addEventListener('click', () => openTransferModal('withdraw'));
-
-depositTabBtn?.addEventListener('click', () => setTransferMode('deposit'));
-withdrawTabBtn?.addEventListener('click', () => setTransferMode('withdraw'));
-closeTransferModalBtn?.addEventListener('click', closeTransferModal);
-
-transferModal?.addEventListener('click', (event) => {
-    if (event.target === transferModal) closeTransferModal();
-});
-
-window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeTransferModal();
-});
-
-document.querySelectorAll('[data-copy-target]').forEach((button) => {
-    button.addEventListener('click', async () => {
-        const targetId = button.getAttribute('data-copy-target');
-        const target = document.getElementById(targetId);
-        const value = target?.value ?? '';
-        if (!value) return;
+    async function fetchUserState() {
         try {
-            await navigator.clipboard.writeText(value);
+            const response = await fetch(`${API_BASE}/api/user?userId=${currentUserId}`);
+            const user = await response.json();
+            updateUI(user);
+            startTimer(user.lastUpdate);
         } catch (error) {
+            console.error('Fetch error:', error);
         }
-    });
-});
-
-        let currentMarketView = 'all';
-
-        function setActiveNav(activeBtn) {
-            [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn].forEach(btn => btn?.classList.remove('active'));
-            activeBtn?.classList.add('active');
-        }
-
-        function hideOverlays() {
-            document.querySelectorAll('.screen-overlay').forEach(screen => screen.classList.remove('show'));
-        }
-
-        function showHomeScreen() {
-            hideOverlays();
-            setActiveNav(homeNavBtn);
-        }
-
-        function showTasksScreen() {
-            hideOverlays();
-            tasksScreen?.classList.add('show');
-            setActiveNav(tasksNavBtn);
-        }
-
-        function showFriendsScreen() {
-            hideOverlays();
-            friendsScreen?.classList.add('show');
-            setActiveNav(friendsNavBtn);
-        }
-
-        function setMarketMode(mode) {
-    currentMarketView = mode;
-    marketPages.forEach(page => page.classList.remove('active'));
-    marketModes.forEach(modeBtn => modeBtn.classList.remove('active'));
-
-    if (mode === 'all') {
-        document.getElementById('market-all')?.classList.add('active');
-        document.querySelector('.market-mode[data-market-mode="all"]')?.classList.add('active');
-    } else if (mode === 'yours') {
-        document.getElementById('market-yours')?.classList.add('active');
-        document.querySelector('.market-mode[data-market-mode="yours"]')?.classList.add('active');
-    } else if (mode === 'lootbox') {
-        document.getElementById('market-lootbox')?.classList.add('active');
-    } else if (mode === 'create') {
-        document.getElementById('market-create')?.classList.add('active');
     }
-}
 
-        function showMarketScreen(mode = 'all') {
-            hideOverlays();
-            marketScreen?.classList.add('show');
-            setActiveNav(marketNavBtn);
-            setMarketMode(mode);
+    let timerInterval;
+    function startTimer(lastUpdate) {
+        clearInterval(timerInterval);
+        const now = Math.floor(Date.now() / 1000);
+        const elapsedSeconds = now - lastUpdate;
+        const cycleSeconds = 3600;
+        let remainingSeconds = cycleSeconds - (elapsedSeconds % cycleSeconds);
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            document.querySelector('.timer-text').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (remainingSeconds <= 0) {
+                remainingSeconds = cycleSeconds;
+                fetchUserState();
+            }
+            remainingSeconds--;
         }
+        updateTimerDisplay();
+        timerInterval = setInterval(updateTimerDisplay, 1000);
+    }
 
-function showPvpScreen() {
-    hideOverlays();
-    pvpScreen?.classList.add('show');
-    setActiveNav(null);
-}
+    // ========== باقي دوال التنقل والواجهة (كما كانت) ==========
+    function setTransferMode(mode) {
+        const depositMode = mode === 'deposit';
+        depositTabBtn?.classList.toggle('active', depositMode);
+        withdrawTabBtn?.classList.toggle('active', !depositMode);
+        depositPanel?.classList.toggle('active', depositMode);
+        withdrawPanel?.classList.toggle('active', !depositMode);
+    }
 
-function hidePvpScreen() {
-    pvpScreen?.classList.remove('show');
-}
+    function openTransferModal(mode) {
+        transferModal?.classList.add('show');
+        setTransferMode(mode);
+    }
 
-        tasksNavBtn?.addEventListener('click', () => {
-    closeTransferModal();
-    hidePvpScreen();
-    showTasksScreen();
-});
+    function closeTransferModal() {
+        transferModal?.classList.remove('show');
+    }
 
-homeNavBtn?.addEventListener('click', () => {
-    closeTransferModal();
-    hidePvpScreen();
-    showHomeScreen();
-});
+    openDepositBtn?.addEventListener('click', () => openTransferModal('deposit'));
+    profileDepositBtn?.addEventListener('click', () => openTransferModal('deposit'));
+    profileWithdrawBtn?.addEventListener('click', () => openTransferModal('withdraw'));
 
-marketNavBtn?.addEventListener('click', () => {
-    closeTransferModal();
-    hidePvpScreen();
-    showMarketScreen('all');
-});
+    depositTabBtn?.addEventListener('click', () => setTransferMode('deposit'));
+    withdrawTabBtn?.addEventListener('click', () => setTransferMode('withdraw'));
+    closeTransferModalBtn?.addEventListener('click', closeTransferModal);
 
-friendsNavBtn?.addEventListener('click', () => {
-    closeTransferModal();
-    hidePvpScreen();
-    showFriendsScreen();
-});
+    transferModal?.addEventListener('click', (event) => {
+        if (event.target === transferModal) closeTransferModal();
+    });
 
-profileNavBtn?.addEventListener('click', () => {
-    closeTransferModal();
-    hidePvpScreen();
-    hideOverlays();
-    profileScreen?.classList.add('show');
-    setActiveNav(profileNavBtn);
-});
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeTransferModal();
+    });
 
-        marketModes.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const mode = btn.getAttribute('data-market-mode');
-                setMarketMode(mode);
-            });
+    document.querySelectorAll('[data-copy-target]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const targetId = button.getAttribute('data-copy-target');
+            const target = document.getElementById(targetId);
+            const value = target?.value ?? '';
+            if (!value) return;
+            try {
+                await navigator.clipboard.writeText(value);
+            } catch (error) {}
         });
-
-        marketCreateBtn?.addEventListener('click', () => showMarketScreen('create'));
-        openCreateOrderBtn?.addEventListener('click', () => showMarketScreen('create'));
-        backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
-        marketRefreshBtn?.addEventListener('click', () => setMarketMode(currentMarketView));
-        let currentLootboxData = null;
-const lootboxModal = document.getElementById('lootboxModal');
-const lootboxGrid = document.getElementById('lootboxGrid');
-const lootboxModalTitle = document.getElementById('lootboxModalTitle');
-const closeLootboxModalBtn = document.getElementById('closeLootboxModalBtn');
-
-const snowBoxContents = [
-    { icon: '❄️', text: '25' },
-    { icon: '❄️', text: '50' },
-    { icon: '❄️', text: '500' },
-    { icon: '⚡', text: '1.1x Boost' },
-    { icon: '⚡', text: '1.2x Boost' },
-    { icon: '⚡', text: '1.3x Boost' },
-    { icon: '⚡', text: '2x Boost' },
-    { icon: '☃️', text: '25' },
-    { icon: '☃️', text: '50' },
-    { icon: '☃️', text: '100' },
-    { icon: '☃️', text: '500' },
-    { icon: '💎', text: '0.2 Ton' },
-    { icon: '💎', text: '0.5 Ton' }
-];
-
-const tonBoxContents = [
-    { icon: '☃️', text: '500' },
-    { icon: '☃️', text: '1000' },
-    { icon: '☃️', text: '1500' },
-    { icon: '💎', text: '0.5 Ton' },
-    { icon: '💎', text: '1 Ton' },
-    { icon: '💎', text: '3 Ton' },
-    { icon: '⚡', text: '1.2x Boost' },
-    { icon: '⚡', text: '1.5x Boost' },
-    { icon: '⚡', text: '2x Boost' }
-];
-
-function renderLootboxGrid(contents) {
-    if (!lootboxGrid) return;
-    lootboxGrid.innerHTML = '';
-    contents.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'loot-item';
-        div.innerHTML = `<div class="loot-item-icon">${item.icon}</div><div class="loot-item-text">${item.text}</div>`;
-        lootboxGrid.appendChild(div);
     });
-}
 
-function showLootboxModal(boxType) {
-    if (!lootboxModal) return;
-    if (boxType === 'snow') {
-        if (lootboxModalTitle) lootboxModalTitle.textContent = 'Snow Box';
-        renderLootboxGrid(snowBoxContents);
-    } else if (boxType === 'ton') {
-        if (lootboxModalTitle) lootboxModalTitle.textContent = 'Ton Box';
-        renderLootboxGrid(tonBoxContents);
+    let currentMarketView = 'all';
+
+    function setActiveNav(activeBtn) {
+        [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn].forEach(btn => btn?.classList.remove('active'));
+        activeBtn?.classList.add('active');
     }
-    lootboxModal.style.display = 'flex';
-}
 
-function hideLootboxModal() {
-    if (lootboxModal) lootboxModal.style.display = 'none';
-}
+    function hideOverlays() {
+        document.querySelectorAll('.screen-overlay').forEach(screen => screen.classList.remove('show'));
+    }
 
-if (marketFilterBtn) {
-    marketFilterBtn.addEventListener('click', () => {
-        console.log('Loot Box button clicked');
-        setMarketMode('lootbox');
+    function showHomeScreen() {
+        hideOverlays();
+        setActiveNav(homeNavBtn);
+    }
+
+    function showTasksScreen() {
+        hideOverlays();
+        tasksScreen?.classList.add('show');
+        setActiveNav(tasksNavBtn);
+    }
+
+    function showFriendsScreen() {
+        hideOverlays();
+        friendsScreen?.classList.add('show');
+        setActiveNav(friendsNavBtn);
+    }
+
+    function setMarketMode(mode) {
+        currentMarketView = mode;
+        marketPages.forEach(page => page.classList.remove('active'));
+        marketModes.forEach(modeBtn => modeBtn.classList.remove('active'));
+
+        if (mode === 'all') {
+            document.getElementById('market-all')?.classList.add('active');
+            document.querySelector('.market-mode[data-market-mode="all"]')?.classList.add('active');
+        } else if (mode === 'yours') {
+            document.getElementById('market-yours')?.classList.add('active');
+            document.querySelector('.market-mode[data-market-mode="yours"]')?.classList.add('active');
+        } else if (mode === 'lootbox') {
+            document.getElementById('market-lootbox')?.classList.add('active');
+        } else if (mode === 'create') {
+            document.getElementById('market-create')?.classList.add('active');
+        }
+    }
+
+    function showMarketScreen(mode = 'all') {
+        hideOverlays();
+        marketScreen?.classList.add('show');
+        setActiveNav(marketNavBtn);
+        setMarketMode(mode);
+    }
+
+    function showPvpScreen() {
+        hideOverlays();
+        pvpScreen?.classList.add('show');
+        setActiveNav(null);
+    }
+
+    function hidePvpScreen() {
+        pvpScreen?.classList.remove('show');
+    }
+
+    tasksNavBtn?.addEventListener('click', () => {
+        closeTransferModal();
+        hidePvpScreen();
+        showTasksScreen();
     });
-}
 
-document.querySelectorAll('.loot-preview-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const boxType = btn.getAttribute('data-box');
-        showLootboxModal(boxType);
+    homeNavBtn?.addEventListener('click', () => {
+        closeTransferModal();
+        hidePvpScreen();
+        showHomeScreen();
     });
-});
 
-if (closeLootboxModalBtn) {
-    closeLootboxModalBtn.addEventListener('click', hideLootboxModal);
-}
-if (lootboxModal) {
-    lootboxModal.addEventListener('click', (e) => {
-        if (e.target === lootboxModal) hideLootboxModal();
+    marketNavBtn?.addEventListener('click', () => {
+        closeTransferModal();
+        hidePvpScreen();
+        showMarketScreen('all');
     });
-}
-        marketSortBtn?.addEventListener('click', () => console.log('Sort clicked'));
-        
-        floatingAddTaskBtn?.addEventListener('click', () => {
-    if (addTaskModal) addTaskModal.style.display = 'flex';
-});
-function calculateTaskCost(users) {
-    const pricePerUser = 100 / 30;
-    return users * pricePerUser;
-}
 
-function updateTaskTotal() {
-    const users = Math.max(30, parseInt(taskTargetUsers?.value || '30', 10) || 30);
-    const total = calculateTaskCost(users);
-    if (taskTotalCost) taskTotalCost.textContent = `${Math.round(total)} Snow ❄`;
-}
+    friendsNavBtn?.addEventListener('click', () => {
+        closeTransferModal();
+        hidePvpScreen();
+        showFriendsScreen();
+    });
 
-taskTargetUsers?.addEventListener('input', updateTaskTotal);
+    profileNavBtn?.addEventListener('click', () => {
+        closeTransferModal();
+        hidePvpScreen();
+        hideOverlays();
+        profileScreen?.classList.add('show');
+        setActiveNav(profileNavBtn);
+    });
 
-taskPresetBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const value = btn.getAttribute('data-value');
-        if (taskTargetUsers) taskTargetUsers.value = value;
+    marketModes.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.getAttribute('data-market-mode');
+            setMarketMode(mode);
+        });
+    });
+
+    marketCreateBtn?.addEventListener('click', () => showMarketScreen('create'));
+    openCreateOrderBtn?.addEventListener('click', () => showMarketScreen('create'));
+    backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
+    marketRefreshBtn?.addEventListener('click', () => setMarketMode(currentMarketView));
+
+    // Lootbox modal
+    const lootboxModal = document.getElementById('lootboxModal');
+    const lootboxGrid = document.getElementById('lootboxGrid');
+    const lootboxModalTitle = document.getElementById('lootboxModalTitle');
+    const closeLootboxModalBtn = document.getElementById('closeLootboxModalBtn');
+
+    const snowBoxContents = [
+        { icon: '❄️', text: '25' }, { icon: '❄️', text: '50' }, { icon: '❄️', text: '500' },
+        { icon: '⚡', text: '1.1x Boost' }, { icon: '⚡', text: '1.2x Boost' }, { icon: '⚡', text: '1.3x Boost' },
+        { icon: '⚡', text: '2x Boost' }, { icon: '☃️', text: '25' }, { icon: '☃️', text: '50' },
+        { icon: '☃️', text: '100' }, { icon: '☃️', text: '500' }, { icon: '💎', text: '0.2 Ton' }, { icon: '💎', text: '0.5 Ton' }
+    ];
+
+    const tonBoxContents = [
+        { icon: '☃️', text: '500' }, { icon: '☃️', text: '1000' }, { icon: '☃️', text: '1500' },
+        { icon: '💎', text: '0.5 Ton' }, { icon: '💎', text: '1 Ton' }, { icon: '💎', text: '3 Ton' },
+        { icon: '⚡', text: '1.2x Boost' }, { icon: '⚡', text: '1.5x Boost' }, { icon: '⚡', text: '2x Boost' }
+    ];
+
+    function renderLootboxGrid(contents) {
+        if (!lootboxGrid) return;
+        lootboxGrid.innerHTML = '';
+        contents.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'loot-item';
+            div.innerHTML = `<div class="loot-item-icon">${item.icon}</div><div class="loot-item-text">${item.text}</div>`;
+            lootboxGrid.appendChild(div);
+        });
+    }
+
+    function showLootboxModal(boxType) {
+        if (!lootboxModal) return;
+        if (boxType === 'snow') {
+            if (lootboxModalTitle) lootboxModalTitle.textContent = 'Snow Box';
+            renderLootboxGrid(snowBoxContents);
+        } else if (boxType === 'ton') {
+            if (lootboxModalTitle) lootboxModalTitle.textContent = 'Ton Box';
+            renderLootboxGrid(tonBoxContents);
+        }
+        lootboxModal.style.display = 'flex';
+    }
+
+    function hideLootboxModal() {
+        if (lootboxModal) lootboxModal.style.display = 'none';
+    }
+
+    if (marketFilterBtn) {
+        marketFilterBtn.addEventListener('click', () => setMarketMode('lootbox'));
+    }
+
+    document.querySelectorAll('.loot-preview-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showLootboxModal(btn.getAttribute('data-box'));
+        });
+    });
+
+    if (closeLootboxModalBtn) closeLootboxModalBtn.addEventListener('click', hideLootboxModal);
+    if (lootboxModal) lootboxModal.addEventListener('click', (e) => { if (e.target === lootboxModal) hideLootboxModal(); });
+
+    marketSortBtn?.addEventListener('click', () => console.log('Sort clicked'));
+
+    floatingAddTaskBtn?.addEventListener('click', () => {
+        if (addTaskModal) addTaskModal.style.display = 'flex';
+    });
+
+    function calculateTaskCost(users) { return users * (100 / 30); }
+    function updateTaskTotal() {
+        const users = Math.max(30, parseInt(taskTargetUsers?.value || '30', 10) || 30);
+        const total = calculateTaskCost(users);
+        if (taskTotalCost) taskTotalCost.textContent = `${Math.round(total)} Snow ❄`;
+    }
+    taskTargetUsers?.addEventListener('input', updateTaskTotal);
+    taskPresetBtns.forEach(btn => btn.addEventListener('click', () => {
+        if (taskTargetUsers) taskTargetUsers.value = btn.getAttribute('data-value');
+        updateTaskTotal();
+    }));
+    closeAddTaskModalBtn?.addEventListener('click', () => { if (addTaskModal) addTaskModal.style.display = 'none'; });
+    window.addEventListener('click', (e) => { if (e.target === addTaskModal) addTaskModal.style.display = 'none'; });
+    confirmCreateTaskBtn?.addEventListener('click', () => {
+        const link = taskTelegramLink?.value.trim();
+        if (!link) { alert('Please enter Telegram link'); return; }
+        alert('Task created');
+        if (addTaskModal) addTaskModal.style.display = 'none';
+        if (taskTelegramLink) taskTelegramLink.value = '';
+        if (taskTargetUsers) taskTargetUsers.value = '100';
         updateTaskTotal();
     });
-});
+    updateTaskTotal();
 
-closeAddTaskModalBtn?.addEventListener('click', () => {
-    if (addTaskModal) addTaskModal.style.display = 'none';
-});
-
-window.addEventListener('click', (event) => {
-    if (event.target === addTaskModal) addTaskModal.style.display = 'none';
-});
-
-confirmCreateTaskBtn?.addEventListener('click', () => {
-    const link = taskTelegramLink?.value.trim();
-    const users = Math.max(100, parseInt(taskTargetUsers?.value || '100', 10) || 100);
-
-    if (!link) {
-        alert('Please enter Telegram link');
-        return;
+    if (submitChannelBtn && channelLinkInput) {
+        submitChannelBtn.addEventListener('click', () => {
+            const channelUrl = channelLinkInput.value.trim();
+            if (!channelUrl) { alert('Please enter your Telegram channel link'); return; }
+            alert('Channel submitted for review!');
+            channelLinkInput.value = '';
+        });
     }
 
-    console.log('Create task:', { link, users });
+    openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
+    closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
+    openHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'flex');
+    closeHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'none');
 
-    alert('Task created');
-    if (addTaskModal) addTaskModal.style.display = 'none';
-    if (taskTelegramLink) taskTelegramLink.value = '';
-    if (taskTargetUsers) taskTargetUsers.value = '100';
-    updateTaskTotal();
-});
-
-updateTaskTotal();
-
-        if (submitChannelBtn && channelLinkInput) {
-            submitChannelBtn.addEventListener('click', () => {
-                const channelUrl = channelLinkInput.value.trim();
-                if (!channelUrl) {
-                    alert('Please enter your Telegram channel link');
-                    return;
-                }
-                console.log('Channel submitted:', channelUrl);
-                alert('Channel submitted for review!');
-                channelLinkInput.value = '';
-            });
-        }
-
-        openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
-        closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
-        openHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'flex');
-        closeHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'none');
-
-        window.addEventListener('click', (event) => {
-            if (event.target === mintModal) mintModal.style.display = 'none';
-            if (event.target === hatchModal) hatchModal.style.display = 'none';
-            if (event.target === pvpScreen) pvpScreen.classList.remove('show');
-        });
-
-pvpBtn?.addEventListener('click', showPvpScreen);
-
-function showExchangeModal() {
-    if (exchangeModal) exchangeModal.style.display = 'flex';
-}
-
-function hideExchangeModal() {
-    if (exchangeModal) exchangeModal.style.display = 'none';
-}
-
-exchangeBtn?.addEventListener('click', showExchangeModal);
-closeExchangeModalBtn?.addEventListener('click', hideExchangeModal);
-
-window.addEventListener('click', (event) => {
-    if (event.target === exchangeModal) hideExchangeModal();
-});
-
-document.querySelector('.pvp-wheel-wrap')?.addEventListener('click', () => {
-    pvpWheel.classList.remove('spin-once');
-    void pvpWheel.offsetWidth;
-    pvpWheel.classList.add('spin-once');
-});
-
-pvpSetBtn?.addEventListener('click', () => {
-    const value = Math.max(50, parseInt(pvpAmountInput?.value || '50', 10) || 50);
-    if (pvpAmountInput) pvpAmountInput.value = value;
-});
-
-pvpSetBtn?.addEventListener('click', () => {
-    let value = parseInt(pvpAmountInput?.value || '0', 10);
-    if (isNaN(value) || value < 50) value = 50;
-    if (pvpAmountInput) pvpAmountInput.value = value;
-});
-
-// ----- Leaderboard (الكأس) - واجهة فقط -----
-const leagueScreen = document.getElementById('leagueScreen');
-const leagueCloseBtn = document.getElementById('leagueCloseBtn');
-const leagueTabs = document.querySelectorAll('.league-tab');
-const leaguePanels = document.querySelectorAll('.league-panel');
-const leagueBtn = document.getElementById('leagueBtn');
-
-function showLeagueScreen() {
-    if (leagueScreen) leagueScreen.classList.add('show');
-    document.querySelectorAll('.screen-overlay').forEach(s => s.classList.remove('show'));
-    if (pvpScreen) pvpScreen.classList.remove('show');
-}
-function hideLeagueScreen() {
-    if (leagueScreen) leagueScreen.classList.remove('show');
-}
-
-if (leagueBtn) {
-    leagueBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showLeagueScreen();
+    window.addEventListener('click', (event) => {
+        if (event.target === mintModal) mintModal.style.display = 'none';
+        if (event.target === hatchModal) hatchModal.style.display = 'none';
+        if (event.target === pvpScreen) pvpScreen.classList.remove('show');
     });
-}
-if (leagueCloseBtn) {
-    leagueCloseBtn.addEventListener('click', hideLeagueScreen);
-}
 
-leagueTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
+    pvpBtn?.addEventListener('click', showPvpScreen);
+
+    function showExchangeModal() { if (exchangeModal) exchangeModal.style.display = 'flex'; }
+    function hideExchangeModal() { if (exchangeModal) exchangeModal.style.display = 'none'; }
+    exchangeBtn?.addEventListener('click', showExchangeModal);
+    closeExchangeModalBtn?.addEventListener('click', hideExchangeModal);
+    window.addEventListener('click', (e) => { if (e.target === exchangeModal) hideExchangeModal(); });
+
+    document.querySelector('.pvp-wheel-wrap')?.addEventListener('click', () => {
+        pvpWheel.classList.remove('spin-once');
+        void pvpWheel.offsetWidth;
+        pvpWheel.classList.add('spin-once');
+    });
+
+    pvpSetBtn?.addEventListener('click', () => {
+        let value = parseInt(pvpAmountInput?.value || '0', 10);
+        if (isNaN(value) || value < 50) value = 50;
+        if (pvpAmountInput) pvpAmountInput.value = value;
+    });
+
+    // Leaderboard
+    const leagueScreen = document.getElementById('leagueScreen');
+    const leagueCloseBtn = document.getElementById('leagueCloseBtn');
+    const leagueTabs = document.querySelectorAll('.league-tab');
+    const leaguePanels = document.querySelectorAll('.league-panel');
+    const leagueBtn = document.getElementById('leagueBtn');
+
+    function showLeagueScreen() {
+        if (leagueScreen) leagueScreen.classList.add('show');
+        document.querySelectorAll('.screen-overlay').forEach(s => s.classList.remove('show'));
+        if (pvpScreen) pvpScreen.classList.remove('show');
+    }
+    function hideLeagueScreen() { if (leagueScreen) leagueScreen.classList.remove('show'); }
+    if (leagueBtn) leagueBtn.addEventListener('click', (e) => { e.stopPropagation(); showLeagueScreen(); });
+    if (leagueCloseBtn) leagueCloseBtn.addEventListener('click', hideLeagueScreen);
+    leagueTabs.forEach(tab => tab.addEventListener('click', () => {
         const target = tab.getAttribute('data-league-tab');
         leagueTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         leaguePanels.forEach(panel => panel.classList.remove('active'));
-        if (target === 'referrals') {
-            document.getElementById('leaguePanelReferrals')?.classList.add('active');
-        } else if (target === 'snowmen') {
-            document.getElementById('leaguePanelSnowmen')?.classList.add('active');
-        }
-    });
-});
+        if (target === 'referrals') document.getElementById('leaguePanelReferrals')?.classList.add('active');
+        else if (target === 'snowmen') document.getElementById('leaguePanelSnowmen')?.classList.add('active');
+    }));
+    leagueScreen?.addEventListener('click', (e) => { if (e.target === leagueScreen) hideLeagueScreen(); });
+    [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn].forEach(btn => btn?.addEventListener('click', hideLeagueScreen));
 
-leagueScreen?.addEventListener('click', (e) => {
-    if (e.target === leagueScreen) hideLeagueScreen();
-});
+    // PVP History
+    const pvpHistoryBtn = document.getElementById('pvpHistoryBtn');
+    const pvpHistoryPanel = document.getElementById('pvpHistoryPanel');
+    const closePvpHistoryBtn = document.getElementById('closePvpHistoryBtn');
+    if (pvpHistoryBtn) pvpHistoryBtn.addEventListener('click', (e) => { e.stopPropagation(); if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'block'; });
+    if (closePvpHistoryBtn) closePvpHistoryBtn.addEventListener('click', () => { if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'none'; });
+    if (pvpScreen) pvpScreen.addEventListener('click', (e) => { if (e.target === pvpScreen && pvpHistoryPanel) pvpHistoryPanel.style.display = 'none'; });
 
-const allNavBtns = [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn];
-allNavBtns.forEach(btn => {
-    if (btn) {
-        btn.addEventListener('click', () => hideLeagueScreen());
-    }
-});
-
-   const pvpHistoryBtn = document.getElementById('pvpHistoryBtn');
-const pvpHistoryPanel = document.getElementById('pvpHistoryPanel');
-const closePvpHistoryBtn = document.getElementById('closePvpHistoryBtn');
-
-if (pvpHistoryBtn) {
-    pvpHistoryBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'block';
-    });
-}
-if (closePvpHistoryBtn) {
-    closePvpHistoryBtn.addEventListener('click', () => {
-        if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'none';
-    });
-}
-if (pvpScreen) {
-    pvpScreen.addEventListener('click', (e) => {
-        if (e.target === pvpScreen && pvpHistoryPanel) pvpHistoryPanel.style.display = 'none';
-    });
-}
-
-const promoBtn = document.getElementById('promoBtn');
-const promoModal = document.getElementById('promoModal');
-const closePromoModalBtn = document.getElementById('closePromoModalBtn');
-const applyPromoBtn = document.getElementById('applyPromoBtn');
-
-if (promoBtn) {
-    promoBtn.addEventListener('click', () => {
-        if (promoModal) promoModal.style.display = 'flex';
-    });
-}
-if (closePromoModalBtn) {
-    closePromoModalBtn.addEventListener('click', () => {
-        if (promoModal) promoModal.style.display = 'none';
-    });
-}
-if (promoModal) {
-    promoModal.addEventListener('click', (e) => {
-        if (e.target === promoModal) promoModal.style.display = 'none';
-    });
-}
-if (applyPromoBtn) {
-    applyPromoBtn.addEventListener('click', () => {
+    // Promo
+    const promoBtn = document.getElementById('promoBtn');
+    const promoModal = document.getElementById('promoModal');
+    const closePromoModalBtn = document.getElementById('closePromoModalBtn');
+    const applyPromoBtn = document.getElementById('applyPromoBtn');
+    if (promoBtn) promoBtn.addEventListener('click', () => { if (promoModal) promoModal.style.display = 'flex'; });
+    if (closePromoModalBtn) closePromoModalBtn.addEventListener('click', () => { if (promoModal) promoModal.style.display = 'none'; });
+    if (promoModal) promoModal.addEventListener('click', (e) => { if (e.target === promoModal) promoModal.style.display = 'none'; });
+    if (applyPromoBtn) applyPromoBtn.addEventListener('click', () => {
         const input = document.querySelector('.promo-input');
-        if (input) {
-            alert('Promo code applied (demo): ' + input.value);
-            input.value = '';
-        }
+        if (input) { alert('Promo code applied (demo): ' + input.value); input.value = ''; }
         if (promoModal) promoModal.style.display = 'none';
     });
-}
-    
-        showHomeScreen();
+
+    // ========== ربط أزرار التعدين (Mint & Hatch) ==========
+    document.querySelectorAll('.pack-box').forEach((box, index) => {
+        box.style.cursor = 'pointer';
+        box.addEventListener('click', async () => {
+            let packId;
+            if (index === 0) packId = 'starter';
+            else if (index === 1) packId = 'pro';
+            else if (index === 2) packId = 'whale';
+            else return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/mint`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUserId, packId })
+                });
+                const result = await response.json();
+                if (result.error) {
+                    alert(result.error);
+                } else {
+                    updateUI(result);
+                    mintModal.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Mint error:', error);
+            }
+        });
     });
-   
+
+    document.querySelector('.final-hatch-btn')?.addEventListener('click', async () => {
+        const input = document.querySelector('.hatch-input');
+        const amount = parseFloat(input.value);
+        if (isNaN(amount) || amount < 100) {
+            alert('Minimum amount is 100 Snowmen');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/api/hatch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUserId, amount })
+            });
+            const result = await response.json();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                updateUI(result);
+                hatchModal.style.display = 'none';
+                input.value = '';
+            }
+        } catch (error) {
+            console.error('Hatch error:', error);
+        }
+    });
+
+    document.querySelectorAll('.pct-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pct = btn.textContent.trim();
+            const available = parseFloat(document.getElementById('hatch-avail-snowflakes')?.textContent || '0');
+            const input = document.querySelector('.hatch-input');
+            if (pct === 'MAX') {
+                input.value = Math.floor(available * 0.94);
+            } else {
+                const percentage = parseFloat(pct) / 100;
+                const desired = Math.floor(available * percentage * 0.94);
+                input.value = Math.max(100, desired);
+            }
+        });
+    });
+
+    // ========== بدء التطبيق ==========
+    fetchUserState();
+    showHomeScreen();
+});
     
 </script>
 </body>
