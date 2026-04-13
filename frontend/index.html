@@ -2926,17 +2926,17 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <div class="first-col">
         <div class="status-card">
             <span class="icon-small">☃️</span>
-            <span class="value-text">0</span>
+            <span class="value-text" id="snowmanValue">0</span>
         </div>
-        <div class="mining-counter under-snowman">0.00 ❄️/hr</div>
+        <div class="mining-counter under-snowman" id="miningRateText">0.00 ❄️/hr</div>
     </div>
 
     <div class="center-card">
         <div class="status-card">
             <span class="icon-small">❄️</span>
-            <span class="value-text">0</span>
+            <span class="value-text" id="snowBalanceValue">0</span>
         </div>
-        <div class="timer-text">60:00</div>
+        <div class="timer-text" id="miningTimer">00:00</div>
     </div>
 
     <div class="third-group">
@@ -4078,11 +4078,117 @@ if (applyPromoBtn) {
         if (promoModal) promoModal.style.display = 'none';
     });
 }
+   
+   const HOUR_MS = 60 * 60 * 1000;
+
+const miningUI = {
+    snowman: document.getElementById('snowmanValue'),
+    snow: document.getElementById('snowBalanceValue'),
+    rate: document.getElementById('miningRateText'),
+    timer: document.getElementById('miningTimer')
+};
+
+const miningState = {
+    userId: null,
+    snowmanCount: 0,
+    snowBalance: 0,
+    speedPerHour: 0,
+    lastMinedAt: Date.now(),
+    nextRewardInMs: 0
+};
+
+function formatClock(ms) {
+    const safeMs = Math.max(0, ms);
+    const totalSeconds = Math.floor(safeMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function renderMiningUI() {
+    if (miningUI.snowman) {
+        miningUI.snowman.textContent = String(miningState.snowmanCount);
+    }
+
+    if (miningUI.snow) {
+        miningUI.snow.textContent = String(miningState.snowBalance);
+    }
+
+    if (miningUI.rate) {
+        miningUI.rate.textContent = `${Number(miningState.speedPerHour).toFixed(2)} ❄️/hr`;
+    }
+}
+
+function tickMiningTimer() {
+    if (!miningUI.timer) return;
+
+    if (!miningState.lastMinedAt || miningState.speedPerHour <= 0) {
+        miningUI.timer.textContent = '00:00';
+        return;
+    }
+
+    const elapsed = Date.now() - miningState.lastMinedAt;
+    const remainder = elapsed % HOUR_MS;
+    const remaining = HOUR_MS - remainder;
+
+    miningUI.timer.textContent = formatClock(remaining);
+}
+
+async function loadMiningState() {
+let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+// Fallback for browser testing
+if (!tgUser) {
+    tgUser = {
+        id: "browser_test_user",
+        username: "browser_user",
+        first_name: "Browser",
+        last_name: "User"
+    };
+}
+
+    const params = new URLSearchParams({
+        user_id: String(tgUser.id),
+        username: tgUser.username || '',
+        display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
+    });
+
+    const response = await fetch(`${API_BASE}/api/me?${params.toString()}`);
+    if (!response.ok) {
+        throw new Error(`Mining state request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const user = data.user || {};
+
+    miningState.userId = user.user_id || tgUser.id;
+    miningState.snowmanCount = user.snowman_count || 0;
+    miningState.snowBalance = user.snow_balance || 0;
+    miningState.speedPerHour = user.speed_per_hour || 0;
+    miningState.lastMinedAt = user.last_mined_at || Date.now();
+    miningState.nextRewardInMs = user.next_reward_in_ms || 0;
+
+    renderMiningUI();
+    tickMiningTimer();
+}
+
+loadMiningState().catch((error) => {
+    console.error(error);
+    renderMiningUI();
+    tickMiningTimer();
+});
+
+setInterval(tickMiningTimer, 1000); 
     
         showHomeScreen();
     });
-   
-    
+
 </script>
 </body>
 </html>
