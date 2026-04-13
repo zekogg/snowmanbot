@@ -16,6 +16,7 @@ function json(data, status = 200) {
 }
 
 async function ensureSchema(env) {
+  // تأكد من عدم وجود أي رموز غريبة مثل : قبل فتح القوس
   await env.DB.exec(`
     CREATE TABLE IF NOT EXISTS users (
       user_id INTEGER PRIMARY KEY,
