@@ -82,10 +82,11 @@ function computeMiningState(user, now = Date.now()) {
 }
 
 async function settleUserMining(env, userId, username = null, displayName = null) {
-  await ensureSchema(env);
-
+  // قم بإزالة أو تعطيل السطر التالي بوضع // قبله
+  // await ensureSchema(env); 
   let user = await createUserIfMissing(env, userId, username, displayName);
   const now = Date.now();
+// بقية الكود كما هو...
   const computed = computeMiningState(user, now);
 
   if (computed.earnedNow > 0) {
