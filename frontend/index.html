@@ -4146,7 +4146,7 @@ let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 // Fallback for browser testing
 if (!tgUser) {
     tgUser = {
-        id: "browser_test_user",
+        id: 12345, // استخدم رقماً هنا بدلاً من النص
         username: "browser_user",
         first_name: "Browser",
         last_name: "User"
