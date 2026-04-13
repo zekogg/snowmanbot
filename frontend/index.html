@@ -37,10 +37,10 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(to bottom, #1a1a1a 0%, transparent 25%),
-            url('https://raw.githubusercontent.com/zekogg/SnowMan-images/refs/heads/main/SnowMan%20Background%20photo.webp') center calc(50% + 65px) / cover repeat;
-color: var(--text);
+                        url('https://raw.githubusercontent.com/zekogg/SnowMan-images/refs/heads/main/SnowMan%20Background%20photo.webp') center calc(50% + 65px) / cover repeat;
+            color: var(--text);
             min-height: 100vh;
             min-height: 100dvh;
             height: 100dvh;
@@ -58,8 +58,8 @@ color: var(--text);
             position: fixed;
             inset: 0;
             background:
-                linear-gradient(145deg, rgba(5, 15, 28, 0.20) 0%, rgba(2, 10, 20, 0.17) 45%, rgba(0, 5, 12, 0.30) 100%),
-                radial-gradient(circle at 30% 15%, rgba(90, 200, 255, 0.10) 0%, rgba(0, 70, 110, 0.10) 70%);
+                linear-gradient(145deg, rgba(5, 15, 28, 0.18) 0%, rgba(2, 10, 20, 0.15) 45%, rgba(0, 5, 12, 0.27) 100%),
+radial-gradient(circle at 30% 15%, rgba(90, 200, 255, 0.09) 0%, rgba(0, 70, 110, 0.01) 50%)
             backdrop-filter: blur(0.1px);
             pointer-events: none;
             z-index: 0;
@@ -70,17 +70,55 @@ color: var(--text);
             z-index: 1;
         }
 
+        /* ===== تحسينات عامة بدون تغيير المظهر ===== */
+        button, .pct-btn, .nav-icon, .add-button-blue {
+            user-select: none;
+            transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease;
+        }
+
+        button:active, .pct-btn:active, .nav-icon:active, .add-button-blue:active,
+        .final-hatch-btn:active, .close-mint:active, .close-hatch:active,
+        .task-join-btn:active, .create-btn-large:active, .market-refresh:active,
+        .market-mode:active, .market-filter:active, .market-sort:active,
+        .market-buy-btn:active, .market-create-btn:active, .back-mini:active,
+        .friends-btn:active {
+            transform: scale(0.96);
+        }
+
+        button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
+            outline: 2px solid #3CC7FF;
+            outline-offset: 2px;
+        }
+
+        /* شريط تمرير متوافق مع Firefox */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3CC7FF;
+            border-radius: 10px;
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #3CC7FF rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== العناصر الثابتة ===== */
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             gap: 16px;
-            width: 92%;
+            width: 97%;
             margin-top: 10px;
             background: rgba(12, 28, 40, 0.55);
-            border: 1px solid rgba(60, 199, 255, 0.30);
-            border-radius: 28px;
-            backdrop-filter: blur(5px);
+            border: 2px solid rgba(60, 199, 255, 0.30);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             padding: 12px 12px 10px;
         }
 
@@ -107,7 +145,7 @@ color: var(--text);
         .status-card {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             background: rgba(255, 255, 255, 0.90);
             padding: 7px 13px;
             border-radius: 20px;
@@ -116,7 +154,7 @@ color: var(--text);
         }
 
         .status-card .icon-small {
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .status-card .value-text {
@@ -125,7 +163,7 @@ color: var(--text);
         }
 
         .under-snowman {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             color: #B3E4FF;
             background: transparent;
@@ -133,7 +171,7 @@ color: var(--text);
             border-radius: 0;
             box-shadow: none;
             line-height: 1.2;
-            margin-top: -3px;
+            margin-top: 1px;
             text-align: center;
         }
 
@@ -162,7 +200,7 @@ color: var(--text);
                 padding: 6px 10px;
             }
             .under-snowman {
-                font-size: 9px;
+                font-size: 12px;
             }
             .add-button-blue {
                 width: 40px;
@@ -186,7 +224,7 @@ color: var(--text);
             text-transform: uppercase;
             margin-bottom: 6px;
             letter-spacing: 2px;
-            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* تحسين التباين دون تغيير اللون */
         }
 
         .minting-container {
@@ -207,12 +245,17 @@ color: var(--text);
             letter-spacing: 1px;
         }
 
+        /* استخدام flex لجعل الأزرار في الأسفل بشكل مرن مع نفس المسافة */
+        body {
+            justify-content: space-between;
+        }
         .action-buttons {
             width: 92%;
             display: flex;
             justify-content: space-between;
             gap: 20px;
-            margin-top: 350px;
+            margin-bottom: 94px; /* بدل margin-top الثابت */
+            margin-top: auto;
         }
 
         .btn {
@@ -226,40 +269,18 @@ color: var(--text);
             text-transform: uppercase;
             cursor: pointer;
             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-            transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
-            will-change: transformn
             backdrop-filter: blur(10px);
-border: 1px solid rgba(255, 255, 255, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.28);
         }
 
         .btn-hatch {
-            background: linear-gradient(180deg, rgba(103, 217, 255, 0.70) 0%, rgba(28, 158, 216, 0.45) 100%);
-            box-shadow: 0 10px 26px rgba(28, 158, 216, 0.38);
+            background: linear-gradient(180deg, rgba(103, 217, 255, 0.95) 0%, rgba(28, 158, 216, 0.82) 100%);
+            box-shadow: 0 10px 26px rgba(28, 158, 216, 0.65);
         }
 
         .btn-mint {
-            background: linear-gradient(180deg, rgba(193, 92, 255, 0.72) 0%, rgba(122, 44, 255, 0.48) 100%);
-box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
-        }
-
-        .btn:active,
-        .add-button-blue:active,
-        .final-hatch-btn:active,
-        .close-mint:active,
-        .close-hatch:active,
-        .pct-btn:active,
-        .nav-icon:active,
-        .btn-action-small:active,
-        .task-join-btn:active,
-        .create-btn-large:active,
-        .market-refresh:active,
-        .market-mode:active,
-        .market-filter:active,
-        .market-sort:active,
-        .market-buy-btn:active,
-        .market-create-btn:active,
-        .back-mini:active {
-            transform: scale(0.96);
+            background: linear-gradient(180deg, rgba(193, 92, 255, 0.95) 0%, rgba(122, 44, 255, 0.85) 100%);
+            box-shadow: 0 10px 26px rgba(122, 44, 255, 0.65);
         }
 
         .bottom-nav {
@@ -285,12 +306,10 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-size: 24px;
             color: #E0F0FF;
             padding: 0;
-            user-select: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.14s ease, background-color 0.14s ease, filter 0.14s ease;
         }
 
         .nav-icon.active {
@@ -300,7 +319,8 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             text-shadow: 0 0 6px #3CC7FF;
         }
 
-        #mintModal {
+        /* ===== نوافذ منبثقة (مودالات) ===== */
+        #mintModal, #hatchModal {
             display: none;
             position: fixed;
             inset: 0;
@@ -310,8 +330,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             align-items: center;
             padding: 20px;
         }
-
-        .mint-content {
+        .mint-content, .hatch-content {
             background: rgba(12, 25, 38, 0.96);
             width: 100%;
             max-width: 420px;
@@ -322,8 +341,11 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             text-align: center;
             position: relative;
         }
-
-        .mint-title {
+        .hatch-content {
+            max-width: 400px;
+            padding: 25px;
+        }
+        .mint-title, .hatch-header {
             margin: 0 0 18px 0;
             font-size: 24px;
             background: linear-gradient(135deg, #B3F0FF, #6BC8FF);
@@ -331,7 +353,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             background-clip: text;
             color: transparent;
         }
-
         .pack-box {
             background: rgba(0, 30, 50, 0.65);
             border-radius: 15px;
@@ -339,89 +360,46 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             margin-bottom: 15px;
             border-left: 4px solid #3CC7FF;
         }
-
         .pack-box h3 {
             margin: 0 0 8px 0;
             font-size: 18px;
         }
-
         .pack-price {
-            color: #BDFF9F;
+            color: #9F66FF;
             font-weight: 800;
             margin: 5px 0;
         }
-
         .pack-speed {
             font-size: 12px;
             color: #9EC8E0;
             margin: 0;
         }
-
-        .close-mint {
-            background: none;
+        .close-mint, .close-hatch {
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            color: #FFAFAF;
+            color: white;
             font-weight: 800;
             cursor: pointer;
-            font-size: 18px;
-            margin-top: 6px;
             transition: transform 0.14s ease;
         }
-
-        #hatchModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            padding: 20px;
+        .close-mint {
+            font-size: 18px;
+            margin-top: 6px;
+            padding: 8px 16px;
+            border-radius: 30px;
         }
-
-        .hatch-content {
-            background: rgba(12, 25, 38, 0.96);
-            width: 100%;
-            max-width: 400px;
-            border-radius: 25px;
-            padding: 25px;
-            color: white;
-            position: relative;
-            border: 1.5px solid #3CC7FF;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
         .close-hatch {
             position: absolute;
             top: 15px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
             font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
             width: 30px;
             height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.14s ease;
         }
-
-        .hatch-header {
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 24px;
-            background: linear-gradient(135deg, #B3F0FF, #6BC8FF);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
         .ratio-box {
             background: rgba(60, 199, 255, 0.20);
             border-radius: 15px;
@@ -434,11 +412,9 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-size: 18px;
             border: 1px dashed #3CC7FF;
         }
-
         .hatch-input-section {
             margin-bottom: 15px;
         }
-
         .input-label-row {
             display: flex;
             justify-content: space-between;
@@ -446,7 +422,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-size: 14px;
             margin-bottom: 5px;
         }
-
         .hatch-input {
             width: 100%;
             background: rgba(0, 0, 0, 0.40);
@@ -457,18 +432,12 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-size: 16px;
             outline: none;
         }
-
-        .hatch-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
         .pct-btn-row {
             display: flex;
             justify-content: space-between;
             gap: 10px;
             margin-bottom: 15px;
         }
-
         .pct-btn {
             flex: 1;
             border: 1px solid #3CC7FF;
@@ -479,10 +448,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-weight: bold;
             cursor: pointer;
             text-align: center;
-            user-select: none;
-            transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
         }
-
         .available-text {
             color: #B2EBF2;
             font-size: 14px;
@@ -491,7 +457,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             align-items: center;
             gap: 5px;
         }
-
         .calc-list {
             list-style: none;
             padding: 0;
@@ -499,22 +464,18 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-size: 14px;
             color: #E0F7FA;
         }
-
         .calc-item {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px solid rgba(129, 212, 250, 0.1);
         }
-
         .calc-item.total {
             font-weight: bold;
             color: white;
             border-bottom: none;
-            font-size: 16px;
             margin-top: 5px;
         }
-
         .final-hatch-btn {
             width: 100%;
             background: linear-gradient(180deg, #3CC7FF 0%, #1290C0 100%);
@@ -527,93 +488,102 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             cursor: pointer;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
             text-transform: uppercase;
-            transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
         }
 
-        button, .pct-btn, .nav-icon {
-            -webkit-tap-highlight-color: transparent;
+        /* ===== شاشات منبثقة موحدة ===== */
+        .screen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            background: rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            flex-direction: column;
+            padding: 18px 16px 110px;
+            overflow-y: auto;
+            color: #ffffff;
+            transform: translateZ(0);
         }
-
-        .btn:hover,
-        .add-button-blue:hover,
-        .final-hatch-btn:hover,
-        .close-mint:hover,
-        .close-hatch:hover,
-        .pct-btn:hover,
-        .nav-icon:hover,
-        .btn-action-small:hover,
-        .task-join-btn:hover,
-        .create-btn-large:hover,
-        .market-refresh:hover,
-        .market-mode:hover,
-        .market-filter:hover,
-        .market-sort:hover,
-        .market-buy-btn:hover,
-        .market-create-btn:hover,
-        .back-mini:hover {
-            filter: brightness(1.03);
-        }
-
-        @media (max-width: 380px) {
-            .value-text { font-size: 14px; }
-            .icon-small { font-size: 20px; margin-right: 6px; }
-            .limited-text { font-size: 16px; }
-            .minting-container { width: 84%; }
-            .minting-bar { font-size: 18px; }
-            .mining-counter { font-size: 13px; padding: 6px 12px; }
-            .btn { font-size: 18px; padding: 20px 0; }
-            .action-buttons { margin-bottom: 80px; }
-        }
-
-       .tasks-screen,
-.market-screen,
-.friends-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 900;
-    display: none;
-    flex-direction: column;
-    padding: 18px 16px 110px;
-    overflow-y: auto;
-
-    /* الخلفية شفافة مع ضبابية */
-    background: rgba(0, 0, 0, 0.08); /* شفاف قليلاً لزيادة وضوح blur */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    color: #ffffff;
-}
-
-        .tasks-screen.show,
-        .market-screen.show,
-        .friends-screen.show {
+        .screen-overlay.show {
             display: flex;
         }
-
-        .tasks-top,
-        .market-top,
+        /* الحفاظ على ألوان الخلفية للشاشات المختلفة إن وجدت (لا توجد اختلافات) */
+        .tasks-screen, .market-screen, .friends-screen, .profile-screen {
+            /* الخصائص موجودة في .screen-overlay */
+        }
+        /* إضافة الفروق الفردية إن لزم */
+        .market-screen .market-top {
+            margin-bottom: 14px;
+        }
         .friends-top {
+            width: 92%;
+            max-width: 360px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* توحيد البطاقات الزجاجية */
+        .glass-card {
+            background: rgba(27, 31, 58, 0.70);
+            border: 1px solid rgba(129, 212, 250, 0.18);
+            border-radius: 24px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(10px);
+        }
+        .task-card, .market-card, .friends-card, .profile-card {
+            background: rgba(27, 31, 58, 0.70);
+            border: 1px solid rgba(129, 212, 250, 0.18);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(10px);
+        }
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 24px;
+        }
+        .market-card {
+            background: linear-gradient(180deg, rgba(27, 31, 58, 0.70), rgba(17, 20, 40, 0.80));
+            border: 3px solid var(--market-card-border);
+            border-radius: 14px;
+            padding: 9px 9px 9px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        .friends-card {
+            min-height: 82px;
+            padding: 10px 8px;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .profile-card {
+            border-radius: 28px;
+            padding: 20px 18px;
+            margin-bottom: 20px;
+        }
+
+        /* باقي الأنماط الخاصة بالمكونات */
+        .tasks-top, .market-top, .friends-top {
             margin-top: 6px;
             margin-bottom: 18px;
             text-align: center;
         }
-
-        .tasks-title,
-        .market-title,
-        .friends-title {
+        .tasks-title, .market-title, .friends-title {
             font-size: 30px;
             font-weight: 900;
             letter-spacing: 0.5px;
             color: #ffffff;
         }
-
-        .tasks-subtitle,
-        .market-subtitle {
-            display: none;
-        }
-
-        .channel-submit-card,
-        .market-panel {
+        .channel-submit-card, .market-panel {
             background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
             border: 1px solid rgba(129, 212, 250, 0.18);
             border-radius: 28px;
@@ -621,7 +591,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             margin-bottom: 24px;
             text-align: center;
         }
-
         .channel-submit-text {
             font-size: 15px;
             font-weight: 600;
@@ -629,8 +598,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             margin-bottom: 16px;
             line-height: 1.4;
         }
-
-        .channel-input {
+        .channel-input, .form-input {
             width: 100%;
             background-color: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(129, 212, 250, 0.4);
@@ -640,52 +608,25 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             color: white;
             outline: none;
             margin-bottom: 14px;
-            transition: border 0.2s;
         }
-
-        .channel-input:focus {
-            border-color: #67d9ff;
-        }
-
-        .channel-input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .submit-channel-btn {
+        .submit-channel-btn, .market-create-btn {
             background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
             border: none;
             border-radius: 30px;
             padding: 12px 20px;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 800;
             color: white;
             width: 100%;
             cursor: pointer;
-            transition: transform 0.14s ease;
             box-shadow: 0 6px 14px rgba(28, 158, 216, 0.3);
         }
-
-        .submit-channel-btn:active { transform: scale(0.97); }
-
         .task-list {
             display: flex;
             flex-direction: column;
             gap: 14px;
             width: 100%;
         }
-
-        .task-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 14px;
-            padding: 16px;
-            border-radius: 24px;
-            background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
-            border: 1px solid rgba(129, 212, 250, 0.18);
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-        }
-
         .task-left {
             display: flex;
             align-items: center;
@@ -693,7 +634,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             min-width: 0;
             flex: 1;
         }
-
         .task-emoji {
             width: 54px;
             height: 54px;
@@ -703,10 +643,8 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             justify-content: center;
             font-size: 28px;
             background: rgba(255, 255, 255, 0.06);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
         }
-
         .task-name {
             font-size: 17px;
             font-weight: 800;
@@ -714,14 +652,12 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             line-height: 1.1;
             margin: 0;
         }
-
         .task-meta {
             margin-top: 4px;
             font-size: 13px;
             font-weight: 700;
             color: #67d9ff;
         }
-
         .task-join-btn {
             border: none;
             min-width: 88px;
@@ -734,7 +670,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             cursor: pointer;
             box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
         }
-
         .floating-add-task {
             position: fixed;
             left: 50%;
@@ -754,7 +689,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             box-shadow: 0 10px 20px rgba(122, 44, 255, 0.32);
             cursor: pointer;
         }
-
         .floating-add-task .plus {
             width: 28px;
             height: 28px;
@@ -764,31 +698,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             justify-content: center;
             background: rgba(255, 255, 255, 0.16);
             font-size: 20px;
-            line-height: 1;
         }
-
-        .market-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 900;
-    display: none;
-    flex-direction: column;
-    padding: 18px 16px 110px;
-    overflow-y: auto;
-
-    /* خلفية شفافة مع blur */
-    background: rgba(0, 0, 0, 0.08); /* شفافية خفيفة لتظهر الخلفية الرئيسية */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    color: #ffffff;
-    transform: translateZ(0);
-}
-
-        .market-top {
-            margin-bottom: 14px;
-        }
-
         .market-title-row {
             display: flex;
             align-items: center;
@@ -796,13 +706,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             gap: 12px;
             margin-bottom: 18px;
         }
-
-        .market-title {
-            font-size: 34px;
-            letter-spacing: 0.2px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
-        }
-
         .market-refresh {
             width: 44px;
             height: 44px;
@@ -810,7 +713,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             border: 2px solid rgba(255, 255, 255, 0.35);
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
-            font-size: 22px;
+            font-size: 25px;
             font-weight: 900;
             display: inline-flex;
             align-items: center;
@@ -818,15 +721,13 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             cursor: pointer;
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
         }
-
         .market-toolbar {
             display: flex;
             gap: 10px;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 18px;
+            margin-bottom: 5px;
         }
-
         .market-segment {
             flex: 1;
             display: flex;
@@ -836,9 +737,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             padding: 6px;
             gap: 6px;
             backdrop-filter: blur(6px);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
-
         .market-mode {
             flex: 1;
             border: none;
@@ -850,21 +749,17 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-weight: 800;
             cursor: pointer;
         }
-
         .market-mode.active {
             background: rgba(255, 255, 255, 0.92);
             color: #0D2440;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
-
         .market-controls {
             display: flex;
             gap: 10px;
             margin-left: 6px;
         }
-
-        .market-filter,
-        .market-sort {
+        .market-filter, .market-sort {
             border: 2px solid rgba(255, 255, 255, 0.22);
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
@@ -872,7 +767,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             height: 58px;
             min-width: 58px;
             padding: 0 18px;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 800;
             cursor: pointer;
             display: inline-flex;
@@ -880,52 +775,46 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             justify-content: center;
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
         }
-
         .market-filter {
             min-width: 170px;
             justify-content: space-between;
             gap: 12px;
         }
-
         .market-filter span {
-            font-size: 15px;
+            font-size: 18px;
         }
-
         .market-sort {
             width: 60px;
             padding: 0;
         }
-
         .market-create-cta-wrap {
             width: 100%;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
-
         .market-create-cta {
             width: 100%;
-            border: 4px solid rgba(255, 255, 255, 0.92);
+            border: 4px solid rgba(255, 255, 255, 0.40);
             background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
             color: white;
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 0.2px;
+            font-size: 14px;
+             height: 55px;
+            line-height: 1;
+            font-weight: 950;
+            letter-spacing: 1px;
             border-radius: 22px;
             padding: 18px 18px;
             cursor: pointer;
             box-shadow: 0 10px 22px rgba(28, 158, 216, 0.34);
             text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
         }
-
         .market-sub-page {
             display: none;
             flex-direction: column;
             width: 100%;
         }
-
         .market-sub-page.active {
             display: flex;
         }
-
         .market-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -933,31 +822,17 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             width: 100%;
             padding-bottom: 6px;
         }
-
-        .market-card {
-            background: linear-gradient(180deg, rgba(27, 31, 58, 0.70), rgba(17, 20, 40, 0.80));
-            border: 1px solid var(--market-card-border);
-            border-radius: 24px;
-            padding: 14px 12px 12px;
-            box-shadow: 0 12px 26px rgba(0, 140, 255, 0.22);
-            backdrop-filter: blur(10px);
-            min-height: 270px;
-            display: flex;
-            flex-direction: column;
-        }
-
         .market-badge {
             color: rgba(255, 255, 255, 0.78);
             font-weight: 900;
-            font-size: 16px;
+            font-size: 14px;
             letter-spacing: 1px;
-            margin-bottom: 10px;
+            margin-bottom: 7px;
         }
-
         .market-pill {
             width: 100%;
-            min-height: 58px;
-            border-radius: 18px;
+            min-height: 40px;
+            border-radius: 13px;
             background: var(--market-pill);
             border: 2px solid rgba(255, 255, 255, 0.20);
             display: flex;
@@ -966,20 +841,20 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             gap: 8px;
             color: #ffffff;
             font-weight: 900;
-            margin-bottom: 10px;
-            padding: 8px 10px;
+            margin-bottom: 7px;
+            padding: 6px 7px;
         }
-
         .market-snow-pill {
-            font-size: 16px;
-            letter-spacing: 0.3px;
-            background: linear-gradient(180deg, rgba(204, 64, 155, 0.28), rgba(180, 44, 125, 0.32));
-        }
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(8px);
+}
 
-        .market-price-pill {
-            font-size: 16px;
-            background: linear-gradient(180deg, rgba(194, 76, 162, 0.18), rgba(164, 32, 131, 0.26));
-        }
+.market-price-pill {
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(8px);
+}
 
         .market-price-pill .ton-icon {
             width: 24px;
@@ -988,26 +863,30 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: #3CC7FF;
+            background: rgba(60, 199, 255, 0.08)
             color: #ffffff;
             font-size: 15px;
             font-weight: 900;
             flex: 0 0 auto;
         }
-
+        
         .market-buy-btn {
-            margin-top: auto;
-            width: 100%;
-            border: 2px solid rgba(255, 255, 255, 0.88);
-            border-radius: 14px;
-            background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 900;
-            padding: 12px 10px;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
-        }
+    margin-top: auto;
+    margin-bottom: 1px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 70%;
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 900;
+    padding: 8px 7px;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
+}
 
         .market-empty {
             display: flex;
@@ -1022,41 +901,26 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 26px;
         }
-
         .market-empty-icon {
             font-size: 56px;
             margin-bottom: 8px;
         }
-
         .market-empty-title {
             font-size: 20px;
             font-weight: 900;
             color: #ffffff;
             margin-bottom: 8px;
         }
-
-        .market-empty-text {
-            margin: 0 0 18px;
-            color: rgba(255, 255, 255, 0.58);
-            font-size: 14px;
-        }
-
         .market-create-inline {
             width: 100%;
             max-width: 260px;
         }
-
-        .market-panel.create-panel {
-            text-align: left;
-        }
-
         .create-panel-head {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 14px;
         }
-
         .back-mini {
             border: none;
             background: rgba(255, 255, 255, 0.10);
@@ -1069,79 +933,27 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             cursor: pointer;
             flex: 0 0 auto;
         }
-
         .market-panel-title {
             margin: 0;
             color: #81D4FA;
             font-size: 22px;
             font-weight: 900;
         }
-
         .form-group {
             margin-bottom: 15px;
             text-align: left;
         }
-
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-size: 14px;
             color: #4DD0E1;
         }
-
-        .form-input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(77, 208, 225, 0.5);
-            padding: 12px;
-            border-radius: 10px;
-            color: white;
-            font-family: inherit;
-            outline: none;
-        }
-
-        .form-input:disabled {
-            opacity: 0.75;
-        }
-
-        .market-create-btn {
-            width: 100%;
-            border: none;
-            border-radius: 18px;
-            background: linear-gradient(180deg, var(--hatch-blue) 0%, var(--hatch-blue-dark) 100%);
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 900;
-            padding: 15px 18px;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(28, 158, 216, 0.28);
-        }
-
-        .friends-top {
-            width: 92%;
-            max-width: 360px;
-            margin-top: 6px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .friends-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 28px;
-            font-weight: 900;
-            color: #ffffff;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
-        }
-
         .friends-title-icon {
             font-size: 28px;
             line-height: 1;
             color: #3CC7FF;
         }
-
         .friends-grid {
             width: 92%;
             max-width: 360px;
@@ -1150,36 +962,18 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             gap: 10px;
             margin: 0 auto 10px;
         }
-
-        .friends-card {
-            min-height: 82px;
-            padding: 10px 8px;
-            border-radius: 18px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            background: rgba(27, 31, 58, 0.70);
-            border: 1px solid rgba(129, 212, 250, 0.16);
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
-            backdrop-filter: blur(10px);
-        }
-
         .friends-card-label {
             font-size: 12px;
             font-weight: 500;
             color: rgba(224, 247, 250, 0.48);
             margin-bottom: 4px;
         }
-
         .friends-card-value {
             font-size: 22px;
             line-height: 1;
             font-weight: 800;
             color: #ffffff;
         }
-
         .friends-reward-card {
             width: 92%;
             max-width: 360px;
@@ -1192,7 +986,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
             backdrop-filter: blur(10px);
         }
-
         .friends-reward-line {
             font-size: 13px;
             font-weight: 500;
@@ -1200,7 +993,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             margin: 5px 0;
             line-height: 1.3;
         }
-
         .friends-link-card {
             width: 92%;
             max-width: 360px;
@@ -1216,13 +1008,10 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            line-height: 1;
             background: rgba(27, 31, 58, 0.70);
             border: 1px solid rgba(129, 212, 250, 0.16);
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
             backdrop-filter: blur(10px);
         }
-
         .friends-actions {
             width: 92%;
             max-width: 360px;
@@ -1230,7 +1019,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             gap: 10px;
             margin: 0 auto 12px;
         }
-
         .friends-btn {
             flex: 1;
             border: none;
@@ -1239,26 +1027,22 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
-            transition: transform 0.14s ease, filter 0.14s ease;
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
-
         .friends-btn-copy {
             background: linear-gradient(180deg, #2c334f 0%, #1d2238 100%);
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.16);
         }
-
         .friends-btn-share {
             background: linear-gradient(180deg, #19d45b 0%, #12b84d 100%);
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.10);
         }
-
         .friends-empty {
             margin-top: 14px;
             font-size: 14px;
@@ -1266,126 +1050,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             color: rgba(224, 247, 250, 0.38);
             text-align: center;
         }
-
-        .friends-empty-emoji {
-            margin-left: 6px;
-            font-size: 22px;
-            vertical-align: middle;
-        }
-
-        @media (max-width: 480px) {
-            .market-title,
-            .friends-title {
-                font-size: 30px;
-            }
-
-            .market-filter {
-                min-width: 140px;
-                padding: 0 14px;
-                font-size: 16px;
-            }
-
-            .market-sort {
-                width: 54px;
-            }
-
-            .market-create-cta {
-                font-size: 21px;
-                padding: 16px 16px;
-            }
-
-            .market-grid,
-            .friends-grid {
-                gap: 12px;
-            }
-
-            .market-card {
-                min-height: 270px;
-                padding: 14px 12px 12px;
-            }
-
-            .market-pill {
-                min-height: 58px;
-            }
-
-            .friends-card {
-                min-height: 130px;
-            }
-
-            .friends-card-value {
-                font-size: 44px;
-            }
-
-            .friends-reward-line {
-                font-size: 16px;
-            }
-
-            .friends-btn {
-                font-size: 18px;
-                padding: 18px 12px;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .market-grid,
-            .friends-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .market-card {
-                min-height: 262px;
-            }
-
-            .market-create-cta {
-                font-size: 19px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .market-toolbar {
-                gap: 8px;
-            }
-
-            .market-controls {
-                gap: 8px;
-            }
-
-            .market-filter {
-                min-width: 126px;
-            }
-        }
-
-        .profile-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 900;
-    display: none;
-    flex-direction: column;
-    padding: 18px 16px 110px;
-    overflow-y: auto;
-
-    /* خلفية شفافة لتظهر الخلفية الرئيسية مع blur */
-    background: rgba(0, 0, 0, 0.08); /* شفاف قليل لتوضيح blur */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    color: #ffffff;
-    transform: translateZ(0);
-}
-
-        .profile-screen.show {
-            display: flex;
-        }
-
-        .profile-card {
-            background: rgba(27, 31, 58, 0.70);
-            border: 1px solid rgba(129, 212, 250, 0.18);
-            border-radius: 28px;
-            padding: 20px 18px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(8px);
-        }
-
         .wallet-row {
             display: flex;
             align-items: center;
@@ -1393,7 +1057,6 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             flex-wrap: wrap;
             gap: 12px;
         }
-
         .wallet-info {
             display: flex;
             align-items: center;
@@ -1401,29 +1064,21 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-weight: 800;
             font-size: 18px;
         }
-
-        .wallet-info span:first-child {
-            font-size: 28px;
-        }
-
         .balance-rate {
             text-align: left;
             font-size: 14px;
             color: #B2DAFF;
             margin-top: 8px;
         }
-
         .balance-rate strong {
             font-size: 20px;
             color: white;
         }
-
         .ton-controls {
             display: flex;
             gap: 12px;
             align-items: center;
         }
-
         .circle-btn {
             width: 44px;
             height: 44px;
@@ -1434,31 +1089,25 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             font-weight: bold;
             color: white;
             cursor: pointer;
-            transition: 0.1s;
         }
-
         .profile-name-row {
             display: flex;
             align-items: center;
             gap: 14px;
             margin-bottom: 8px;
         }
-
         .profile-name-row .avatar {
             font-size: 42px;
         }
-
         .name-details .display-name {
             font-size: 22px;
             font-weight: 800;
         }
-
         .name-details .username {
             font-size: 13px;
             opacity: 0.6;
             margin-top: 2px;
         }
-
         .stats-two-columns {
             display: flex;
             justify-content: space-between;
@@ -1466,24 +1115,20 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             gap: 20px;
             margin-bottom: 12px;
         }
-
         .stat-col {
             text-align: center;
             flex: 1;
         }
-
         .stat-value {
             font-size: 28px;
             font-weight: 900;
             color: #B3F0FF;
         }
-
         .stat-label {
             font-size: 12px;
             opacity: 0.7;
             margin-top: 4px;
         }
-
         .mining-rate-center {
             text-align: center;
             font-size: 14px;
@@ -1496,30 +1141,1684 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             justify-content: center;
             gap: 6px;
         }
-
-        .mining-rate-center .icon-small {
-            font-size: 14px;
-        }
-
         .timer-text {
             font-size: 13px;
             font-weight: 800;
             color: #C2F0FF;
         }
 
-        ::-webkit-scrollbar {
-            width: 4px;
+        @media (max-width: 480px) {
+            .market-title, .friends-title {
+                font-size: 30px;
+            }
+            .market-filter {
+                min-width: 140px;
+                padding: 0 14px;
+                font-size: 16px;
+            }
+            .market-sort {
+                width: 54px;
+            }
+            .market-create-cta {
+                font-size: 21px;
+                padding: 16px 16px;
+            }
+            .market-grid, .friends-grid {
+                gap: 8px;
+            }
+            .market-card {
+                min-height: 189px;
+                padding: 10px 8px 8px;
+            }
+            .market-pill {
+                min-height: 40px;
+            }
+            .friends-card {
+                min-height: 130px;
+            }
+            .friends-card-value {
+                font-size: 44px;
+            }
+            .friends-reward-line {
+                font-size: 16px;
+            }
+            .friends-btn {
+                font-size: 18px;
+                padding: 18px 12px;
+            }
         }
+        @media (max-width: 380px) {
+            .market-grid, .friends-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .market-card {
+                min-height: 200px;
+            }
+            .market-create-cta {
+                font-size: 17px;
+            }
+        }
+        @media (max-width: 360px) {
+            .market-toolbar {
+                gap: 6px;
+            }
+            .market-controls {
+                gap: 6px;
+            }
+            .market-filter {
+                min-width: 88px;
+            }
+        }
+      /* تنسيق أيقونة الكأس الجانبية */
+.league-btn {
+    position: fixed;
+    right: 15px; /* المسافة من اليمين */
+    top: 50%; /* في المنتصف عمودياً */
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 850; /* لتكون فوق الخلفية وتحت القوائم المنبثقة */
+    transition: transform 0.2s ease;
+}
 
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
+.league-btn:active {
+    transform: translateY(-50%) scale(0.9);
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: #3CC7FF;
-            border-radius: 10px;
-        }
+.league-icon-circle {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at center, #FFE066 0%, #FFB800 100%);
+    border: 4px solid #FF8A00;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 
+                inset 0 0 15px rgba(255, 255, 255, 0.6);
+    position: relative;
+}
+
+@keyframes softFloat {
+    0% {
+        transform: translateY(0px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    50% {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        transform: translateY(0px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+}
+
+.league-icon-circle {
+    animation: softFloat 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
+}
+
+.league-icon-circle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent
+    );
+    transform: skewX(-25deg);
+    animation: shine 4s infinite;
+}
+
+.league-icon-circle::after {
+    content: '✨';
+    position: absolute;
+    top: -5px;
+    right: -2px;
+    font-size: 16px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+.league-emoji {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+}
+
+/* لإخفاء الزر عند فتح الشاشات الأخرى */
+.league-btn.hidden {
+    display: none;
+}
+
+.exchange-btn {
+    position: fixed;
+    right: 15px;
+    top: 41%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 850;
+    transition: transform 0.2s ease;
+}
+
+.exchange-btn:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+.exchange-icon-circle {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, rgba(196, 248, 255, 0.45) 0%, rgba(8, 65, 120, 0.95) 2%, rgba(18, 90, 140, 1) 100%);
+    border: 4px solid rgba(90, 160, 230, 0.10);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28), inset 0 0 18px rgba(255, 255, 255, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    position: relative;
+    overflow: hidden;
+    animation: exchangeFloat 3.2s ease-in-out infinite;
+}
+
+.exchange-icon-circle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: skewX(-25deg);
+    animation: exchangeShine 4.5s infinite;
+}
+
+.exchange-row {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    font-size: 18px;
+    line-height: 1;
+    z-index: 1;
+}
+
+.exchange-arrow {
+    font-size: 13px;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.exchange-text {
+    font-size: 8px;
+    font-weight: 900;
+    color: #f2fbff;
+    line-height: 1;
+    letter-spacing: 0.2px;
+    z-index: 1;
+}
+
+.exchange-time {
+    font-size: 9px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.92);
+    line-height: 1;
+    z-index: 1;
+}
+
+@keyframes exchangeFloat {
+    0%, 100% { transform: translateY(-50%) translateY(0px); }
+    50% { transform: translateY(-50%) translateY(-6px); }
+}
+
+@keyframes exchangeShine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
+}
+
+@media (max-width: 480px) {
+    .exchange-btn {
+        right: 12px;
+        top: 40.5%;
+    }
+
+    .exchange-icon-circle {
+        width: 65px;
+        height: 65px;
+    }
+
+    .exchange-row {
+        font-size: 14px;
+    }
+
+    .exchange-text,
+    .exchange-time {
+        font-size: 7px;
+    }
+}
+
+.pvp-btn {
+    position: fixed;
+    left: 15px;
+    top: 38%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 850;
+    transition: transform 0.2s ease;
+}
+
+.pvp-btn:active {
+    transform: translateY(-50%) scale(0.9);
+}
+
+.pvp-icon-circle {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at center, #6247aa 0%, #1a237e 100%);
+    border: 4px solid #173766;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(26, 35, 126, 0.6);
+    position: relative;
+    overflow: hidden;
+    animation: pvpFloat 4s ease-in-out infinite;
+}
+
+.pvp-emoji {
+    font-size: 27px;
+    line-height: 1;
+}
+
+.pvp-text {
+    font-size: 9px;
+    font-weight: bold;
+    color: #e8eaf6;
+    margin-top: -2px;
+    text-transform: uppercase;
+}
+
+.pvp-icon-circle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transform: skewX(-25deg);
+    animation: pvpShine 5s infinite;
+}
+
+@keyframes pvpFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes pvpShine {
+    0% { left: -100%; }
+    15% { left: 100%; }
+    100% { left: 100%; }
+}
+
+.pvp-btn.hidden {
+    display: none;
+}
+
+.pvp-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    background: rgba(8, 10, 14, 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 18px 16px 30px;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+.pvp-screen.show {
+    display: flex;
+}
+
+.pvp-total-box span:last-child {
+    color: #6bbcff;
+}
+
+.pvp-wheel-wrap {
+    width: min(92vw, 760px);
+    aspect-ratio: 1 / 1;
+    position: relative;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pvp-pointer {
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 24px solid transparent;
+    border-right: 24px solid transparent;
+    border-top: 38px solid #ffffff;
+    filter: drop-shadow(0 0 0 rgba(0,0,0,0.35));
+    z-index: 3;
+}
+
+.pvp-pointer::after {
+    content: "";
+    position: absolute;
+    left: -16px;
+    top: -30px;
+    width: 0;
+    height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-top: 26px solid #111319;
+}
+
+.pvp-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #0f1116;
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.02), 0 18px 50px rgba(0, 0, 0, 0.45);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.pvp-wheel::before {
+    content: "";
+    position: absolute;
+    inset: 2%;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #5aa8c6, #6A47CC, #5aa8c6, #5aa8c6);
+    animation: pvpColorSpin 5s linear infinite;
+}
+
+.pvp-wheel::after {
+    content: "";
+    position: absolute;
+    inset: 35%;
+    border-radius: 50%;
+    background: #0a0c10;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.03);
+}
+
+.pvp-wheel.spin-once {
+    animation: pvpSpinOnce 1.2s cubic-bezier(.2,.7,.2,1) 1;
+}
+
+@keyframes pvpColorSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.pvp-wheel-center {
+    position: absolute;
+    width: min(28vw, 220px);
+    height: min(28vw, 220px);
+    max-width: 220px;
+    max-height: 220px;
+    border-radius: 50%;
+    background: #0a0c10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.03);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.pvp-wheel-center span {
+    font-size: clamp(5px, 4vw, 50px);
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 2px;
+}
+
+.pvp-set-area {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.pvp-set-input {
+    width: 100%;
+    height: 56px;
+    border-radius: 18px;
+    border: 3px solid rgba(75, 0, 130, 0.30);
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+    outline: none;
+}
+
+.pvp-set-input::placeholder {
+    color: rgba(255, 255, 255, 0.32);
+}
+
+.pvp-set-btn {
+    width: 92px;
+    height: 38px;
+    border: none;
+    border-radius: 12px;
+   background: linear-gradient(135deg, #6A1B9A, #311B92);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+@keyframes pvpSlowSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pvpSpinOnce {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+    .pvp-total-box {
+        min-width: unset;
+        max-width: 180px;
+        width: auto;
+        height: 42px;
+        padding: 0 10px;
+        font-size: 14px;
+    }
+
+    .pvp-wheel-wrap {
+        width: min(94vw, 420px);
+    }
+
+    .pvp-wheel-center {
+        width: min(30vw, 160px);
+        height: min(30vw, 160px);
+    }
+
+    .pvp-set-input {
+        height: 52px;
+        font-size: 18px;
+    }
+}
+
+.task-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 12, 24, 0.72);
+    z-index: 1100;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+}
+
+.task-modal-content {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(10, 24, 40, 0.98), rgba(4, 12, 22, 0.98));
+    border: 2px solid rgba(74, 163, 255, 0.35);
+    border-radius: 28px;
+    padding: 22px 18px 18px;
+    position: relative;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.task-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.task-modal-title {
+    margin: 0 0 18px;
+    font-size: 26px;
+    font-weight: 900;
+    text-align: center;
+    color: #f4fbff;
+}
+
+.task-modal-field {
+    margin-bottom: 14px;
+}
+
+.task-modal-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #d8ecff;
+}
+
+.task-modal-field input {
+    width: 100%;
+    height: 58px;
+    border-radius: 20px;
+    border: 2px solid rgba(74, 163, 255, 0.28);
+    background: rgba(0, 0, 0, 0.22);
+    color: #ffffff;
+    padding: 0 16px;
+    font-size: 18px;
+    font-weight: 800;
+    outline: none;
+}
+
+.task-modal-field input::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.task-preset-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 12px 0 16px;
+}
+
+.task-preset-btn {
+    height: 56px;
+    border-radius: 16px;
+    border: 2px solid rgba(74, 163, 255, 0.28);
+    background: rgba(255, 255, 255, 0.04);
+    color: #7ec8ff;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.task-total-box {
+    height: 70px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.20);
+    border: 1px solid rgba(74, 163, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #dfefff;
+}
+
+.task-total-box strong {
+    color: #7ee6ff;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.task-create-btn {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #66c8ff 0%, #2f7fd6 100%);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(47, 127, 214, 0.35);
+}
+
+.exchange-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 14px;
+}
+
+.exchange-modal-card {
+    width: min(86vw, 350px);
+    border-radius: 30px;
+    padding: 18px 16px 16px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(8, 18, 30, 0.94), rgba(5, 12, 20, 0.97));
+    border: 1px solid rgba(120, 190, 255, 0.18);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42), inset 0 0 40px rgba(60, 199, 255, 0.06);
+}
+
+.exchange-modal-card::before {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    background: radial-gradient(circle at 50% 15%, rgba(60, 199, 255, 0.18), transparent 55%);
+    pointer-events: none;
+}
+
+.exchange-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.exchange-box {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(120, 190, 255, 0.10);
+    border-radius: 22px;
+    padding: 14px 14px 12px;
+}
+
+.exchange-box + .exchange-box {
+    margin-top: 12px;
+}
+
+.exchange-label {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1.8px;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 10px;
+}
+
+.exchange-row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.exchange-asset {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.exchange-asset-icon {
+    font-size: 30px;
+    line-height: 1;
+}
+
+.exchange-asset-name {
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.exchange-asset-value {
+    font-size: 28px;
+    font-weight: 900;
+    color: #7ee6ff;
+    line-height: 1;
+}
+
+.exchange-balance {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(210, 240, 255, 0.78);
+}
+
+.exchange-switch {
+    width: 56px;
+    height: 56px;
+    margin: 12px auto;
+    border-radius: 50%;
+    border: 2px solid rgba(120, 190, 255, 0.16);
+    background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 12px 24px rgba(28, 158, 216, 0.28);
+}
+
+.exchange-action {
+    width: 60%;
+    height: 54px;
+    margin: 12px auto 0;
+    display: block;
+    margin-top: 12px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+    box-shadow: 0 12px 26px rgba(28, 158, 216, 0.30);
+}
+
+@media (max-width: 480px) {
+    .exchange-modal-card {
+        width: min(88vw, 330px);
+        padding: 16px 14px 14px;
+    }
+
+    .exchange-asset-name,
+    .exchange-asset-value {
+        font-size: 24px;
+    }
+
+    .exchange-asset-icon {
+        font-size: 26px;
+    }
+
+    .exchange-switch {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+    }
+}
+
+.phase-top {
+    position: absolute;
+    top: 135px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    padding: 6px 14px;
+    border-radius: 14px;
+    background: rgba(8, 18, 30, 0.35);
+    border: 1px solid rgba(120, 190, 255, 0.18);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 5;
+}
+
+.phase-top-title {
+    font-size: 25px;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.phase-top-sub {
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    margin-top: 2px;
+}
+
+/* شاشة Leaderboard */
+.league-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 70px;  /* يترك الشريط السفلي ظاهراً */
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 950;
+    display: none;
+    flex-direction: column;
+    padding: 16px 16px 20px;
+    overflow-y: auto;
+    border-radius: 28px 28px 0 0;
+    color: #ffffff;
+}
+.league-screen.show {
+    display: flex;
+}
+.league-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(60, 199, 255, 0.35);
+}
+.league-header h2 {
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+    background: linear-gradient(135deg, #FFF7B0, #FFE57F);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.league-close {
+    width: 42px;
+    height: 42px;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: white;
+    font-size: 24px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.league-tabs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 60px;
+    padding: 6px;
+}
+.league-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 18px;
+    font-weight: 800;
+    border-radius: 50px;
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+.league-tab.active {
+    background: rgba(60, 199, 255, 0.85);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.league-content {
+    flex: 1;
+}
+.league-panel {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+.league-panel.active {
+    display: flex;
+}
+.leaderboard-card {
+    background: rgba(20, 28, 40, 0.7);
+    border: 1px solid rgba(60, 199, 255, 0.25);
+    border-radius: 28px;
+    padding: 18px 16px;
+    backdrop-filter: blur(8px);
+}
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.leaderboard-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #9EC8E0;
+    letter-spacing: 0.5px;
+}
+.leaderboard-value {
+    font-size: 28px;
+    font-weight: 900;
+    color: #FFE57F;
+}
+.your-position-box {
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 22px;
+    padding: 14px 16px;
+    margin: 12px 0 10px;
+    border-left: 4px solid #3CC7FF;
+}
+.rank-number {
+    font-size: 24px;
+    font-weight: 900;
+    color: #3CC7FF;
+}
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 16px;
+    font-weight: 600;
+}
+.list-rank {
+    width: 50px;
+    color: #B0D4FF;
+}
+.list-name {
+    flex: 2;
+}
+.list-score {
+    font-weight: 800;
+    color: #FFD966;
+}
+.period-participants {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 20px;
+    padding: 14px;
+    margin-top: 8px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.participants-icons {
+    font-size: 20px;
+    letter-spacing: 4px;
+}
+
+.prizes-mini-box {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 18px;
+    padding: 8px 12px;
+    margin: 10px 0 12px;
+    border: 1px solid rgba(60, 199, 255, 0.25);
+}
+.prizes-header {
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFE57F;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+.prizes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+.prize-item {
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.08);
+    padding: 4px 8px;
+    border-radius: 20px;
+    color: #B8ECFF;
+    white-space: nowrap;
+}
+
+.transfer-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 960;
+    background: rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px 10px 23px;
+    overflow-y: auto;
+}
+
+.transfer-modal.show {
+    display: flex;
+}
+
+.transfer-card {
+    width: 95%;
+    max-width: 390px;
+    margin-top: 0px;
+    background: linear-gradient(180deg, rgba(27, 31, 58, 0.88), rgba(17, 20, 40, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 28px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+    padding: 14px;
+    position: relative;
+    max-height: 85vh;     
+    overflow-y: auto;
+}
+
+.transfer-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.transfer-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-right: 42px;
+}
+
+.transfer-tab {
+    flex: 1;
+    border: none;
+    height: 56px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.transfer-tab.active {
+    background: rgba(255, 255, 255, 0.86);
+    color: #7d2e6f;
+}
+
+.transfer-panel {
+    display: none;
+}
+
+.transfer-panel.active {
+    display: block;
+}
+
+.transfer-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.transfer-section {
+    margin-top: 12px;
+}
+
+.transfer-section-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.transfer-amount-input,
+.transfer-text-input {
+    width: 100%;
+    height: 62px;
+    border-radius: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 22px;
+    font-weight: 900;
+    outline: none;
+}
+
+.transfer-amount-input::placeholder,
+.transfer-text-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.transfer-quick-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.transfer-quick-btn {
+    height: 46px;
+    border-radius: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.transfer-wallet-btn {
+    width: 100%;
+    height: 58px;
+    border: none;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #3CC7FF 0%, #1290C0 100%);
+color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.transfer-copy-box {
+    margin-bottom: 14px;
+}
+
+.transfer-copy-label {
+    font-size: 16px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.90);
+    margin-bottom: 8px;
+}
+
+.transfer-copy-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.transfer-copy-input {
+    flex: 1;
+    height: 50px;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.92);
+    color: #333333;
+    padding: 0 14px;
+    font-size: 15px;
+    font-weight: 800;
+    outline: none;
+}
+
+.transfer-copy-btn {
+    width: 76px;
+    height: 50px;
+    border: none;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.28);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.transfer-note {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 188, 72, 0.45);
+    background: rgba(255, 156, 64, 0.12);
+    color: #ffd28b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 20px;
+}
+
+.transfer-withdraw-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.transfer-action-btn {
+    width: 100%;
+    height: 54px;
+    border: none;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #3CC7FF 0%, #1290C0 100%);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 12px;
+    box-shadow: 0 8px 18px rgba(18, 144, 192, 0.30);
+}
+
+.transfer-history-btn {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 18px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.ton-icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background-image: url('https://raw.githubusercontent.com/zekogg/SnowMan-images/refs/heads/main/Ton%20Currency%20v1.png');
+    background-size: contain;
+    vertical-align: middle;
+}
+
+.pvp-history-panel {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    right: 20px;
+    background: rgba(10, 15, 25, 0.95);
+    border: 1px solid #3CC7FF;
+    border-radius: 24px;
+    padding: 16px;
+    backdrop-filter: blur(12px);
+    display: none;
+    z-index: 960;
+}
+
+.pvp-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-weight: 900;
+    font-size: 20px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(60,199,255,0.3);
+    padding-bottom: 8px;
+}
+
+.pvp-history-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.pvp-history-item {
+    background: rgba(60,199,255,0.08);
+    padding: 12px 14px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    color: #E0F7FA;
+    font-weight: 600;
+    border-left: 4px solid #311B92;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pvp-history-row1 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pvp-history-id {
+    color: #a0c0e0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pvp-history-user {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.pvp-history-winner {
+    background: #7E57C2;
+    color: #1a1e2a;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: auto;
+}
+
+.pvp-history-row2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.pvp-history-won {
+    color: #7ee6ff;
+    font-weight: 800;
+}
+
+.pvp-history-percent {
+   margin-left: auto;
+    color: #b0b0b0;
+    font-weight: 700;
+}
+
+.promo-btn {
+    position: fixed;
+    left: 15px;
+    top: 57%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 850;
+    transition: transform 0.2s ease;
+}
+
+.promo-btn:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+.promo-icon-circle {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #FFB3C6 0%, #C2185B 100%);
+    border: 4px solid #C22918;
+    box-shadow: 0 8px 18px rgba(194, 24, 91, 0.4), inset 0 0 15px rgba(255,255,255,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    position: relative;
+    overflow: hidden;
+    animation: promoFloat 3.5s ease-in-out infinite;
+}
+
+.promo-emoji {
+    font-size: 24px;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+}
+
+.promo-text {
+    font-size: 6px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+@keyframes promoFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.promo-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.promo-modal-content {
+    background: rgba(20, 30, 45, 0.85);
+    border: 1px solid #FF8A80;
+    border-radius: 28px;
+    padding: 24px 20px 20px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.promo-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.promo-modal-text {
+    color: #FFE0E0;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.promo-input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 14px 16px;
+    color: white;
+    font-size: 16px;
+    outline: none;
+    margin-bottom: 16px;
+}
+
+.promo-submit-btn {
+    width: 100%;
+    background: linear-gradient(180deg, #F48FB1 0%, #C2185B 100%);
+    border: none;
+    border-radius: 30px;
+    padding: 12px;
+    color: white;
+    font-weight: 900;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(194, 24, 91, 0.4);
+}
+
+@media (max-width: 480px) {
+    .promo-btn {
+        left: 12px;
+        top: 56%;
+    }
+    .promo-icon-circle {
+        width: 60px;
+        height: 60px;
+    }
+    .promo-text {
+        font-size: 6px;
+    }
+}
+
+.pvp-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 6px;
+    margin-bottom: 18px;
+}
+
+.pvp-history-btn {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #FFD966;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    z-index: 5;
+}
+
+.pvp-total-box {
+    min-width: 150px;      /* 280 × 0.7 */
+    height: 49px;          /* 56 × 0.7 */
+    padding: 0 11px;       /* 16 × 0.7 */
+    border-radius: 20px;
+    background: rgba(35, 40, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;              /* 10 × 0.7 */
+    font-size: 14px;       /* 20 × 0.7 */
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 auto;
+}
+
+.loot-preview {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 20px;
+    margin: 10px 0 8px;
+}
+.loot-preview span {
+    font-size: 20px;
+}
+
+.lootbox-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.lootbox-modal-content {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(10, 24, 40, 0.98), rgba(4, 12, 22, 0.98));
+    border: 2px solid rgba(60, 199, 255, 0.5);
+    border-radius: 32px;
+    padding: 24px 20px 20px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.lootbox-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.lootbox-modal-title {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    font-weight: 900;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.lootbox-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.loot-item {
+    background: rgba(60, 199, 255, 0.12);
+    border: 1.5px solid rgba(60, 199, 255, 0.3);
+    border-radius: 16px;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 700;
+    color: #E0F7FA;
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.loot-item-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.loot-item-text {
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: 100%;
+}
+
+@media (max-width: 480px) {
+    .lootbox-grid {
+        gap: 8px;
+    }
+    .loot-item {
+        padding: 8px 4px;
+    }
+    .loot-item-icon {
+        font-size: 24px;
+    }
+    .loot-item-text {
+        font-size: 12px;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -1543,10 +2842,10 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
 
     <div class="third-group">
         <div class="status-card">
-            <span class="icon-small">💎</span>
+            <span class="ton-icon"></span>
             <span class="value-text">0</span>
         </div>
-        <button class="add-button-blue" type="button">+</button>
+        <button class="add-button-blue" id="openDepositBtn" type="button">+</button>
     </div>
 </div>
 
@@ -1559,7 +2858,189 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
 
 <div class="action-buttons" id="mainActionButtons">
     <button class="btn btn-hatch" id="openHatchBtn" type="button">Hatch ❄️</button>
-    <button class="btn btn-mint" id="openMintBtn" type="button">Mint 💎</button>
+    <button class="btn btn-mint" id="openMintBtn" type="button">Mint ☃️</button>
+</div>
+
+<button class="promo-btn" id="promoBtn" type="button">
+    <div class="promo-icon-circle">
+        <span class="promo-emoji">🎁</span>
+        <span class="promo-text">Promo Code</span>
+    </div>
+</button>
+
+<button class="league-btn" id="leagueBtn" type="button">
+    <div class="league-icon-circle">
+        <span class="league-emoji">🏆</span>
+    </div>
+</button>
+
+<button class="exchange-btn" id="exchangeBtn" type="button">
+    <div class="exchange-icon-circle">
+        <div class="exchange-row">
+    <span>❄️</span>
+    <span class="exchange-arrow">➜</span>
+    <span class="ton-icon" style="width: 18px; height: 18px;"></span>
+</div>
+        <div class="exchange-text">Exchange</div>
+       <div class="exchange-time">(⏳Soon⏳)</div>            </div>
+</button>
+
+<button class="pvp-btn" id="pvpBtn" type="button">
+    <div class="pvp-icon-circle">
+        <span class="pvp-emoji">⚔️</span>
+        <span class="pvp-text">PvP</span>
+    </div>
+</button>
+
+<!-- شاشة Leaderboard (الكأس) -->
+<div id="leagueScreen" class="league-screen">
+    <div class="league-header">
+        <h2>🏆 Leaderboard</h2>
+        <button class="league-close" id="leagueCloseBtn">✕</button>
+    </div>
+    <div class="league-tabs">
+        <button class="league-tab active" data-league-tab="referrals">Referrals</button>
+        <button class="league-tab" data-league-tab="snowmen">Snowmen</button>
+    </div>
+    <div class="league-content">
+        <!-- لوحة Referrals -->
+        <div class="league-panel active" id="leaguePanelReferrals">
+            <div class="period-participants">
+                <span>📅 Competition: Apr 20, 2026 – May 1, 2026</span>
+                <span class="participants-icons">🏆 🎮 🎵</span>
+            </div>
+            <div class="leaderboard-card">
+                <div class="leaderboard-row">
+                    <span class="leaderboard-label">Participate & win TON</span>
+                    <span class="leaderboard-value"><span class="ton-icon"></span></span>
+                </div>
+                <div class="prizes-mini-box">
+                    <div class="prizes-header">🎁 Prizes :</div>
+                    <div class="prizes-grid">
+                        <div class="prize-item">1. 50 <span class="ton-icon"></span></div>
+                        <div class="prize-item">2. 25 <span class="ton-icon"></span></div>
+                        <div class="prize-item">3. 15 <span class="ton-icon"></span></div>
+                        <div class="prize-item">4-20. 5 <span class="ton-icon"></span></div>
+                    </div>
+                </div>
+                <div class="your-position-box">
+                    <div class="leaderboard-row" style="margin-bottom: 6px;">
+                        <span class="leaderboard-label">Your Position</span>
+                        <span class="rank-number" id="refUserRank">#0</span>
+                    </div>
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-label">Referrals</span>
+                        <span class="leaderboard-value" id="refUserValue">0</span>
+                    </div>
+                </div>
+                <div class="leaderboard-label" style="margin: 12px 0 8px;">🏅 Top Referrers</div>
+                <div id="refLeaderboardList"></div>
+            </div>
+        </div>
+        <!-- لوحة Snowmen -->
+        <div class="league-panel" id="leaguePanelSnowmen">
+            <div class="period-participants">
+                <span>📅 Competition: Apr 20, 2026 – May 1, 2026</span>
+                <span class="participants-icons">🏆 🎮 🎵</span>
+            </div>
+            <div class="leaderboard-card">
+                <div class="leaderboard-row">
+                    <span class="leaderboard-label">Participate & win TON</span>
+                    <span class="leaderboard-value"><span class="ton-icon"></span></span>
+                </div>
+                <div class="prizes-mini-box">
+                    <div class="prizes-header">🎁 Prizes :</div>
+                    <div class="prizes-grid">
+                        <div class="prize-item">1. 50 <span class="ton-icon"></span></div>
+                        <div class="prize-item">2. 25 <span class="ton-icon"></span></div>
+                        <div class="prize-item">3. 15 <span class="ton-icon"></span></div>
+                        <div class="prize-item">4-20. 5 <span class="ton-icon"></span></div>
+                    </div>
+                </div>
+                <div class="your-position-box">
+                    <div class="leaderboard-row" style="margin-bottom: 6px;">
+                        <span class="leaderboard-label">Your Position</span>
+                        <span class="rank-number" id="snowUserRank">#0</span>
+                    </div>
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-label">Snowmen</span>
+                        <span class="leaderboard-value" id="snowUserValue">0</span>
+                    </div>
+                </div>
+                <div class="leaderboard-label" style="margin: 12px 0 8px;">🏅 Top Snowmen Owners</div>
+                <div id="snowLeaderboardList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="transferModal" class="transfer-modal" aria-hidden="true">
+    <div class="transfer-card">
+        <button class="transfer-close" id="closeTransferModalBtn" type="button">×</button>
+
+        <div class="transfer-tabs">
+            <button class="transfer-tab active" id="depositTabBtn" type="button">Deposit</button>
+            <button class="transfer-tab" id="withdrawTabBtn" type="button">Withdraw</button>
+        </div>
+
+        <div class="transfer-panel active" id="depositPanel">
+            <div class="transfer-title">Enter Amount</div>
+
+            <input class="transfer-amount-input" type="number" value="0.00" min="0" step="0.01">
+
+            <div class="transfer-quick-row">
+                <button class="transfer-quick-btn" type="button">0.5</button>
+                <button class="transfer-quick-btn" type="button">1</button>
+                <button class="transfer-quick-btn" type="button">2</button>
+                <button class="transfer-quick-btn" type="button">5</button>
+                <button class="transfer-quick-btn" type="button">10</button>
+            </div>
+
+            <div class="transfer-section">
+                <div class="transfer-section-title">Payment Method</div>
+                <button class="transfer-wallet-btn" type="button">Connect Wallet</button>
+
+                <div class="transfer-copy-box">
+                    <div class="transfer-copy-label">or (Manual) Deposit Address</div>
+                    <div class="transfer-copy-row">
+                        <input class="transfer-copy-input" id="depositAddressValue" type="text" value="0" readonly>
+                        <button class="transfer-copy-btn" type="button" data-copy-target="depositAddressValue">Copy</button>
+                    </div>
+                </div>
+
+                <div class="transfer-copy-box">
+                    <div class="transfer-copy-label">Memo (Required)</div>
+                    <div class="transfer-copy-row">
+                        <input class="transfer-copy-input" id="depositMemoValue" type="text" value="0" readonly>
+                        <button class="transfer-copy-btn" type="button" data-copy-target="depositMemoValue">Copy</button>
+                    </div>
+                </div>
+
+                <div class="transfer-note">
+                    Always include the memo. Deposits without memo cannot be credited automatically.
+                </div>
+            </div>
+        </div>
+
+        <div class="transfer-panel" id="withdrawPanel">
+            <div class="transfer-section">
+                <div class="transfer-section-title">Withdraw Amount</div>
+                <input class="transfer-amount-input" type="number" min="0.2" step="0.01" placeholder="0.2">
+                <div class="transfer-withdraw-foot">
+                    <span>min 0.2</span>
+                    <span>fee %5</span>
+                </div>
+            </div>
+
+            <div class="transfer-section">
+                <div class="transfer-section-title">Ton Address</div>
+                <input class="transfer-text-input" type="text" placeholder="Enter TON address">
+            </div>
+
+            <button class="transfer-action-btn" type="button">Withdraw</button>
+            <button class="transfer-history-btn" type="button">History</button>
+        </div>
+    </div>
 </div>
 
 <div class="bottom-nav">
@@ -1572,26 +3053,22 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
 
 <div id="mintModal">
     <div class="mint-content">
-        <h2 class="mint-title">Mint Snowmen 💎</h2>
-
+        <h2 class="mint-title">Mint Snowmen ☃️</h2>
         <div class="pack-box">
             <h3>Starter Pack</h3>
-            <p class="pack-price">1 TON ➔ 2240 ☃️</p>
+            <p class="pack-price">1 TON ➔ 2450 ☃️</p>
             <p class="pack-speed">Mining Speed: 7.00 ❄️/hr</p>
         </div>
-
         <div class="pack-box">
             <h3>Pro Pack</h3>
-            <p class="pack-price">3 TON ➔ 5120 ☃️</p>
-            <p class="pack-speed">Mining Speed: 16.00 ❄️/hr</p>
+            <p class="pack-price">5 TON ➔ 10,500 ☃️</p>
+            <p class="pack-speed">Mining Speed: 30.00 ❄️/hr</p>
         </div>
-
         <div class="pack-box" style="margin-bottom: 18px;">
             <h3>Whale Pack</h3>
-            <p class="pack-price">99 TON ➔ 160,000 ☃️</p>
+            <p class="pack-price">99 TON ➔ 175,000 ☃️</p>
             <p class="pack-speed">Mining Speed: 500.00 ❄️/hr</p>
         </div>
-
         <button class="close-mint" id="closeMintBtn" type="button">CANCEL</button>
     </div>
 </div>
@@ -1599,15 +3076,12 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
 <div id="hatchModal">
     <div class="hatch-content">
         <button class="close-hatch" id="closeHatchBtn" type="button">×</button>
-
         <h2 class="hatch-header">Hatch Snow ❄️</h2>
-
         <div class="ratio-box">
             <span>❄️ 1</span>
             <span>➜</span>
             <span>☃️ 1</span>
         </div>
-
         <div class="hatch-input-section">
             <div class="input-label-row">
                 <span>❄️ Snow to Hatch</span>
@@ -1615,43 +3089,29 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             </div>
             <input type="number" class="hatch-input" placeholder="Enter amount (min. 100)">
         </div>
-
         <div class="pct-btn-row">
             <button class="pct-btn" type="button">25%</button>
             <button class="pct-btn" type="button">50%</button>
             <button class="pct-btn" type="button">75%</button>
             <button class="pct-btn" type="button">MAX</button>
         </div>
-
         <div class="available-text">
             ❄️ Available: <span id="hatch-avail-snowflakes">0</span> snowflakes
         </div>
-
         <ul class="calc-list">
-            <li class="calc-item">
-                <span>Base Snowflakes</span>
-                <span>-</span>
-            </li>
-            <li class="calc-item">
-                <span>Craft fee (6%)</span>
-                <span>-</span>
-            </li>
-            <li class="calc-item total">
-                <span>❄️ Total required</span>
-                <span>-</span>
-            </li>
+            <li class="calc-item"><span>Base Snowflakes</span><span>-</span></li>
+            <li class="calc-item"><span>Craft fee (6%)</span><span>-</span></li>
+            <li class="calc-item total"><span>❄️ Total required</span><span>-</span></li>
         </ul>
-
         <button class="final-hatch-btn" type="button">Hatch ❄️</button>
     </div>
 </div>
 
-<div id="tasksScreen" class="tasks-screen" aria-hidden="true">
+<!-- ===== الشاشات المنبثقة (تم إضافة كلاس screen-overlay) ===== -->
+<div id="tasksScreen" class="tasks-screen screen-overlay" aria-hidden="true">
     <div class="tasks-top">
         <div class="tasks-title">Tasks</div>
-        <div class="tasks-subtitle">(hidden)</div>
     </div>
-
     <div class="channel-submit-card">
         <div class="channel-submit-text">
             Have a Telegram channel?<br>
@@ -1660,71 +3120,60 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
         <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
         <button class="submit-channel-btn" id="submitChannelBtn" type="button">Submit Channel</button>
     </div>
-
     <div class="task-list">
         <div class="task-card">
             <div class="task-left">
                 <div class="task-emoji">📣</div>
                 <div>
                     <div class="task-name">Join Our Channel</div>
-                    <div class="task-meta">+5 ❄️</div>
+                    <div class="task-meta">+5 ☃️</div>
                 </div>
             </div>
             <button class="task-join-btn" type="button">Join</button>
         </div>
     </div>
-
     <button id="floatingAddTaskBtn" class="floating-add-task" type="button">
         <span class="plus">+</span>
         <span>Add a Task</span>
     </button>
 </div>
 
-<div id="marketScreen" class="market-screen" aria-hidden="true">
+<div id="marketScreen" class="market-screen screen-overlay" aria-hidden="true">
     <div class="market-top">
         <div class="market-title-row">
             <div class="market-title">Market</div>
             <button class="market-refresh" id="marketRefreshBtn" type="button">↻</button>
         </div>
-
         <div class="market-toolbar">
             <div class="market-segment">
                 <button class="market-mode active" type="button" data-market-mode="all">All</button>
                 <button class="market-mode" type="button" data-market-mode="yours">Yours</button>
             </div>
-
             <div class="market-controls">
-                <button class="market-filter" id="marketFilterBtn" type="button">
-                    <span>Value</span>
-                    <span>▾</span>
-                </button>
+                <button class="market-filter" id="marketFilterBtn" type="button"><span>Loot Box</span></button>
                 <button class="market-sort" id="marketSortBtn" type="button">▲</button>
             </div>
         </div>
     </div>
-
     <div class="market-create-cta-wrap">
         <button class="market-create-cta" id="marketCreateBtn" type="button">+ Create Order</button>
     </div>
-
     <div class="market-sub-page active" id="market-all">
         <div class="market-grid">
             <div class="market-card">
                 <div class="market-badge">SNOW</div>
                 <div class="market-pill market-snow-pill">❄️ 0</div>
-                <div class="market-pill market-price-pill"><span class="ton-icon">💎</span><span>0.00</span></div>
+                <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>0.00</span></div>
                 <button class="market-buy-btn" type="button">Buy</button>
             </div>
-
             <div class="market-card">
                 <div class="market-badge">SNOW</div>
                 <div class="market-pill market-snow-pill">❄️ 0</div>
-                <div class="market-pill market-price-pill"><span class="ton-icon">💎</span><span>0.00</span></div>
+                <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>0.00</span></div>
                 <button class="market-buy-btn" type="button">Buy</button>
             </div>
         </div>
     </div>
-
     <div class="market-sub-page" id="market-yours">
         <div class="market-empty">
             <div class="market-empty-icon">☃️</div>
@@ -1733,71 +3182,283 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             <button class="market-buy-btn market-create-inline" id="openCreateOrderBtn" type="button">+ Create Order</button>
         </div>
     </div>
-
+    <div class="market-sub-page" id="market-lootbox">
+    <div class="market-grid">
+        <div class="market-card loot-card">
+            <div class="market-badge">SNOW BOX</div>
+            <div class="loot-preview">
+                <span>🎁</span>
+                <span>❄️</span>
+                <span>⚡</span>
+                <span>☃️</span>
+            </div>
+            <div class="market-pill market-price-pill"><span>❄️ 200</span></div>
+            <button class="market-buy-btn loot-preview-btn" data-box="snow">Preview</button>
+            <button class="market-buy-btn loot-buy-btn" data-box="snow" style="margin-top: 8px;">Buy</button>
+        </div>
+        <div class="market-card loot-card">
+            <div class="market-badge">TON BOX</div>
+            <div class="loot-preview">
+                <span>💰</span>
+                <span>☃️</span>
+                <span>⚡</span>
+                <span>💎</span>
+            </div>
+            <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>1.00</span></div>
+            <button class="market-buy-btn loot-preview-btn" data-box="ton">Preview</button>
+            <button class="market-buy-btn loot-buy-btn" data-box="ton" style="margin-top: 8px;">Buy</button>
+        </div>
+    </div>
+</div>
     <div class="market-sub-page" id="market-create">
         <div class="market-panel create-panel">
             <div class="create-panel-head">
                 <button class="back-mini" id="backToMarketBtn" type="button">←</button>
                 <h3 class="market-panel-title">New Snow Order</h3>
             </div>
-
             <div class="form-group">
                 <label>Amount of Snow ❄️</label>
                 <input type="number" class="form-input" placeholder="0.00">
             </div>
-
             <div class="form-group">
-                <label>Price in Ton 💎</label>
+                <label>Price in Ton <span class="ton-icon"></span></label>
                 <input type="number" class="form-input" placeholder="0.00">
             </div>
-
             <div class="form-group">
                 <label>Total Value</label>
                 <input type="text" class="form-input" value="0.00" disabled>
             </div>
-
             <button class="market-create-btn" type="button">Confirm Order</button>
         </div>
     </div>
 </div>
 
-<div id="friendsScreen" class="friends-screen" aria-hidden="true">
+<div id="friendsScreen" class="friends-screen screen-overlay" aria-hidden="true">
     <div class="friends-top">
         <div class="friends-title">
             <span class="friends-title-icon">👥</span>
             <span>Friends</span>
         </div>
     </div>
-
     <div class="friends-grid">
         <div class="friends-card">
             <div class="friends-card-label">Your Reward</div>
-            <div class="friends-card-value">💎 0</div>
+            <div class="friends-card-value">
+<span class="ton-icon" style="width: 50px; height: 50px;"></span> 0</div>
         </div>
-
         <div class="friends-card">
             <div class="friends-card-label">Your Friends</div>
             <div class="friends-card-value">0</div>
         </div>
     </div>
-
     <div class="friends-reward-card">
         <div class="friends-reward-line">☃️ +1 free SnowMan per Friend</div>
-        <div class="friends-reward-line">❄️ 5% Snow when they Hatch a Snow</div>
-        <div class="friends-reward-line">💎 15% TON when they buy SnowMans (Mint, Market)</div>
+        <div class="friends-reward-line">❄️ 5% Snow when they Hatch</div>
+        <div class="friends-reward-line"><span class="ton-icon"></span> 15% TON when they buy SnowMans </div>
     </div>
-
     <div class="friends-link-card">
         https://t.me/your_bot_username?start=ref123456
     </div>
-
     <div class="friends-actions">
         <button class="friends-btn friends-btn-copy" type="button">📋 Copy</button>
         <button class="friends-btn friends-btn-share" type="button">📤 Share</button>
     </div>
-
     <div class="friends-empty">
         No friends yet <span class="friends-empty-emoji">🧱</span>
+    </div>
+</div>
+
+<div id="profileScreen" class="profile-screen screen-overlay">
+    <div class="profile-card">
+        <div class="wallet-row">
+            <div class="wallet-info">
+                <span>💳</span>
+                <span>WALLET</span>
+            </div>
+            <div class="ton-controls">
+                <button class="circle-btn" id="profileWithdrawBtn" type="button">-</button>
+                <button class="circle-btn" id="profileDepositBtn" type="button">+</button>
+            </div>
+        </div>
+        <div class="balance-rate">
+            Your Balance: <strong>0.00 TON</strong><br>
+        </div>
+    </div>
+    <div class="profile-card">
+        <div class="profile-name-row">
+            <div class="avatar">👤</div>
+            <div class="name-details">
+                <div class="display-name">Name</div>
+                <div class="username">@Username</div>
+            </div>
+        </div>
+    </div>
+    <div class="profile-card">
+        <div class="stats-two-columns">
+            <div class="stat-col">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Active SnowMan</div>
+            </div>
+            <div class="stat-col">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Snow Balance</div>
+            </div>
+        </div>
+        <div class="mining-rate-center">
+            <span class="icon-small">❄️</span> <span>0/hr</span>
+        </div>
+    </div>
+</div>
+
+<div id="pvpScreen" class="pvp-screen" aria-hidden="true">
+  <div class="pvp-header">
+    <button class="pvp-history-btn" id="pvpHistoryBtn" type="button">📜</button>
+    <div class="pvp-total-box">
+        <span>TOTAL :</span>
+        <span id="pvpTotalValue">0</span>
+    </div>
+</div>
+
+    <div class="pvp-wheel-wrap">
+    <div class="pvp-pointer"></div>
+    <div class="pvp-wheel" id="pvpWheel"></div>
+    <div class="pvp-wheel-center">
+        <span>WAITING</span>
+    </div>
+</div>
+
+    <div class="pvp-set-area">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="pvp-set-input" id="pvpAmountInput" placeholder="Min : 50 Snow">
+        <button class="pvp-set-btn" id="pvpSetBtn" type="button">Set</button>
+    </div>
+
+    <div id="pvpHistoryPanel" class="pvp-history-panel">
+    <div class="pvp-history-header">
+        <span>History</span>
+        <button class="pvp-history-close" id="closePvpHistoryBtn">✕</button>
+    </div>
+    <div class="pvp-history-item">
+        <div class="pvp-history-row1">
+            <span class="pvp-history-id">#0</span>
+            <span class="pvp-history-user">@User</span>
+            <span class="pvp-history-winner">Winner</span>
+        </div>
+        <div class="pvp-history-row2">
+            <span class="pvp-history-won">Won 0 Snow</span>
+            <span class="pvp-history-percent">0%</span>
+        </div>
+    </div>
+    <div class="pvp-history-item">
+        <div class="pvp-history-row1">
+            <span class="pvp-history-id">#0</span>
+            <span class="pvp-history-user">@User</span>
+            <span class="pvp-history-winner">Winner</span>
+        </div>
+        <div class="pvp-history-row2">
+            <span class="pvp-history-won">Won 0 Snow</span>
+            <span class="pvp-history-percent">0%</span>
+        </div>
+    </div>
+    <div class="pvp-history-item">
+        <div class="pvp-history-row1">
+            <span class="pvp-history-id">#0</span>
+            <span class="pvp-history-user">@User</span>
+            <span class="pvp-history-winner">Winner</span>
+        </div>
+        <div class="pvp-history-row2">
+            <span class="pvp-history-won">Won 0 Snow</span>
+            <span class="pvp-history-percent">0%</span>
+        </div>
+    </div>
+</div>
+</div>
+
+<div id="exchangeModal" class="exchange-modal" aria-hidden="true">
+    <div class="exchange-modal-card">
+
+        <div class="phase-top">
+            <div class="phase-top-title">Phase 1</div>
+            <div class="phase-top-sub">(Coming Soon)</div>
+        </div>
+
+        <button class="exchange-modal-close" id="closeExchangeModalBtn" type="button">×</button>
+        
+        <div class="exchange-box">
+            <div class="exchange-label">FROM</div>
+            <div class="exchange-row-main">
+                <div class="exchange-asset">
+                    <span class="exchange-asset-icon">❄️</span>
+                    <span class="exchange-asset-name">Snow</span>
+                </div>
+                <span class="exchange-asset-value">0</span>
+            </div>
+            <div class="exchange-balance">Balance: 0 Snow</div>
+        </div>
+
+        <div class="exchange-switch">↓</div>
+
+        <div class="exchange-box">
+            <div class="exchange-label">TO</div>
+            <div class="exchange-row-main">
+                <div class="exchange-asset">
+                    <span class="exchange-asset-icon"><span class="ton-icon"></span></span>
+                    <span class="exchange-asset-name">Ton</span>
+                </div>
+                <span class="exchange-asset-value">0</span>
+            </div>
+            <div class="exchange-balance">Balance: 0 Ton</div>
+        </div>
+
+        <button class="exchange-action" type="button">Exchange Now</button>
+    </div>
+</div>
+
+<div id="addTaskModal" class="task-modal">
+    <div class="task-modal-content">
+        <button class="task-modal-close" id="closeAddTaskModalBtn" type="button">×</button>
+
+        <h2 class="task-modal-title">Create Task</h2>
+
+        <div class="task-modal-field">
+            <label>Telegram Link</label>
+            <input type="text" id="taskTelegramLink" placeholder="https://t.me/yourchannel">
+        </div>
+
+        <div class="task-modal-field">
+            <label>Target Users (min 30)</label>
+            <input type="number" id="taskTargetUsers" value="30" min="30">
+        </div>
+
+        <div class="task-preset-row">
+            <button type="button" class="task-preset-btn" data-value="100">100</button>
+            <button type="button" class="task-preset-btn" data-value="500">500</button>
+            <button type="button" class="task-preset-btn" data-value="1000">1K</button>
+            <button type="button" class="task-preset-btn" data-value="3000">3K</button>
+        </div>
+
+        <div class="task-total-box">
+            <span>Total Cost:</span>
+            <strong id="taskTotalCost">0 Snow ❄</strong>
+        </div>
+
+        <button class="task-create-btn" id="confirmCreateTaskBtn" type="button">Create Task</button>
+    </div>
+</div>
+
+<div id="promoModal" class="promo-modal">
+    <div class="promo-modal-content">
+        <button class="promo-modal-close" id="closePromoModalBtn">✕</button>
+        <div class="promo-modal-text">You Can Find the Promo Code at our Channel</div>
+        <input type="text" class="promo-input" placeholder="Enter code">
+        <button class="promo-submit-btn" id="applyPromoBtn">Apply</button>
+    </div>
+</div>
+
+<div id="lootboxModal" class="lootbox-modal">
+    <div class="lootbox-modal-content">
+        <button class="lootbox-modal-close" id="closeLootboxModalBtn">×</button>
+        <h2 class="lootbox-modal-title" id="lootboxModalTitle">Snow Box</h2>
+        <div class="lootbox-grid" id="lootboxGrid"></div>
     </div>
 </div>
 
@@ -1805,6 +3466,14 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
 
     document.addEventListener('DOMContentLoaded', () => {
+      const addTaskModal = document.getElementById('addTaskModal');
+const closeAddTaskModalBtn = document.getElementById('closeAddTaskModalBtn');
+const confirmCreateTaskBtn = document.getElementById('confirmCreateTaskBtn');
+const taskTargetUsers = document.getElementById('taskTargetUsers');
+const taskTotalCost = document.getElementById('taskTotalCost');
+const taskPresetBtns = document.querySelectorAll('.task-preset-btn');
+const taskTelegramLink = document.getElementById('taskTelegramLink');
+
         const tasksScreen = document.getElementById('tasksScreen');
         const marketScreen = document.getElementById('marketScreen');
         const friendsScreen = document.getElementById('friendsScreen');
@@ -1838,6 +3507,73 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
         const marketRefreshBtn = document.getElementById('marketRefreshBtn');
         const marketFilterBtn = document.getElementById('marketFilterBtn');
         const marketSortBtn = document.getElementById('marketSortBtn');
+        
+const pvpBtn = document.getElementById('pvpBtn');
+const pvpScreen = document.getElementById('pvpScreen');
+const pvpWheel = document.getElementById('pvpWheel');
+const pvpAmountInput = document.getElementById('pvpAmountInput');
+const pvpSetBtn = document.getElementById('pvpSetBtn');
+const pvpTotalValue = document.getElementById('pvpTotalValue');
+
+const exchangeBtn = document.getElementById('exchangeBtn');
+const exchangeModal = document.getElementById('exchangeModal');
+const closeExchangeModalBtn = document.getElementById('closeExchangeModalBtn');
+
+const transferModal = document.getElementById('transferModal');
+const closeTransferModalBtn = document.getElementById('closeTransferModalBtn');
+const depositTabBtn = document.getElementById('depositTabBtn');
+const withdrawTabBtn = document.getElementById('withdrawTabBtn');
+const depositPanel = document.getElementById('depositPanel');
+const withdrawPanel = document.getElementById('withdrawPanel');
+const openDepositBtn = document.getElementById('openDepositBtn');
+const profileDepositBtn = document.getElementById('profileDepositBtn');
+const profileWithdrawBtn = document.getElementById('profileWithdrawBtn');
+
+function setTransferMode(mode) {
+    const depositMode = mode === 'deposit';
+    depositTabBtn?.classList.toggle('active', depositMode);
+    withdrawTabBtn?.classList.toggle('active', !depositMode);
+    depositPanel?.classList.toggle('active', depositMode);
+    withdrawPanel?.classList.toggle('active', !depositMode);
+}
+
+function openTransferModal(mode) {
+    transferModal?.classList.add('show');
+    setTransferMode(mode);
+}
+
+function closeTransferModal() {
+    transferModal?.classList.remove('show');
+}
+
+openDepositBtn?.addEventListener('click', () => openTransferModal('deposit'));
+profileDepositBtn?.addEventListener('click', () => openTransferModal('deposit'));
+profileWithdrawBtn?.addEventListener('click', () => openTransferModal('withdraw'));
+
+depositTabBtn?.addEventListener('click', () => setTransferMode('deposit'));
+withdrawTabBtn?.addEventListener('click', () => setTransferMode('withdraw'));
+closeTransferModalBtn?.addEventListener('click', closeTransferModal);
+
+transferModal?.addEventListener('click', (event) => {
+    if (event.target === transferModal) closeTransferModal();
+});
+
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeTransferModal();
+});
+
+document.querySelectorAll('[data-copy-target]').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const targetId = button.getAttribute('data-copy-target');
+        const target = document.getElementById(targetId);
+        const value = target?.value ?? '';
+        if (!value) return;
+        try {
+            await navigator.clipboard.writeText(value);
+        } catch (error) {
+        }
+    });
+});
 
         let currentMarketView = 'all';
 
@@ -1847,10 +3583,7 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
         }
 
         function hideOverlays() {
-            tasksScreen?.classList.remove('show');
-            marketScreen?.classList.remove('show');
-            friendsScreen?.classList.remove('show');
-            profileScreen?.classList.remove('show');
+            document.querySelectorAll('.screen-overlay').forEach(screen => screen.classList.remove('show'));
         }
 
         function showHomeScreen() {
@@ -1871,20 +3604,22 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
         }
 
         function setMarketMode(mode) {
-            currentMarketView = mode;
-            marketPages.forEach(page => page.classList.remove('active'));
-            marketModes.forEach(modeBtn => modeBtn.classList.remove('active'));
+    currentMarketView = mode;
+    marketPages.forEach(page => page.classList.remove('active'));
+    marketModes.forEach(modeBtn => modeBtn.classList.remove('active'));
 
-            if (mode === 'all') {
-                document.getElementById('market-all')?.classList.add('active');
-                document.querySelector('.market-mode[data-market-mode="all"]')?.classList.add('active');
-            } else if (mode === 'yours') {
-                document.getElementById('market-yours')?.classList.add('active');
-                document.querySelector('.market-mode[data-market-mode="yours"]')?.classList.add('active');
-            } else if (mode === 'create') {
-                document.getElementById('market-create')?.classList.add('active');
-            }
-        }
+    if (mode === 'all') {
+        document.getElementById('market-all')?.classList.add('active');
+        document.querySelector('.market-mode[data-market-mode="all"]')?.classList.add('active');
+    } else if (mode === 'yours') {
+        document.getElementById('market-yours')?.classList.add('active');
+        document.querySelector('.market-mode[data-market-mode="yours"]')?.classList.add('active');
+    } else if (mode === 'lootbox') {
+        document.getElementById('market-lootbox')?.classList.add('active');
+    } else if (mode === 'create') {
+        document.getElementById('market-create')?.classList.add('active');
+    }
+}
 
         function showMarketScreen(mode = 'all') {
             hideOverlays();
@@ -1893,34 +3628,47 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             setMarketMode(mode);
         }
 
+function showPvpScreen() {
+    hideOverlays();
+    pvpScreen?.classList.add('show');
+    setActiveNav(null);
+}
+
+function hidePvpScreen() {
+    pvpScreen?.classList.remove('show');
+}
+
         tasksNavBtn?.addEventListener('click', () => {
-            hideOverlays();
-            tasksScreen?.classList.add('show');
-            setActiveNav(tasksNavBtn);
-        });
+    closeTransferModal();
+    hidePvpScreen();
+    showTasksScreen();
+});
 
-        homeNavBtn?.addEventListener('click', () => {
-            hideOverlays();
-            setActiveNav(homeNavBtn);
-        });
+homeNavBtn?.addEventListener('click', () => {
+    closeTransferModal();
+    hidePvpScreen();
+    showHomeScreen();
+});
 
-        marketNavBtn?.addEventListener('click', () => {
-            hideOverlays();
-            marketScreen?.classList.add('show');
-            setActiveNav(marketNavBtn);
-        });
+marketNavBtn?.addEventListener('click', () => {
+    closeTransferModal();
+    hidePvpScreen();
+    showMarketScreen('all');
+});
 
-        friendsNavBtn?.addEventListener('click', () => {
-            hideOverlays();
-            friendsScreen?.classList.add('show');
-            setActiveNav(friendsNavBtn);
-        });
+friendsNavBtn?.addEventListener('click', () => {
+    closeTransferModal();
+    hidePvpScreen();
+    showFriendsScreen();
+});
 
-        profileNavBtn?.addEventListener('click', () => {
-            hideOverlays();
-            profileScreen?.classList.add('show');
-            setActiveNav(profileNavBtn);
-        });
+profileNavBtn?.addEventListener('click', () => {
+    closeTransferModal();
+    hidePvpScreen();
+    hideOverlays();
+    profileScreen?.classList.add('show');
+    setActiveNav(profileNavBtn);
+});
 
         marketModes.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1929,33 +3677,147 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             });
         });
 
-        marketCreateBtn?.addEventListener('click', () => {
-            showMarketScreen('create');
-        });
+        marketCreateBtn?.addEventListener('click', () => showMarketScreen('create'));
+        openCreateOrderBtn?.addEventListener('click', () => showMarketScreen('create'));
+        backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
+        marketRefreshBtn?.addEventListener('click', () => setMarketMode(currentMarketView));
+        let currentLootboxData = null;
+const lootboxModal = document.getElementById('lootboxModal');
+const lootboxGrid = document.getElementById('lootboxGrid');
+const lootboxModalTitle = document.getElementById('lootboxModalTitle');
+const closeLootboxModalBtn = document.getElementById('closeLootboxModalBtn');
 
-        openCreateOrderBtn?.addEventListener('click', () => {
-            showMarketScreen('create');
-        });
+const snowBoxContents = [
+    { icon: '❄️', text: '25' },
+    { icon: '❄️', text: '50' },
+    { icon: '❄️', text: '500' },
+    { icon: '⚡', text: '1.1x Boost' },
+    { icon: '⚡', text: '1.2x Boost' },
+    { icon: '⚡', text: '1.3x Boost' },
+    { icon: '⚡', text: '2x Boost' },
+    { icon: '☃️', text: '25' },
+    { icon: '☃️', text: '50' },
+    { icon: '☃️', text: '100' },
+    { icon: '☃️', text: '500' },
+    { icon: '💎', text: '0.2 Ton' },
+    { icon: '💎', text: '0.5 Ton' }
+];
 
-        backToMarketBtn?.addEventListener('click', () => {
-            showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all');
-        });
+const tonBoxContents = [
+    { icon: '☃️', text: '500' },
+    { icon: '☃️', text: '1000' },
+    { icon: '☃️', text: '1500' },
+    { icon: '💎', text: '0.5 Ton' },
+    { icon: '💎', text: '1 Ton' },
+    { icon: '💎', text: '3 Ton' },
+    { icon: '⚡', text: '1.2x Boost' },
+    { icon: '⚡', text: '1.5x Boost' },
+    { icon: '⚡', text: '2x Boost' }
+];
 
-        marketRefreshBtn?.addEventListener('click', () => {
-            setMarketMode(currentMarketView);
-        });
+function renderLootboxGrid(contents) {
+    if (!lootboxGrid) return;
+    lootboxGrid.innerHTML = '';
+    contents.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'loot-item';
+        div.innerHTML = `<div class="loot-item-icon">${item.icon}</div><div class="loot-item-text">${item.text}</div>`;
+        lootboxGrid.appendChild(div);
+    });
+}
 
-        marketFilterBtn?.addEventListener('click', () => {
-            console.log('Filter clicked');
-        });
+function showLootboxModal(boxType) {
+    if (!lootboxModal) return;
+    if (boxType === 'snow') {
+        if (lootboxModalTitle) lootboxModalTitle.textContent = 'Snow Box';
+        renderLootboxGrid(snowBoxContents);
+    } else if (boxType === 'ton') {
+        if (lootboxModalTitle) lootboxModalTitle.textContent = 'Ton Box';
+        renderLootboxGrid(tonBoxContents);
+    }
+    lootboxModal.style.display = 'flex';
+}
 
-        marketSortBtn?.addEventListener('click', () => {
-            console.log('Sort clicked');
-        });
+function hideLootboxModal() {
+    if (lootboxModal) lootboxModal.style.display = 'none';
+}
 
+if (marketFilterBtn) {
+    marketFilterBtn.addEventListener('click', () => {
+        console.log('Loot Box button clicked');
+        setMarketMode('lootbox');
+    });
+}
+
+document.querySelectorAll('.loot-preview-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const boxType = btn.getAttribute('data-box');
+        showLootboxModal(boxType);
+    });
+});
+
+if (closeLootboxModalBtn) {
+    closeLootboxModalBtn.addEventListener('click', hideLootboxModal);
+}
+if (lootboxModal) {
+    lootboxModal.addEventListener('click', (e) => {
+        if (e.target === lootboxModal) hideLootboxModal();
+    });
+}
+        marketSortBtn?.addEventListener('click', () => console.log('Sort clicked'));
+        
         floatingAddTaskBtn?.addEventListener('click', () => {
-            console.log('Add a Task clicked');
-        });
+    if (addTaskModal) addTaskModal.style.display = 'flex';
+});
+function calculateTaskCost(users) {
+    const pricePerUser = 100 / 30;
+    return users * pricePerUser;
+}
+
+function updateTaskTotal() {
+    const users = Math.max(30, parseInt(taskTargetUsers?.value || '30', 10) || 30);
+    const total = calculateTaskCost(users);
+    if (taskTotalCost) taskTotalCost.textContent = `${Math.round(total)} Snow ❄`;
+}
+
+taskTargetUsers?.addEventListener('input', updateTaskTotal);
+
+taskPresetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const value = btn.getAttribute('data-value');
+        if (taskTargetUsers) taskTargetUsers.value = value;
+        updateTaskTotal();
+    });
+});
+
+closeAddTaskModalBtn?.addEventListener('click', () => {
+    if (addTaskModal) addTaskModal.style.display = 'none';
+});
+
+window.addEventListener('click', (event) => {
+    if (event.target === addTaskModal) addTaskModal.style.display = 'none';
+});
+
+confirmCreateTaskBtn?.addEventListener('click', () => {
+    const link = taskTelegramLink?.value.trim();
+    const users = Math.max(100, parseInt(taskTargetUsers?.value || '100', 10) || 100);
+
+    if (!link) {
+        alert('Please enter Telegram link');
+        return;
+    }
+
+    console.log('Create task:', { link, users });
+
+    alert('Task created');
+    if (addTaskModal) addTaskModal.style.display = 'none';
+    if (taskTelegramLink) taskTelegramLink.value = '';
+    if (taskTargetUsers) taskTargetUsers.value = '100';
+    updateTaskTotal();
+});
+
+updateTaskTotal();
 
         if (submitChannelBtn && channelLinkInput) {
             submitChannelBtn.addEventListener('click', () => {
@@ -1970,77 +3832,158 @@ box-shadow: 0 10px 26px rgba(122, 44, 255, 0.38);
             });
         }
 
-        openMintBtn?.addEventListener('click', () => {
-            mintModal.style.display = 'flex';
-        });
-
-        closeMintBtn?.addEventListener('click', () => {
-            mintModal.style.display = 'none';
-        });
-
-        openHatchBtn?.addEventListener('click', () => {
-            hatchModal.style.display = 'flex';
-        });
-
-        closeHatchBtn?.addEventListener('click', () => {
-            hatchModal.style.display = 'none';
-        });
+        openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
+        closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
+        openHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'flex');
+        closeHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'none');
 
         window.addEventListener('click', (event) => {
-            if (event.target === mintModal) {
-                mintModal.style.display = 'none';
-            }
-            if (event.target === hatchModal) {
-                hatchModal.style.display = 'none';
-            }
+            if (event.target === mintModal) mintModal.style.display = 'none';
+            if (event.target === hatchModal) hatchModal.style.display = 'none';
+            if (event.target === pvpScreen) pvpScreen.classList.remove('show');
         });
 
+pvpBtn?.addEventListener('click', showPvpScreen);
+
+function showExchangeModal() {
+    if (exchangeModal) exchangeModal.style.display = 'flex';
+}
+
+function hideExchangeModal() {
+    if (exchangeModal) exchangeModal.style.display = 'none';
+}
+
+exchangeBtn?.addEventListener('click', showExchangeModal);
+closeExchangeModalBtn?.addEventListener('click', hideExchangeModal);
+
+window.addEventListener('click', (event) => {
+    if (event.target === exchangeModal) hideExchangeModal();
+});
+
+document.querySelector('.pvp-wheel-wrap')?.addEventListener('click', () => {
+    pvpWheel.classList.remove('spin-once');
+    void pvpWheel.offsetWidth;
+    pvpWheel.classList.add('spin-once');
+});
+
+pvpSetBtn?.addEventListener('click', () => {
+    const value = Math.max(50, parseInt(pvpAmountInput?.value || '50', 10) || 50);
+    if (pvpAmountInput) pvpAmountInput.value = value;
+});
+
+pvpSetBtn?.addEventListener('click', () => {
+    let value = parseInt(pvpAmountInput?.value || '0', 10);
+    if (isNaN(value) || value < 50) value = 50;
+    if (pvpAmountInput) pvpAmountInput.value = value;
+});
+
+// ----- Leaderboard (الكأس) - واجهة فقط -----
+const leagueScreen = document.getElementById('leagueScreen');
+const leagueCloseBtn = document.getElementById('leagueCloseBtn');
+const leagueTabs = document.querySelectorAll('.league-tab');
+const leaguePanels = document.querySelectorAll('.league-panel');
+const leagueBtn = document.getElementById('leagueBtn');
+
+function showLeagueScreen() {
+    if (leagueScreen) leagueScreen.classList.add('show');
+    document.querySelectorAll('.screen-overlay').forEach(s => s.classList.remove('show'));
+    if (pvpScreen) pvpScreen.classList.remove('show');
+}
+function hideLeagueScreen() {
+    if (leagueScreen) leagueScreen.classList.remove('show');
+}
+
+if (leagueBtn) {
+    leagueBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showLeagueScreen();
+    });
+}
+if (leagueCloseBtn) {
+    leagueCloseBtn.addEventListener('click', hideLeagueScreen);
+}
+
+leagueTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const target = tab.getAttribute('data-league-tab');
+        leagueTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        leaguePanels.forEach(panel => panel.classList.remove('active'));
+        if (target === 'referrals') {
+            document.getElementById('leaguePanelReferrals')?.classList.add('active');
+        } else if (target === 'snowmen') {
+            document.getElementById('leaguePanelSnowmen')?.classList.add('active');
+        }
+    });
+});
+
+leagueScreen?.addEventListener('click', (e) => {
+    if (e.target === leagueScreen) hideLeagueScreen();
+});
+
+const allNavBtns = [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn];
+allNavBtns.forEach(btn => {
+    if (btn) {
+        btn.addEventListener('click', () => hideLeagueScreen());
+    }
+});
+
+   const pvpHistoryBtn = document.getElementById('pvpHistoryBtn');
+const pvpHistoryPanel = document.getElementById('pvpHistoryPanel');
+const closePvpHistoryBtn = document.getElementById('closePvpHistoryBtn');
+
+if (pvpHistoryBtn) {
+    pvpHistoryBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'block';
+    });
+}
+if (closePvpHistoryBtn) {
+    closePvpHistoryBtn.addEventListener('click', () => {
+        if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'none';
+    });
+}
+if (pvpScreen) {
+    pvpScreen.addEventListener('click', (e) => {
+        if (e.target === pvpScreen && pvpHistoryPanel) pvpHistoryPanel.style.display = 'none';
+    });
+}
+
+const promoBtn = document.getElementById('promoBtn');
+const promoModal = document.getElementById('promoModal');
+const closePromoModalBtn = document.getElementById('closePromoModalBtn');
+const applyPromoBtn = document.getElementById('applyPromoBtn');
+
+if (promoBtn) {
+    promoBtn.addEventListener('click', () => {
+        if (promoModal) promoModal.style.display = 'flex';
+    });
+}
+if (closePromoModalBtn) {
+    closePromoModalBtn.addEventListener('click', () => {
+        if (promoModal) promoModal.style.display = 'none';
+    });
+}
+if (promoModal) {
+    promoModal.addEventListener('click', (e) => {
+        if (e.target === promoModal) promoModal.style.display = 'none';
+    });
+}
+if (applyPromoBtn) {
+    applyPromoBtn.addEventListener('click', () => {
+        const input = document.querySelector('.promo-input');
+        if (input) {
+            alert('Promo code applied (demo): ' + input.value);
+            input.value = '';
+        }
+        if (promoModal) promoModal.style.display = 'none';
+    });
+}
+    
         showHomeScreen();
     });
+   
+    
 </script>
-
-<div id="profileScreen" class="profile-screen">
-    <div class="profile-card">
-        <div class="wallet-row">
-            <div class="wallet-info">
-                <span>💳</span>
-                <span>WALLET</span>
-            </div>
-            <div class="ton-controls">
-                <button class="circle-btn" type="button">-</button>
-                <button class="circle-btn" type="button">+</button>
-            </div>
-        </div>
-        <div class="balance-rate">
-            Your Balance: <strong>0.00 TON</strong><br>
-        </div>
-    </div>
-
-    <div class="profile-card">
-        <div class="profile-name-row">
-            <div class="avatar">👤</div>
-            <div class="name-details">
-                <div class="display-name">Name</div>
-                <div class="username">@Username</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="profile-card">
-        <div class="stats-two-columns">
-            <div class="stat-col">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Active SnowMan</div>
-            </div>
-            <div class="stat-col">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Snow Balance</div>
-            </div>
-        </div>
-        <div class="mining-rate-center">
-            <span class="icon-small">❄️</span> <span>0/hr</span>
-        </div>
-    </div>
-</div>
 </body>
 </html>
