@@ -60,8 +60,8 @@ async function createUserIfMissing(env, userId, username = null, displayName = n
 
 function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
-  // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
-  const baseSpeed = Math.floor(snowmanCount / 350); 
+   // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
+  const baseSpeed = snowmanCount / 350;
   const speedPerHour = baseSpeed;
 
   const lastMinedAt = Number(user.last_mined_at || now);
