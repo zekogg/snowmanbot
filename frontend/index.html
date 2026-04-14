@@ -58,7 +58,7 @@ body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: linear-gradient(145deg, rgba(5, 15, 28, 0.18) 0%, rgba(2, 10, 20, 0.15) 45%, rgba(0, 5, 12, 0.27) 100%), radial-gradient(circle at 30% 15%, rgba(90, 200, 255, 0.09) 0%, rgba(0, 70, 110, 0.01) 50%);
+    background: linear-gradient(145deg, rgba(5, 15, 28, 0.13) 0%, rgba(2, 10, 20, 0.10) 45%, rgba(0, 5, 12, 0.15) 100%), radial-gradient(circle at 30% 15%, rgba(90, 200, 255, 0.04) 0%, rgba(0, 70, 110, 0.01) 50%);
     backdrop-filter: blur(0.1px);
     pointer-events: none;
     z-index: 0;
@@ -2672,7 +2672,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 .promo-icon-circle {
     width: 68px;
     height: 68px;
-    border-radius: 50%;
+    border-radius: 40%;
     background: radial-gradient(circle at 30% 25%, #FFB3C6 0%, #C2185B 100%);
     border: 4px solid #C22918;
     box-shadow: 0 8px 18px rgba(194, 24, 91, 0.4), inset 0 0 15px rgba(255,255,255,0.5);
@@ -2687,7 +2687,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 }
 
 .promo-emoji {
-    font-size: 23px;
+    font-size: 27px;
     filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
 }
 
@@ -2930,7 +2930,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         </div>
         <div class="mining-counter under-snowman" id="miningRateText">0.00 ❄️/hr</div>
     </div>
-
     <div class="center-card">
         <div class="status-card">
             <span class="icon-small">❄️</span>
@@ -3392,21 +3391,22 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             </div>
         </div>
     </div>
-    <div class="profile-card">
-        <div class="stats-two-columns">
-            <div class="stat-col">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Active SnowMan</div>
-            </div>
-            <div class="stat-col">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Snow Balance</div>
-            </div>
+   <div class="profile-card">
+    <div class="stats-two-columns">
+        <div class="stat-col">
+            <div class="stat-value" id="profileSnowmanValue">0</div>
+            <div class="stat-label">Active SnowMan</div>
         </div>
-        <div class="mining-rate-center">
-            <span class="icon-small">❄️</span> <span>0/hr</span>
+        <div class="stat-col">
+            <div class="stat-value" id="profileSnowBalanceValue">0</div>
+            <div class="stat-label">Snow Balance</div>
         </div>
     </div>
+    <div class="mining-rate-center">
+        <span class="icon-small">❄️</span>
+        <span id="profileMiningRate">0.00 ❄️/hr</span>
+    </div>
+</div>
 </div>
 
 <div id="pvpScreen" class="pvp-screen" aria-hidden="true">
@@ -3563,7 +3563,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <script>
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
-
+    
     document.addEventListener('DOMContentLoaded', () => {
       const addTaskModal = document.getElementById('addTaskModal');
 const closeAddTaskModalBtn = document.getElementById('closeAddTaskModalBtn');
@@ -3577,13 +3577,20 @@ const taskTelegramLink = document.getElementById('taskTelegramLink');
         const marketScreen = document.getElementById('marketScreen');
         const friendsScreen = document.getElementById('friendsScreen');
         const profileScreen = document.getElementById('profileScreen');
+        
+const profileSnowmanValue = document.getElementById('profileSnowmanValue');
+const profileSnowBalanceValue = document.getElementById('profileSnowBalanceValue');
+const profileMiningRate = document.getElementById('profileMiningRate');
+const snowmanValue = document.getElementById('snowmanValue');
+const snowBalanceValue = document.getElementById('snowBalanceValue');
+const miningRateText = document.getElementById('miningRateText');
 
         const tasksNavBtn = document.getElementById('tasksNavBtn');
         const homeNavBtn = document.getElementById('homeNavBtn');
         const marketNavBtn = document.getElementById('marketNavBtn');
         const friendsNavBtn = document.getElementById('friendsNavBtn');
         const profileNavBtn = document.getElementById('profileNavBtn');
-
+        
         const floatingAddTaskBtn = document.getElementById('floatingAddTaskBtn');
 
         const mintModal = document.getElementById('mintModal');
@@ -4078,7 +4085,8 @@ if (applyPromoBtn) {
         if (promoModal) promoModal.style.display = 'none';
     });
 }
-   
+
+
    const HOUR_MS = 60 * 60 * 1000;
 
 const miningUI = {
@@ -4094,86 +4102,81 @@ const miningState = {
     snowBalance: 0,
     speedPerHour: 0,
     lastMinedAt: Date.now(),
-    nextRewardInMs: 0
+    nextRewardInMs: 0,
+    serverTimeOffsetMs: 0
 };
 
 function formatClock(ms) {
-    const safeMs = Math.max(0, ms);
-    const totalSeconds = Math.floor(safeMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-    }
-
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 function renderMiningUI() {
-    if (miningUI.snowman) {
-        miningUI.snowman.textContent = String(miningState.snowmanCount);
-    }
-
-    if (miningUI.snow) {
-        miningUI.snow.textContent = String(miningState.snowBalance);
-    }
-
-    if (miningUI.rate) {
-        miningUI.rate.textContent = `${Number(miningState.speedPerHour).toFixed(2)} ❄️/hr`;
-    }
+    const snowman = String(miningState.snowmanCount);
+    const snow = String(Math.floor(miningState.snowBalance));
+    const rate = `${Number(miningState.speedPerHour).toFixed(2)} ❄️/hr`;
+    
+    if (snowmanValue) snowmanValue.textContent = snowman;
+    if (snowBalanceValue) snowBalanceValue.textContent = snow;
+    if (miningRateText) miningRateText.textContent = rate;
+    
+    if (profileSnowmanValue) profileSnowmanValue.textContent = snowman;
+    if (profileSnowBalanceValue) profileSnowBalanceValue.textContent = snow;
+    if (profileMiningRate) profileMiningRate.textContent = rate;
 }
 
 function tickMiningTimer() {
     if (!miningUI.timer) return;
-
-    if (!miningState.lastMinedAt || miningState.speedPerHour <= 0) {
-        miningUI.timer.textContent = '00:00';
-        return;
-    }
-
-    const elapsed = Date.now() - miningState.lastMinedAt;
-    const remainder = elapsed % HOUR_MS;
-    const remaining = HOUR_MS - remainder;
-
+    
+    const syncedNow = Date.now() + (miningState.serverTimeOffsetMs || 0);
+    const msIntoHour = syncedNow % HOUR_MS;
+    const remaining = HOUR_MS - msIntoHour;
+    
     miningUI.timer.textContent = formatClock(remaining);
 }
 
 async function loadMiningState() {
-let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-// Fallback for browser testing
-if (!tgUser) {
-    tgUser = {
-        id: 12345, // استخدم رقماً هنا بدلاً من النص
-        username: "browser_user",
-        first_name: "Browser",
-        last_name: "User"
-    };
-}
-
+    let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    
+    if (!tgUser) {
+        tgUser = {
+            id: 12345,
+            username: "browser_user",
+            first_name: "Browser",
+            last_name: "User"
+        };
+    }
+    
     const params = new URLSearchParams({
         user_id: String(tgUser.id),
         username: tgUser.username || '',
         display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
     });
-
+    
     const response = await fetch(`${API_BASE}/api/me?${params.toString()}`);
     if (!response.ok) {
         throw new Error(`Mining state request failed: ${response.status}`);
     }
-
+    
     const data = await response.json();
+    console.log("Mining loaded", data);
+    
+    miningState.serverTimeOffsetMs = Number(data.server_time || Date.now()) - Date.now();
+    
     const user = data.user || {};
-
+    console.log("snowman_count", user.snowman_count);
+    console.log("snow_balance", user.snow_balance);
+    console.log("speed_per_hour", user.speed_per_hour);
+    
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
     miningState.snowBalance = user.snow_balance || 0;
     miningState.speedPerHour = user.speed_per_hour || 0;
     miningState.lastMinedAt = user.last_mined_at || Date.now();
     miningState.nextRewardInMs = user.next_reward_in_ms || 0;
-
+    
     renderMiningUI();
     tickMiningTimer();
 }
@@ -4184,10 +4187,12 @@ loadMiningState().catch((error) => {
     tickMiningTimer();
 });
 
-setInterval(tickMiningTimer, 1000); 
-    
-        showHomeScreen();
-    });
+setInterval(() => {
+    tickMiningTimer();
+}, 1000);
+
+showHomeScreen();
+});
 
 </script>
 </body>
