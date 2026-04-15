@@ -174,10 +174,84 @@ export default {
       return new Response("ok");
     }
 
-    if (url.pathname === "/api/status") {
-      return json({ status: "ok", message: "SnowmanBot API is running" });
-    }
+    if (url.pathname === "/api/status" && request.method === "GET") {
+  return json({ status: "ok", message: "SnowmanBot API is running" });
+}
 
+if (url.pathname === "/api/hatch" && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const userId = Number(body.user_id);
+        const baseAmount = Math.floor(Number(body.amount));
+        const username = body.username || null;
+        const displayName = body.display_name || null;
+
+        if (!userId || isNaN(userId) || userId <= 0) {
+          return json({ error: "Invalid user_id." }, 400);
+        }
+
+        if (!Number.isFinite(baseAmount) || baseAmount < 100) {
+          return json({ error: "Minimum hatch amount is 100." }, 400);
+        }
+
+        const settled = await settleUserMining(env, userId, username, displayName);
+        const user = settled.user;
+
+        const fee = Math.ceil(baseAmount * 0.10);
+        const total = baseAmount + fee;
+        const result = await env.DB
+  .prepare(
+    `UPDATE users
+     SET snow_balance = snow_balance - ?,
+         snowman_count = snowman_count + ?,
+         updated_at = ?
+     WHERE user_id = ? AND snow_balance >= ?`
+  )
+  .bind(total, baseAmount, now, userId, total)
+  .run();
+
+if (result.meta.changes === 0) {
+  return json({ error: "Not enough Snow." }, 400);
+}
+
+        const now = Date.now();
+
+        await env.DB
+          .prepare(
+            `UPDATE users
+             SET snow_balance = snow_balance - ?,
+                 snowman_count = snowman_count + ?,
+                 updated_at = ?
+             WHERE user_id = ?`
+          )
+          .bind(total, baseAmount, now, userId)
+          .run();
+
+        const updatedUser = await getUser(env, userId);
+
+        return json({
+          ok: true,
+          user: {
+            user_id: Number(updatedUser.user_id),
+            username: updatedUser.username || null,
+            display_name: updatedUser.display_name || null,
+            snow_balance: Number(updatedUser.snow_balance || 0),
+            snowman_count: Number(updatedUser.snowman_count || 0),
+            mining_boost: Number(updatedUser.mining_boost || 1),
+            last_mined_at: Number(updatedUser.last_mined_at || 0),
+            updated_at: Number(updatedUser.updated_at || 0)
+          },
+          hatch: {
+            amount: baseAmount,
+            fee,
+            total
+          }
+        });
+      } catch (error) {
+        return json({ error: error.message }, 500);
+      }
+    }
+    
     if (url.pathname === "/api/me" && request.method === "GET") {
       const userIdParam = url.searchParams.get("user_id");
       const userId = Number(userIdParam);
