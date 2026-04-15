@@ -3386,8 +3386,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div class="profile-name-row">
             <div class="avatar">👤</div>
             <div class="name-details">
-                <div class="display-name">Name</div>
-                <div class="username">@Username</div>
+                <div class="display-name" id="profileDisplayName">Name</div>
+<div class="username" id="profileUsername">@Username</div>
             </div>
         </div>
     </div>
@@ -4226,6 +4226,8 @@ const miningUI = {
 
 const miningState = {
     userId: null,
+    displayName: null,
+    username: null,
     snowmanCount: 0,
     snowBalance: 0,
     speedPerHour: 0,
@@ -4253,6 +4255,11 @@ function renderMiningUI() {
     if (profileSnowmanValue) profileSnowmanValue.textContent = snowman;
     if (profileSnowBalanceValue) profileSnowBalanceValue.textContent = snow;
     if (profileMiningRate) profileMiningRate.textContent = rate;
+
+    const nameEl = document.getElementById('profileDisplayName');
+    const userEl = document.getElementById('profileUsername');
+    if (nameEl && miningState.displayName) nameEl.textContent = miningState.displayName;
+    if (userEl && miningState.username) userEl.textContent = '@' + miningState.username;
 }
 
 function tickMiningTimer() {
@@ -4300,6 +4307,8 @@ async function loadMiningState() {
     
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
+    miningState.displayName = user.display_name || tgUser.first_name || 'Player';
+    miningState.username = user.username || tgUser.username || '';
     miningState.snowBalance = user.snow_balance || 0;
     miningState.speedPerHour = user.speed_per_hour || 0;
     miningState.lastMinedAt = user.last_mined_at || Date.now();
