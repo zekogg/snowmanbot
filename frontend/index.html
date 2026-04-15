@@ -3183,9 +3183,9 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div class="hatch-input-section">
             <div class="input-label-row">
                 <span>❄️ Snow to Hatch</span>
-                <span>max. 0</span>
+                <span id="hatchMaxText">max. 0</span>
             </div>
-            <input type="number" class="hatch-input" placeholder="Enter amount (min. 100)">
+            <input type="number" class="hatch-input" id="hatchAmountInput" placeholder="Enter amount (min. 100)">
         </div>
         <div class="pct-btn-row">
             <button class="pct-btn" type="button">25%</button>
@@ -3197,9 +3197,9 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             ❄️ Available: <span id="hatch-avail-snowflakes">0</span> snowflakes
         </div>
         <ul class="calc-list">
-            <li class="calc-item"><span>Base Snowflakes</span><span>-</span></li>
-            <li class="calc-item"><span>Craft fee (6%)</span><span>-</span></li>
-            <li class="calc-item total"><span>❄️ Total required</span><span>-</span></li>
+            <li class="calc-item"><span>Base Snowflakes</span><span id="hatchBaseValue">-</span></li>
+            <li class="calc-item"><span>Craft fee (10%)</span><span id="hatchFeeValue">-</span></li>
+            <li class="calc-item total"><span>❄️ Total required</span><span id="hatchTotalValue">-</span></li>
         </ul>
         <button class="final-hatch-btn" type="button">Hatch ❄️</button>
     </div>
@@ -3520,7 +3520,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
         <div class="task-modal-field">
             <label>Telegram Link</label>
-            <input type="text" id="taskTelegramLink" placeholder="https://t.me/yourchannel">
+            <input type="text" id="taskTelegramLink" placeholder="https://t.me/yourlink">
         </div>
 
         <div class="task-modal-field">
@@ -3601,6 +3601,18 @@ const miningRateText = document.getElementById('miningRateText');
 
         const openHatchBtn = document.getElementById('openHatchBtn');
         const closeHatchBtn = document.getElementById('closeHatchBtn');
+        
+const HATCH_FEE_RATE = 0.10;
+const MIN_HATCH_AMOUNT = 100;
+
+const hatchAmountInput = document.getElementById('hatchAmountInput');
+const hatchMaxText = document.getElementById('hatchMaxText');
+const hatchAvailSnowflakes = document.getElementById('hatch-avail-snowflakes');
+const hatchBaseValue = document.getElementById('hatchBaseValue');
+const hatchFeeValue = document.getElementById('hatchFeeValue');
+const hatchTotalValue = document.getElementById('hatchTotalValue');
+const hatchPctBtns = document.querySelectorAll('.pct-btn');
+const finalHatchBtn = document.querySelector('.final-hatch-btn');
 
         const submitChannelBtn = document.getElementById('submitChannelBtn');
         const channelLinkInput = document.getElementById('channelLinkInput');
@@ -3938,10 +3950,126 @@ updateTaskTotal();
             });
         }
 
-        openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
-        closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
-        openHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'flex');
-        closeHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'none');
+        function getHatchAvailableSnowflakes() {
+    return Math.max(0, Math.floor(Number(miningState.snowBalance || 0)));
+}
+
+function formatHatchValue(value) {
+    return Number.isFinite(value) ? String(Math.floor(value)) : '-';
+}
+
+function updateHatchUI() {
+    const available = getHatchAvailableSnowflakes();
+    const rawAmount = parseInt(hatchAmountInput?.value || '0', 10);
+    const amount = Number.isFinite(rawAmount) && rawAmount >= MIN_HATCH_AMOUNT ? rawAmount : 0;
+    const fee = amount > 0 ? Math.ceil(amount * HATCH_FEE_RATE) : 0;
+    const total = amount > 0 ? amount + fee : 0;
+    
+    if (hatchMaxText) hatchMaxText.textContent = `max. ${available}`;
+    if (hatchAvailSnowflakes) hatchAvailSnowflakes.textContent = String(available);
+    if (hatchBaseValue) hatchBaseValue.textContent = amount > 0 ? formatHatchValue(amount) : '-';
+    if (hatchFeeValue) hatchFeeValue.textContent = amount > 0 ? formatHatchValue(fee) : '-';
+    if (hatchTotalValue) hatchTotalValue.textContent = amount > 0 ? formatHatchValue(total) : '-';
+}
+
+function setHatchAmount(amount) {
+    const available = getHatchAvailableSnowflakes();
+    const safeAmount = Math.max(0, Math.min(Math.floor(amount), available));
+    
+    if (hatchAmountInput) {
+        hatchAmountInput.value = String(safeAmount);
+    }
+    
+    updateHatchUI();
+}
+
+async function submitHatch() {
+    const userId = miningState.userId;
+    const baseAmount = parseInt(hatchAmountInput?.value || '0', 10);
+    
+    if (!userId) {
+        alert('User is not loaded yet.');
+        return;
+    }
+    
+    if (!Number.isFinite(baseAmount) || baseAmount < MIN_HATCH_AMOUNT) {
+        alert('Minimum amount is 100.');
+        return;
+    }
+    
+    const available = getHatchAvailableSnowflakes();
+    const fee = Math.ceil(baseAmount * HATCH_FEE_RATE);
+    const total = baseAmount + fee;
+    
+    if (total > available) {
+        alert('Not enough Snow.');
+        return;
+    }
+    
+    const response = await fetch(`${API_BASE}/api/hatch`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            amount: baseAmount,
+            username: miningState.username || '',
+            display_name: miningState.displayName || ''
+        })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+        alert(data.error || 'Hatch failed.');
+        return;
+    }
+    
+    miningState.snowBalance = data.user?.snow_balance || 0;
+    miningState.snowmanCount = data.user?.snowman_count || 0;
+    
+    renderMiningUI();
+    updateHatchUI();
+    
+    alert(`Hatched successfully: ${baseAmount} snowflakes`);
+    if (hatchModal) hatchModal.style.display = 'none';
+}
+
+openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
+closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
+
+openHatchBtn?.addEventListener('click', () => {
+    if (hatchModal) hatchModal.style.display = 'flex';
+    updateHatchUI();
+});
+
+closeHatchBtn?.addEventListener('click', () => hatchModal.style.display = 'none');
+
+hatchAmountInput?.addEventListener('input', updateHatchUI);
+
+hatchPctBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const available = getHatchAvailableSnowflakes();
+        const label = btn.textContent.trim();
+        let amount = 0;
+
+        if (label === 'MAX') {
+            amount = available;
+        } else {
+            const percent = parseInt(label, 10) / 100;
+            amount = Math.floor(available * percent);
+        }
+
+        if (amount > 0 && amount < MIN_HATCH_AMOUNT) {
+            amount = MIN_HATCH_AMOUNT;
+        }
+
+        setHatchAmount(amount);
+    });
+});
+
+finalHatchBtn?.addEventListener('click', submitHatch);
 
         window.addEventListener('click', (event) => {
             if (event.target === mintModal) mintModal.style.display = 'none';
@@ -4184,6 +4312,7 @@ async function loadMiningState() {
 loadMiningState().catch((error) => {
     console.error(error);
     renderMiningUI();
+   updateHatchUI();
     tickMiningTimer();
 });
 
