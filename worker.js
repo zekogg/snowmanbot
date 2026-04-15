@@ -199,7 +199,9 @@ if (url.pathname === "/api/hatch" && request.method === "POST") {
 
         const fee = Math.ceil(baseAmount * 0.10);
         const total = baseAmount + fee;
-        const result = await env.DB
+        const now = Date.now();
+
+const result = await env.DB
   .prepare(
     `UPDATE users
      SET snow_balance = snow_balance - ?,
@@ -213,19 +215,6 @@ if (url.pathname === "/api/hatch" && request.method === "POST") {
 if (result.meta.changes === 0) {
   return json({ error: "Not enough Snow." }, 400);
 }
-
-        const now = Date.now();
-
-        await env.DB
-          .prepare(
-            `UPDATE users
-             SET snow_balance = snow_balance - ?,
-                 snowman_count = snowman_count + ?,
-                 updated_at = ?
-             WHERE user_id = ?`
-          )
-          .bind(total, baseAmount, now, userId)
-          .run();
 
         const updatedUser = await getUser(env, userId);
 
