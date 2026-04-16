@@ -600,8 +600,18 @@ if (url.pathname === "/api/tasks/submit-channel" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/tasks/list" && request.method === "GET") {
+  const userId = Number(url.searchParams.get("user_id"));
   const tasks = await getOnlineTasks(env);
-  return json({ tasks: tasks.results || [] });
+  
+  let completedIds = [];
+  if (userId) {
+    const completions = await env.DB.prepare(
+      `SELECT task_id FROM task_completions WHERE user_id = ?`
+    ).bind(userId).all();
+    completedIds = (completions.results || []).map(r => r.task_id);
+  }
+  
+  return json({ tasks: tasks.results || [], completed_ids: completedIds });
 }
 
 if (url.pathname === "/api/tasks/history" && request.method === "GET") {
