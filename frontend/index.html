@@ -4204,7 +4204,7 @@ async function submitHatch() {
     if (hatchModal) hatchModal.style.display = 'none';
 }
 
-function renderTaskFeed(tasks) {
+function renderTaskFeed(tasks, completedIds = []) {
     if (!taskFeed) return;
     
     taskFeed.innerHTML = '';
@@ -4221,7 +4221,10 @@ function renderTaskFeed(tasks) {
                     <div class="task-meta">+2 ☃️</div>
                 </div>
             </div>
-            <button class="task-join-btn" type="button" data-task-id="${task.task_id}">Join</button>
+            <button class="task-join-btn" type="button" data-task-id="${task.task_id}" 
+  ${completedIds.includes(task.task_id) ? 'disabled style="opacity:0.5"' : ''}>
+  ${completedIds.includes(task.task_id) ? 'Done' : 'Join'}
+</button>
         `;
         
         const joinBtn = card.querySelector('.task-join-btn');
@@ -4233,9 +4236,12 @@ function renderTaskFeed(tasks) {
 
 async function loadTaskFeed() {
     try {
-        const response = await fetch(`${API_BASE}/api/tasks/list`);
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const userId = tgUser?.id || 12345;
+        
+        const response = await fetch(`${API_BASE}/api/tasks/list?user_id=${userId}`);
         const data = await response.json();
-        renderTaskFeed(data.tasks || []);
+        renderTaskFeed(data.tasks || [], data.completed_ids || []);
     } catch (error) {
         console.error(error);
     }
@@ -4280,6 +4286,8 @@ function startTaskJoin(task, button) {
     if (!button || button.dataset.running === '1') return;
     button.dataset.running = '1';
     button.textContent = '4';
+    
+    window.open(task.link, '_blank'); // ← هذا السطر الجديد
     
     let remaining = 4;
     const timer = setInterval(async () => {
