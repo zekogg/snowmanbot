@@ -453,7 +453,6 @@ async function settleUserMining(env, userId, username = null, displayName = null
   let user = await createUserIfMissing(env, userId, username, displayName);
   const now = Date.now();
   const computed = computeMiningState(user, now);  
-}
 
   if (computed.earnedNow > 0) {
     await env.DB
