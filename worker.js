@@ -27,6 +27,8 @@ async function ensureSchema(env) {
       last_mined_at INTEGER NOT NULL DEFAULT 0,
       updated_at INTEGER NOT NULL DEFAULT 0
     );
+  `);
+}
     
     CREATE TABLE IF NOT EXISTS tasks (
       task_id INTEGER PRIMARY KEY AUTOINCREMENT,
