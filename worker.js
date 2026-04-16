@@ -26,8 +26,10 @@ async function ensureSchema(env) {
       mining_boost REAL NOT NULL DEFAULT 1,
       last_mined_at INTEGER NOT NULL DEFAULT 0,
       updated_at INTEGER NOT NULL DEFAULT 0
-    );
+    )
+  `);
 
+  await env.DB.exec(`
     CREATE TABLE IF NOT EXISTS tasks (
       task_id INTEGER PRIMARY KEY AUTOINCREMENT,
       creator_user_id INTEGER NOT NULL,
@@ -44,15 +46,17 @@ async function ensureSchema(env) {
       approved_at INTEGER,
       published_at INTEGER,
       rejected_at INTEGER
-    );
+    )
+  `);
 
+  await env.DB.exec(`
     CREATE TABLE IF NOT EXISTS task_completions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       task_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
       completed_at INTEGER NOT NULL,
       UNIQUE(task_id, user_id)
-    );
+    )
   `);
 }
 
