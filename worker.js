@@ -347,8 +347,33 @@ async function handleTaskComplete(env, body) {
   }
 
   const task = await getTask(env, taskId);
-  if (!task || task.status !== "online") {
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.status !== "online") {
     throw new Error("Task is not online");
+  }
+
+  const currentCountRow = await env.DB
+    .prepare(`SELECT COUNT(*) AS total FROM task_completions WHERE task_id = ?`)
+    .bind(taskId)
+    .first();
+
+  const currentCount = Number(currentCountRow?.total || 0);
+  const limit = Number(task.completion_limit || 1);
+
+  if (currentCount >= limit) {
+    await env.DB
+      .prepare(
+        `UPDATE tasks
+         SET status = 'completed'
+         WHERE task_id = ? AND status = 'online'`
+      )
+      .bind(taskId)
+      .run();
+
+    return { success: false, full: true };
   }
 
   await createUserIfMissing(env, userId);
@@ -375,15 +400,28 @@ async function handleTaskComplete(env, body) {
     .bind(Date.now(), userId)
     .run();
 
-  const count = await env.DB
+  const afterCountRow = await env.DB
     .prepare(`SELECT COUNT(*) AS total FROM task_completions WHERE task_id = ?`)
     .bind(taskId)
     .first();
 
+  const afterCount = Number(afterCountRow?.total || 0);
+
+  if (afterCount >= limit) {
+    await env.DB
+      .prepare(
+        `UPDATE tasks
+         SET status = 'completed'
+         WHERE task_id = ? AND status = 'online'`
+      )
+      .bind(taskId)
+      .run();
+  }
+
   return {
     success: true,
     reward: 2,
-    completions: Number(count?.total || 0)
+    completions: afterCount
   };
 }
 
@@ -411,13 +449,12 @@ function computeMiningState(user, now = Date.now()) {
 }
 
 async function settleUserMining(env, userId, username = null, displayName = null) {
-  // قم بإزالة أو تعطيل السطر التالي بوضع // قبله
-  // await ensureSchema(env); 
+  await ensureSchema(env);
   let user = await createUserIfMissing(env, userId, username, displayName);
   const now = Date.now();
-// بقية الكود كما هو...
   const computed = computeMiningState(user, now);
-
+  ...
+}
   if (computed.earnedNow > 0) {
     await env.DB
       .prepare(
