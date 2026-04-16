@@ -6,9 +6,9 @@
     <title>SnowMan Empire Mini App</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script>
-  if (window.TelegramWebviewProxy || navigator.userAgent.includes('Telegram')) {
-    document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
-  }
+    if (window.TelegramWebviewProxy || navigator.userAgent.includes('Telegram')) {
+        document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
+    }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>
@@ -872,6 +872,112 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     justify-content: center;
     background: rgba(255, 255, 255, 0.16);
     font-size: 20px;
+}
+
+.task-history-btn {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+    z-index: 980;
+}
+
+.task-history-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+}
+
+.task-history-card {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(10, 24, 40, 0.98), rgba(4, 12, 22, 0.98));
+    border: 2px solid rgba(74, 163, 255, 0.35);
+    border-radius: 28px;
+    padding: 20px 16px 16px;
+    position: relative;
+}
+
+.task-history-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.task-history-title {
+    margin-bottom: 14px;
+    font-size: 24px;
+    font-weight: 900;
+    color: #ffffff;
+    text-align: center;
+}
+
+.task-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task-history-item {
+    background: rgba(60, 199, 255, 0.08);
+    border: 1px solid rgba(60, 199, 255, 0.18);
+    border-radius: 18px;
+    padding: 12px;
+}
+
+.task-history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.task-history-status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.10);
+    text-transform: uppercase;
+}
+
+.task-history-bar {
+    margin-top: 10px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.10);
+    overflow: hidden;
+}
+
+.task-history-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
 }
 
 .market-title-row {
@@ -3212,9 +3318,12 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <!-- ===== الشاشات المنبثقة (تم إضافة كلاس screen-overlay) ===== -->
 <div id="tasksScreen" class="tasks-screen screen-overlay" aria-hidden="true">
+    <button id="taskHistoryBtn" class="task-history-btn" type="button">⏱</button>
+    
     <div class="tasks-top">
         <div class="tasks-title">Tasks</div>
     </div>
+    
     <div class="channel-submit-card">
         <div class="channel-submit-text">
             Have a Telegram channel?<br>
@@ -3223,22 +3332,21 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
         <button class="submit-channel-btn" id="submitChannelBtn" type="button">Submit Channel</button>
     </div>
-    <div class="task-list">
-        <div class="task-card">
-            <div class="task-left">
-                <div class="task-emoji">📣</div>
-                <div>
-                    <div class="task-name">Join Our Channel</div>
-                    <div class="task-meta">+5 ☃️</div>
-                </div>
-            </div>
-            <button class="task-join-btn" type="button">Join</button>
-        </div>
-    </div>
+    
+    <div class="task-list" id="taskFeed"></div>
+    
     <button id="floatingAddTaskBtn" class="floating-add-task" type="button">
         <span class="plus">+</span>
         <span>Add a Task</span>
     </button>
+</div>
+
+<div id="taskHistoryModal" class="task-history-modal">
+    <div class="task-history-card">
+        <button class="task-history-close" id="closeTaskHistoryBtn" type="button">×</button>
+        <div class="task-history-title">Task History</div>
+        <div id="taskHistoryList" class="task-history-list"></div>
+    </div>
 </div>
 
 <div id="marketScreen" class="market-screen screen-overlay" aria-hidden="true">
@@ -3577,6 +3685,11 @@ const taskTargetUsers = document.getElementById('taskTargetUsers');
 const taskTotalCost = document.getElementById('taskTotalCost');
 const taskPresetBtns = document.querySelectorAll('.task-preset-btn');
 const taskTelegramLink = document.getElementById('taskTelegramLink');
+const taskFeed = document.getElementById('taskFeed');
+const taskHistoryBtn = document.getElementById('taskHistoryBtn');
+const taskHistoryModal = document.getElementById('taskHistoryModal');
+const closeTaskHistoryBtn = document.getElementById('closeTaskHistoryBtn');
+const taskHistoryList = document.getElementById('taskHistoryList');
 
         const tasksScreen = document.getElementById('tasksScreen');
         const marketScreen = document.getElementById('marketScreen');
@@ -3922,37 +4035,87 @@ window.addEventListener('click', (event) => {
     if (event.target === addTaskModal) addTaskModal.style.display = 'none';
 });
 
-confirmCreateTaskBtn?.addEventListener('click', () => {
+confirmCreateTaskBtn?.addEventListener('click', async () => {
     const link = taskTelegramLink?.value.trim();
-    const users = Math.max(100, parseInt(taskTargetUsers?.value || '100', 10) || 100);
-
+    const users = Math.max(30, parseInt(taskTargetUsers?.value || '30', 10) || 30);
+    
     if (!link) {
         alert('Please enter Telegram link');
         return;
     }
-
-    console.log('Create task:', { link, users });
-
-    alert('Task created');
-    if (addTaskModal) addTaskModal.style.display = 'none';
-    if (taskTelegramLink) taskTelegramLink.value = '';
-    if (taskTargetUsers) taskTargetUsers.value = '100';
-    updateTaskTotal();
+    
+    try {
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const userId = tgUser?.id || 12345;
+        
+        const response = await fetch(`${API_BASE}/api/tasks/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                link,
+                target_users: users,
+                source_type: 'add_task'
+            })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+            alert(data.error || 'Failed to create task');
+            return;
+        }
+        
+        alert('Under review');
+        if (addTaskModal) addTaskModal.style.display = 'none';
+        if (taskTelegramLink) taskTelegramLink.value = '';
+        if (taskTargetUsers) taskTargetUsers.value = '100';
+        updateTaskTotal();
+        loadTaskFeed();
+        loadTaskHistory();
+    } catch (error) {
+        console.error(error);
+        alert('Failed to create task');
+    }
 });
 
-updateTaskTotal();
-
         if (submitChannelBtn && channelLinkInput) {
-            submitChannelBtn.addEventListener('click', () => {
-                const channelUrl = channelLinkInput.value.trim();
-                if (!channelUrl) {
-                    alert('Please enter your Telegram channel link');
-                    return;
-                }
-                console.log('Channel submitted:', channelUrl);
-                alert('Channel submitted for review!');
-                channelLinkInput.value = '';
-            });
+            submitChannelBtn?.addEventListener('click', async () => {
+    const channelUrl = channelLinkInput.value.trim();
+    if (!channelUrl) {
+        alert('Please enter your Telegram channel link');
+        return;
+    }
+    
+    try {
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const userId = tgUser?.id || 12345;
+        
+        const response = await fetch(`${API_BASE}/api/tasks/submit-channel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                link: channelUrl,
+                target_users: 250,
+                source_type: 'submit_channel'
+            })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+            alert(data.error || 'Failed to submit channel');
+            return;
+        }
+        
+        alert('Under review');
+        channelLinkInput.value = '';
+        loadTaskFeed();
+        loadTaskHistory();
+    } catch (error) {
+        console.error(error);
+        alert('Failed to submit channel');
+    }
+});
         }
 
         function getHatchAvailableSnowflakes() {
@@ -4039,6 +4202,127 @@ async function submitHatch() {
     
     alert(`Hatched successfully: ${baseAmount} snowflakes`);
     if (hatchModal) hatchModal.style.display = 'none';
+}
+
+function renderTaskFeed(tasks) {
+    if (!taskFeed) return;
+    
+    taskFeed.innerHTML = '';
+    
+    tasks.forEach((task) => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        
+        card.innerHTML = `
+            <div class="task-left">
+                <div class="task-emoji">📣</div>
+                <div>
+                    <div class="task-name">${task.title}</div>
+                    <div class="task-meta">+2 ☃️</div>
+                </div>
+            </div>
+            <button class="task-join-btn" type="button" data-task-id="${task.task_id}">Join</button>
+        `;
+        
+        const joinBtn = card.querySelector('.task-join-btn');
+        joinBtn.addEventListener('click', () => startTaskJoin(task, joinBtn));
+        
+        taskFeed.appendChild(card);
+    });
+}
+
+async function loadTaskFeed() {
+    try {
+        const response = await fetch(`${API_BASE}/api/tasks/list`);
+        const data = await response.json();
+        renderTaskFeed(data.tasks || []);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function loadTaskHistory() {
+    try {
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const userId = tgUser?.id || 12345;
+        
+        const response = await fetch(`${API_BASE}/api/tasks/history?user_id=${userId}`);
+        const data = await response.json();
+        
+        if (!taskHistoryList) return;
+        taskHistoryList.innerHTML = '';
+        
+        (data.tasks || []).forEach((task) => {
+            const total = Number(task.target_users || 1);
+            const status = task.status || 'under_review';
+            const done = status === 'online' ? Math.min(total, Number(task.completions || 0)) : 0;
+            const percent = total > 0 ? Math.min(100, (done / total) * 100) : 0;
+            
+            const item = document.createElement('div');
+            item.className = 'task-history-item';
+            item.innerHTML = `
+                <div class="task-history-row">
+                    <div>${task.title}</div>
+                    <div class="task-history-status">${status.replace('_', ' ')}</div>
+                </div>
+                <div class="task-history-bar">
+                    <div class="task-history-bar-fill" style="width:${percent}%"></div>
+                </div>
+            `;
+            taskHistoryList.appendChild(item);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function startTaskJoin(task, button) {
+    if (!button || button.dataset.running === '1') return;
+    button.dataset.running = '1';
+    button.textContent = '4';
+    
+    let remaining = 4;
+    const timer = setInterval(async () => {
+        remaining -= 1;
+        if (remaining > 0) {
+            button.textContent = String(remaining);
+            return;
+        }
+        
+        clearInterval(timer);
+        
+        try {
+            const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const userId = tgUser?.id || 12345;
+            
+            const response = await fetch(`${API_BASE}/api/tasks/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: userId,
+                    task_id: task.task_id
+                })
+            });
+            
+            const data = await response.json();
+            if (!response.ok || data.already_done) {
+                button.textContent = 'Done';
+                button.style.opacity = '0.5';
+                button.disabled = true;
+                return;
+            }
+            
+            button.textContent = 'Done';
+            button.style.opacity = '0.5';
+            button.disabled = true;
+            
+            await loadMiningState();
+        } catch (error) {
+            console.error(error);
+            button.dataset.running = '0';
+            button.textContent = 'Join';
+        }
+    }, 1000);
 }
 
 openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
@@ -4333,6 +4617,24 @@ loadMiningState().catch((error) => {
 setInterval(() => {
     tickMiningTimer();
 }, 1000);
+
+loadTaskFeed();
+loadTaskHistory();
+
+taskHistoryBtn?.addEventListener('click', () => {
+    if (taskHistoryModal) taskHistoryModal.style.display = 'flex';
+    loadTaskHistory();
+});
+
+closeTaskHistoryBtn?.addEventListener('click', () => {
+    if (taskHistoryModal) taskHistoryModal.style.display = 'none';
+});
+
+taskHistoryModal?.addEventListener('click', (event) => {
+    if (event.target === taskHistoryModal) {
+        taskHistoryModal.style.display = 'none';
+    }
+});
 
 showHomeScreen();
 });
