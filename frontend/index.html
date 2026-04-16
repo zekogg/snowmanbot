@@ -4272,9 +4272,8 @@ async function loadTaskHistory() {
             item.innerHTML = `
                 <div class="task-history-row">
                     <div>${task.title}</div>
-                    <div class="task-history-status">
-  ${status.replace('_', ' ')}
-  ${status === 'online' ? `<span style="font-size:11px; background:rgba(60,199,255,0.2); padding:2px 7px; border-radius:10px; margin-left:6px;">
+                    <div class="task-history-status" style="font-size:11px;">${status.replace('_', ' ')}</div>
+${status === 'online' ? `<span style="font-size:9px; background:rgba(60,199,255,0.2); padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle;">
     ${task.completion_limit - (task.completion_count || 0)} left
   </span>` : ''}
 </div>
