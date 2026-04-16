@@ -27,9 +27,7 @@ async function ensureSchema(env) {
       last_mined_at INTEGER NOT NULL DEFAULT 0,
       updated_at INTEGER NOT NULL DEFAULT 0
     );
-  `);
-}
-    
+
     CREATE TABLE IF NOT EXISTS tasks (
       task_id INTEGER PRIMARY KEY AUTOINCREMENT,
       creator_user_id INTEGER NOT NULL,
@@ -47,7 +45,7 @@ async function ensureSchema(env) {
       published_at INTEGER,
       rejected_at INTEGER
     );
-    
+
     CREATE TABLE IF NOT EXISTS task_completions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       task_id INTEGER NOT NULL,
