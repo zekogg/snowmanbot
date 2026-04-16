@@ -793,6 +793,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     flex-direction: column;
     gap: 14px;
     width: 100%;
+    overflow-y: auto;
+    max-height: calc(100dvh - 280px);
 }
 
 .task-left {
@@ -4269,7 +4271,12 @@ async function loadTaskHistory() {
             item.innerHTML = `
                 <div class="task-history-row">
                     <div>${task.title}</div>
-                    <div class="task-history-status">${status.replace('_', ' ')}</div>
+                    <div class="task-history-status">
+  ${status.replace('_', ' ')}
+  ${status === 'online' ? `<span style="font-size:11px; background:rgba(60,199,255,0.2); padding:2px 7px; border-radius:10px; margin-left:6px;">
+    ${task.completion_limit - (task.completion_count || 0)} left
+  </span>` : ''}
+</div>
                 </div>
                 <div class="task-history-bar">
                     <div class="task-history-bar-fill" style="width:${percent}%"></div>
