@@ -15,7 +15,6 @@ function json(data, status = 200) {
   });
 }
 
-async fetch(request, env) {
 async function ensureSchema(env) {
   await env.DB.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -40,7 +39,7 @@ async function ensureSchema(env) {
       reward_snow REAL NOT NULL DEFAULT 2,
       completion_limit INTEGER NOT NULL DEFAULT 1,
       status TEXT NOT NULL DEFAULT 'under_review',
-      channel_message_id TEXT,
+      channel_message_id INTEGER,
       created_at INTEGER NOT NULL,
       approved_at INTEGER,
       published_at INTEGER,
