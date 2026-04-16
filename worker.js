@@ -39,7 +39,7 @@ async function ensureSchema(env) {
       reward_snow REAL NOT NULL DEFAULT 2,
       completion_limit INTEGER NOT NULL DEFAULT 1,
       status TEXT NOT NULL DEFAULT 'under_review',
-      channel_message_id INTEGER,
+      channel_message_id TEXT,
       created_at INTEGER NOT NULL,
       approved_at INTEGER,
       published_at INTEGER,
