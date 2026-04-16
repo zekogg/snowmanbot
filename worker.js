@@ -15,6 +15,7 @@ function json(data, status = 200) {
   });
 }
 
+async fetch(request, env) {
 async function ensureSchema(env) {
   await env.DB.exec(`
     CREATE TABLE IF NOT EXISTS users (
