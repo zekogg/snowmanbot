@@ -10,6 +10,7 @@
         document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
     }
 </script>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         if (window.eruda) {
@@ -2567,6 +2568,15 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     cursor: pointer;
 }
 
+.deposit-main-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #3CC7FF, #129FDF);
+    color: white;
+    font-weight: 900;
+    font-size: 22px;
+    border-color: rgba(60, 199, 255, 0.5);
+}
+
 .transfer-wallet-btn {
     width: 100%;
     height: 58px;
@@ -3196,43 +3206,43 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         </div>
 
         <div class="transfer-panel active" id="depositPanel">
-            <div class="transfer-title">Enter Amount</div>
+    <div class="transfer-title">Enter Amount (TON)</div>
 
-            <input class="transfer-amount-input" type="number" value="0.00" min="0" step="0.01">
+    <input class="transfer-amount-input" id="depositAmountInput" type="number" value="1" min="0.1" step="0.1">
 
-            <div class="transfer-quick-row">
-                <button class="transfer-quick-btn" type="button">0.5</button>
-                <button class="transfer-quick-btn" type="button">1</button>
-                <button class="transfer-quick-btn" type="button">2</button>
-                <button class="transfer-quick-btn" type="button">5</button>
-                <button class="transfer-quick-btn" type="button">10</button>
-            </div>
+    <div class="transfer-quick-row">
+        <button class="transfer-quick-btn deposit-main-btn" id="depositActionBtn"
+          type="button" style="display:block; margin:0 auto; width:100%;">Deposit</button>
+    </div>
 
-            <div class="transfer-section">
-                <div class="transfer-section-title">Payment Method</div>
-                <button class="transfer-wallet-btn" type="button">Connect Wallet</button>
+    <div id="depositStatusMsg" style="text-align:center; font-size:13px; color:#7ee6ff; min-height:18px; margin:6px 0;"></div>
 
-                <div class="transfer-copy-box">
-                    <div class="transfer-copy-label">or (Manual) Deposit Address</div>
-                    <div class="transfer-copy-row">
-                        <input class="transfer-copy-input" id="depositAddressValue" type="text" value="0" readonly>
-                        <button class="transfer-copy-btn" type="button" data-copy-target="depositAddressValue">Copy</button>
-                    </div>
-                </div>
+    <div class="transfer-section">
+        <div class="transfer-section-title">Payment Method</div>
+        <button class="transfer-wallet-btn" id="connectWalletBtn" type="button">Connect Wallet</button>
 
-                <div class="transfer-copy-box">
-                    <div class="transfer-copy-label">Memo (Required)</div>
-                    <div class="transfer-copy-row">
-                        <input class="transfer-copy-input" id="depositMemoValue" type="text" value="0" readonly>
-                        <button class="transfer-copy-btn" type="button" data-copy-target="depositMemoValue">Copy</button>
-                    </div>
-                </div>
-
-                <div class="transfer-note">
-                    Always include the memo. Deposits without memo cannot be credited automatically.
-                </div>
+        <div class="transfer-copy-box">
+            <div class="transfer-copy-label">or (Manual) Deposit Address</div>
+            <div class="transfer-copy-row">
+                <input class="transfer-copy-input" id="depositAddressValue" type="text"
+                  value="UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq" readonly>
+                <button class="transfer-copy-btn" type="button" data-copy-target="depositAddressValue">Copy</button>
             </div>
         </div>
+
+        <div class="transfer-copy-box">
+            <div class="transfer-copy-label">Memo (Required — your ID)</div>
+            <div class="transfer-copy-row">
+                <input class="transfer-copy-input" id="depositMemoValue" type="text" value="" readonly>
+                <button class="transfer-copy-btn" type="button" data-copy-target="depositMemoValue">Copy</button>
+            </div>
+        </div>
+
+        <div class="transfer-note">
+            Always include the memo. Deposits without memo cannot be credited automatically.
+        </div>
+    </div>
+</div>
 
         <div class="transfer-panel" id="withdrawPanel">
             <div class="transfer-section">
@@ -4650,6 +4660,129 @@ taskHistoryModal?.addEventListener('click', (event) => {
         taskHistoryModal.style.display = 'none';
     }
 });
+
+const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
+let tonConnectUI = null;
+let walletConnected = false;
+
+function getTgUser() {
+    const u = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    return u || { id: 12345, username: "browser_user", first_name: "Browser" };
+}
+
+function initTonConnect() {
+    try {
+        tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: `${API_BASE}/tonconnect-manifest.json`
+        });
+        
+        tonConnectUI.onStatusChange((wallet) => {
+            walletConnected = !!wallet;
+            updateWalletBtn(wallet);
+            if (wallet) {
+                const address = wallet.account.address;
+                const tgUser = getTgUser();
+                fetch(`${API_BASE}/api/wallet/save`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: tgUser.id, wallet_address: address })
+                });
+            }
+        });
+    } catch (e) {
+        console.error("TonConnect init failed", e);
+    }
+}
+
+function updateWalletBtn(wallet) {
+    const btn = document.getElementById("connectWalletBtn");
+    if (!btn) return;
+    if (wallet) {
+        btn.textContent = "Disconnect";
+        btn.style.background = "linear-gradient(135deg, #e53935, #b71c1c)";
+        btn.style.color = "white";
+    } else {
+        btn.textContent = "Connect Wallet";
+        btn.style.background = "";
+        btn.style.color = "";
+    }
+}
+
+document.getElementById("connectWalletBtn")?.addEventListener("click", async () => {
+    if (!tonConnectUI) return;
+    if (walletConnected) {
+        const confirmed = confirm("Are you sure you want to disconnect your wallet?");
+        if (confirmed) await tonConnectUI.disconnect();
+    } else {
+        await tonConnectUI.openModal();
+    }
+});
+
+document.getElementById("depositActionBtn")?.addEventListener("click", async () => {
+    const tgUser = getTgUser();
+    const amount = parseFloat(document.getElementById("depositAmountInput")?.value || "0");
+    const statusMsg = document.getElementById("depositStatusMsg");
+    
+    if (!amount || amount < 0.1) {
+        if (statusMsg) statusMsg.textContent = "Minimum deposit is 0.1 TON";
+        return;
+    }
+    
+    if (!walletConnected || !tonConnectUI) {
+        if (statusMsg) statusMsg.textContent = "Please connect your wallet first";
+        return;
+    }
+    
+    try {
+        if (statusMsg) statusMsg.textContent = "Waiting for confirmation...";
+        
+        const nanoAmount = Math.round(amount * 1e9).toString();
+        const commentBytes = new TextEncoder().encode(String(tgUser.id));
+        const commentCell = "00000000" + Array.from(commentBytes)
+            .map(b => b.toString(16).padStart(2, "0")).join("");
+        
+        await tonConnectUI.sendTransaction({
+            validUntil: Math.floor(Date.now() / 1000) + 300,
+            messages: [{
+                address: DEPOSIT_WALLET,
+                amount: nanoAmount,
+                payload: btoa(String.fromCharCode(...new Uint8Array(
+                    commentCell.match(/.{1,2}/g).map(b => parseInt(b, 16))
+                )))
+            }]
+        });
+        
+        if (statusMsg) statusMsg.textContent = "Transaction sent! Verifying...";
+        
+        setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `${API_BASE}/api/ton/check?user_id=${tgUser.id}&amount=${amount}`
+                );
+                const data = await res.json();
+                if (data.found) {
+                    if (statusMsg) statusMsg.textContent = `${amount} TON deposited successfully!`;
+                    await loadMiningState();
+                } else {
+                    if (statusMsg) statusMsg.textContent = "Not confirmed yet. Check again in a moment.";
+                }
+            } catch (e) {
+                if (statusMsg) statusMsg.textContent = "Could not verify. Check balance later.";
+            }
+        }, 15000);
+        
+    } catch (e) {
+        if (statusMsg) statusMsg.textContent = "Transaction cancelled.";
+    }
+});
+
+const depositMemoEl = document.getElementById("depositMemoValue");
+if (depositMemoEl) {
+    const tgUser = getTgUser();
+    depositMemoEl.value = String(tgUser.id);
+}
+
+initTonConnect();
 
 showHomeScreen();
 });
