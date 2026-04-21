@@ -4736,21 +4736,15 @@ document.getElementById("depositActionBtn")?.addEventListener("click", async () 
     try {
         if (statusMsg) statusMsg.textContent = "Waiting for confirmation...";
         
-        const nanoAmount = Math.round(amount * 1e9).toString();
-        const commentBytes = new TextEncoder().encode(String(tgUser.id));
-        const commentCell = "00000000" + Array.from(commentBytes)
-            .map(b => b.toString(16).padStart(2, "0")).join("");
-        
-        await tonConnectUI.sendTransaction({
-            validUntil: Math.floor(Date.now() / 1000) + 300,
-            messages: [{
-                address: DEPOSIT_WALLET,
-                amount: nanoAmount,
-                payload: btoa(String.fromCharCode(...new Uint8Array(
-                    commentCell.match(/.{1,2}/g).map(b => parseInt(b, 16))
-                )))
-            }]
-        });
+       const nanoAmount = Math.round(amount * 1e9).toString();
+
+await tonConnectUI.sendTransaction({
+    validUntil: Math.floor(Date.now() / 1000) + 300,
+    messages: [{
+        address: DEPOSIT_WALLET,
+        amount: nanoAmount
+    }]
+});
         
         if (statusMsg) statusMsg.textContent = "Transaction sent! Verifying...";
         
