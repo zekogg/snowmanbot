@@ -94,13 +94,14 @@ async function ensureSchema(env) {
 }
 
 await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS ton_deposits (
-      tx_hash TEXT PRIMARY KEY,
-      user_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
-      created_at INTEGER NOT NULL
-    )
-`).run();
+      CREATE TABLE IF NOT EXISTS ton_deposits (
+        tx_hash TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+  `).run();
+}
 
 async function getUser(env, userId) {
   return await env.DB
