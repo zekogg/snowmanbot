@@ -100,8 +100,7 @@ await env.DB.prepare(`
         amount REAL NOT NULL,
         created_at INTEGER NOT NULL
       )
-  `).run();
-}
+`).run();
 
 async function getUser(env, userId) {
   return await env.DB
