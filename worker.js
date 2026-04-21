@@ -15,6 +15,31 @@ function json(data, status = 200) {
   });
 }
 
+function rawToFriendly(raw) {
+  try {
+    const [workchain, hexAddr] = raw.split(":");
+    const wc = parseInt(workchain);
+    const addr = Uint8Array.from(hexAddr.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const pkg = new Uint8Array(36);
+    pkg[0] = 0x11;
+    pkg[1] = wc < 0 ? 0xff : 0x00;
+    pkg.set(addr, 2);
+    let crc = 0;
+    for (let i = 0; i < 34; i++) {
+      crc ^= pkg[i] << 8;
+      for (let j = 0; j < 8; j++) {
+        crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+      }
+    }
+    pkg[34] = (crc >> 8) & 0xff;
+    pkg[35] = crc & 0xff;
+    return btoa(String.fromCharCode(...pkg))
+      .replace(/\+/g, "-").replace(/\//g, "_");
+  } catch (e) {
+    return raw;
+  }
+}
+
 async function ensureSchema(env) {
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS users (
@@ -620,8 +645,11 @@ if (url.pathname === "/api/ton/check" && request.method === "GET") {
     const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
 
     const user = await getUser(env, userId);
-const walletAddress = user?.wallet_address || "";
-
+const rawAddress = user?.wallet_address || "";
+const walletAddress = rawAddress.includes(":") 
+  ? rawToFriendly(rawAddress) 
+  : rawAddress;
+    
 const match = transactions.find(tx => {
     const inMsg = tx.in_msg;
     if (!inMsg) return false;
