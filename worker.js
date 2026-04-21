@@ -494,23 +494,23 @@ async function settleUserMining(env, userId, username = null, displayName = null
 
   const finalComputed = computeMiningState(user, now);
 
-  return {
-    user: {
-      user_id: Number(user.user_id),
-      username: user.username || null,
-      display_name: user.display_name || null,
-      snow_balance: Number(user.snow_balance || 0),
-      snowman_count: Number(user.snowman_count || 0),
-      mining_boost: Number(user.mining_boost || 1),
-      last_mined_at: Number(user.last_mined_at || 0),
-      speed_per_hour: finalComputed.speedPerHour,
-      earned_now: finalComputed.earnedNow,
-      next_reward_in_ms: finalComputed.nextRewardInMs
-      ton_balance: Number(user.ton_balance || 0),
-      wallet_address: user.wallet_address || null,
-    },
-    server_time: now
-  };
+return {
+  user: {
+    user_id: Number(user.user_id),
+    username: user.username || null,
+    display_name: user.display_name || null,
+    snow_balance: Number(user.snow_balance || 0),
+    snowman_count: Number(user.snowman_count || 0),
+    mining_boost: Number(user.mining_boost || 1),
+    last_mined_at: Number(user.last_mined_at || 0),
+    speed_per_hour: finalComputed.speedPerHour,
+    earned_now: finalComputed.earnedNow,
+    next_reward_in_ms: finalComputed.nextRewardInMs,
+    ton_balance: Number(user.ton_balance || 0),
+    wallet_address: user.wallet_address || null
+  },
+  server_time: now
+};
 }
 
 export default {
