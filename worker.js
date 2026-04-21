@@ -58,14 +58,22 @@ async function ensureSchema(env) {
       UNIQUE(task_id, user_id)
     )
   `).run();
+
+  await env.DB.prepare(
+    `ALTER TABLE users ADD COLUMN ton_balance REAL NOT NULL DEFAULT 0`
+  ).run().catch(() => {});
+
+  await env.DB.prepare(
+    `ALTER TABLE users ADD COLUMN wallet_address TEXT`
+  ).run().catch(() => {});
 }
 
 async function getUser(env, userId) {
   return await env.DB
     .prepare(
-      `SELECT user_id, username, display_name, snow_balance, snowman_count, mining_boost, last_mined_at, updated_at
-       FROM users
-       WHERE user_id = ?`
+      `SELECT user_id, username, display_name, snow_balance, snowman_count,
+              mining_boost, last_mined_at, updated_at, ton_balance, wallet_address
+       FROM users WHERE user_id = ?`
     )
     .bind(userId)
     .first();
@@ -498,6 +506,8 @@ async function settleUserMining(env, userId, username = null, displayName = null
       speed_per_hour: finalComputed.speedPerHour,
       earned_now: finalComputed.earnedNow,
       next_reward_in_ms: finalComputed.nextRewardInMs
+      ton_balance: Number(user.ton_balance || 0),
+      wallet_address: user.wallet_address || null,
     },
     server_time: now
   };
@@ -579,6 +589,80 @@ export default {
   return json({ status: "ok", message: "SnowmanBot API is running" });
 }
 
+if (url.pathname === "/api/wallet/save" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const walletAddress = String(body.wallet_address || "").trim();
+    if (!userId || !walletAddress) return json({ error: "Missing params" }, 400);
+    await env.DB.prepare(
+      `UPDATE users SET wallet_address = ?, updated_at = ? WHERE user_id = ?`
+    ).bind(walletAddress, Date.now(), userId).run();
+    return json({ ok: true });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/ton/check" && request.method === "GET") {
+  try {
+    const userId = Number(url.searchParams.get("user_id"));
+    const amount = Number(url.searchParams.get("amount"));
+    if (!userId || !amount) return json({ error: "Missing params" }, 400);
+
+    const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
+    const res = await fetch(
+      `https://toncenter.com/api/v2/getTransactions?address=${DEPOSIT_WALLET}&limit=20`
+    );
+    const data = await res.json();
+    const transactions = data.result || [];
+    const expectedNano = Math.round(amount * 1e9);
+    const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
+
+    const match = transactions.find(tx => {
+      const inMsg = tx.in_msg;
+      if (!inMsg) return false;
+      const comment = inMsg.message || "";
+      const value = Number(inMsg.value || 0);
+      const time = Number(tx.utime || 0);
+      return (
+        comment === String(userId) &&
+        value >= expectedNano * 0.98 &&
+        time >= fiveMinAgo
+      );
+    });
+
+    if (!match) return json({ found: false });
+
+    await env.DB.prepare(
+      `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
+    ).bind(amount, Date.now(), userId).run();
+
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: userId,
+        text: `Deposit confirmed! ${amount} TON has been added to your SnowMan Empire account.`
+      })
+    });
+
+    return json({ found: true, amount });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/tonconnect-manifest.json") {
+  return new Response(JSON.stringify({
+    url: "https://snowmanbot-api.zekobusiness0.workers.dev",
+    name: "SnowMan Empire",
+    iconUrl: "https://raw.githubusercontent.com/zekogg/SnowMan-images/refs/heads/main/SnowMan%20Background%20photo.webp"
+  }), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  });
+}
+    
 if (url.pathname === "/api/tasks/create" && request.method === "POST") {
   try {
     const body = await request.json();
