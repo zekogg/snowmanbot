@@ -619,18 +619,24 @@ if (url.pathname === "/api/ton/check" && request.method === "GET") {
     const expectedNano = Math.round(amount * 1e9);
     const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
 
-    const match = transactions.find(tx => {
-      const inMsg = tx.in_msg;
-      if (!inMsg) return false;
-      const comment = inMsg.message || "";
-      const value = Number(inMsg.value || 0);
-      const time = Number(tx.utime || 0);
-      return (
-        comment === String(userId) &&
-        value >= expectedNano * 0.98 &&
-        time >= fiveMinAgo
-      );
-    });
+    const user = await getUser(env, userId);
+const walletAddress = user?.wallet_address || "";
+
+const match = transactions.find(tx => {
+    const inMsg = tx.in_msg;
+    if (!inMsg) return false;
+    const sender = inMsg.source || "";
+    const comment = inMsg.message || "";
+    const value = Number(inMsg.value || 0);
+    const time = Number(tx.utime || 0);
+    const validTime = time >= fiveMinAgo;
+    const validAmount = value >= expectedNano * 0.98;
+
+    const byWallet = walletAddress && sender === walletAddress;
+    const byComment = comment === String(userId);
+
+    return validTime && validAmount && (byWallet || byComment);
+});
 
     if (!match) return json({ found: false });
 
