@@ -91,16 +91,16 @@ async function ensureSchema(env) {
   await env.DB.prepare(
     `ALTER TABLE users ADD COLUMN wallet_address TEXT`
   ).run().catch(() => {});
-}
 
-await env.DB.prepare(`
+  await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS ton_deposits (
         tx_hash TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL,
         amount REAL NOT NULL,
         created_at INTEGER NOT NULL
       )
-`).run();
+  `).run().catch(() => {});
+}
 
 async function getUser(env, userId) {
   return await env.DB
