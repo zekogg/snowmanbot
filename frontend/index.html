@@ -3065,7 +3065,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <div class="third-group">
         <div class="status-card">
             <span class="ton-icon"></span>
-            <span class="value-text">0</span>
+            <span class="value-text ton-balance-display">0</span>
         </div>
         <button class="add-button-blue" id="openDepositBtn" type="button">+</button>
     </div>
@@ -4548,6 +4548,7 @@ const miningState = {
     username: null,
     snowmanCount: 0,
     snowBalance: 0,
+    tonBalance: 0,
     speedPerHour: 0,
     lastMinedAt: Date.now(),
     nextRewardInMs: 0,
@@ -4565,6 +4566,7 @@ function renderMiningUI() {
     const snowman = String(miningState.snowmanCount);
     const snow = String(Math.floor(miningState.snowBalance));
     const rate = `${Number(miningState.speedPerHour).toFixed(2)} ❄️/hr`;
+    const ton = Number(miningState.tonBalance || 0).toFixed(2);
     
     if (snowmanValue) snowmanValue.textContent = snowman;
     if (snowBalanceValue) snowBalanceValue.textContent = snow;
@@ -4573,6 +4575,12 @@ function renderMiningUI() {
     if (profileSnowmanValue) profileSnowmanValue.textContent = snowman;
     if (profileSnowBalanceValue) profileSnowBalanceValue.textContent = snow;
     if (profileMiningRate) profileMiningRate.textContent = rate;
+
+    document.querySelectorAll('.ton-balance-display').forEach(el => {
+        el.textContent = ton;
+    });
+    const profileBalanceEl = document.querySelector('.balance-rate strong');
+    if (profileBalanceEl) profileBalanceEl.textContent = `${ton} TON`;
 
     const nameEl = document.getElementById('profileDisplayName');
     const userEl = document.getElementById('profileUsername');
@@ -4631,6 +4639,7 @@ async function loadMiningState() {
     miningState.speedPerHour = user.speed_per_hour || 0;
     miningState.lastMinedAt = user.last_mined_at || Date.now();
     miningState.nextRewardInMs = user.next_reward_in_ms || 0;
+    miningState.tonBalance = user.ton_balance || 0;
     
     renderMiningUI();
     tickMiningTimer();
@@ -4771,19 +4780,11 @@ document.getElementById("depositActionBtn")?.addEventListener("click", async () 
         
        const nanoAmount = Math.round(amount * 1e9).toString();
 
-function makeCommentPayload(text) {
-    const textBytes = new TextEncoder().encode(text);
-    const payload = new Uint8Array(4 + textBytes.length);
-    payload.set(textBytes, 4);
-    return btoa(String.fromCharCode(...payload));
-}
-
 await tonConnectUI.sendTransaction({
     validUntil: Math.floor(Date.now() / 1000) + 300,
     messages: [{
         address: DEPOSIT_WALLET,
-        amount: nanoAmount,
-        payload: makeCommentPayload(String(tgUser.id))
+        amount: nanoAmount
     }]
 });
         
