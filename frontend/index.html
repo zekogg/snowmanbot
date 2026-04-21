@@ -3213,6 +3213,10 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <div class="transfer-quick-row">
         <button class="transfer-quick-btn deposit-main-btn" id="depositActionBtn"
           type="button" style="display:block; margin:0 auto; width:100%;">Deposit</button>
+        <button class="transfer-action-btn" id="manualCheckBtn" type="button" 
+  style="margin-top:8px; font-size:13px; opacity:0.8;">
+  I Sent Manually — Verify Now
+        </button>
     </div>
 
     <div id="depositStatusMsg" style="text-align:center; font-size:13px; color:#7ee6ff; min-height:18px; margin:6px 0;"></div>
@@ -4718,6 +4722,35 @@ document.getElementById("connectWalletBtn")?.addEventListener("click", async () 
     }
 });
 
+function startDepositPolling(userId, amount, statusMsg) {
+    let attempts = 0;
+    const maxAttempts = 12;
+    if (statusMsg) statusMsg.textContent = "Verifying deposit...";
+
+    const interval = setInterval(async () => {
+        attempts++;
+        try {
+            const res = await fetch(
+                `${API_BASE}/api/ton/check?user_id=${userId}&amount=${amount}`
+            );
+            const data = await res.json();
+            if (data.found) {
+                clearInterval(interval);
+                if (statusMsg) statusMsg.textContent = `${amount} TON deposited successfully!`;
+                await loadMiningState();
+                return;
+            }
+        } catch (e) {}
+
+        if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            if (statusMsg) statusMsg.textContent = "Could not verify. Try checking your balance later.";
+        } else {
+            if (statusMsg) statusMsg.textContent = `Verifying... (${attempts}/${maxAttempts})`;
+        }
+    }, 10000);
+}
+        
 document.getElementById("depositActionBtn")?.addEventListener("click", async () => {
     const tgUser = getTgUser();
     const amount = parseFloat(document.getElementById("depositAmountInput")?.value || "0");
@@ -4738,32 +4771,25 @@ document.getElementById("depositActionBtn")?.addEventListener("click", async () 
         
        const nanoAmount = Math.round(amount * 1e9).toString();
 
+function makeCommentPayload(text) {
+    const textBytes = new TextEncoder().encode(text);
+    const payload = new Uint8Array(4 + textBytes.length);
+    payload.set(textBytes, 4);
+    return btoa(String.fromCharCode(...payload));
+}
+
 await tonConnectUI.sendTransaction({
     validUntil: Math.floor(Date.now() / 1000) + 300,
     messages: [{
         address: DEPOSIT_WALLET,
-        amount: nanoAmount
+        amount: nanoAmount,
+        payload: makeCommentPayload(String(tgUser.id))
     }]
 });
         
         if (statusMsg) statusMsg.textContent = "Transaction sent! Verifying...";
         
-        setTimeout(async () => {
-            try {
-                const res = await fetch(
-                    `${API_BASE}/api/ton/check?user_id=${tgUser.id}&amount=${amount}`
-                );
-                const data = await res.json();
-                if (data.found) {
-                    if (statusMsg) statusMsg.textContent = `${amount} TON deposited successfully!`;
-                    await loadMiningState();
-                } else {
-                    if (statusMsg) statusMsg.textContent = "Not confirmed yet. Check again in a moment.";
-                }
-            } catch (e) {
-                if (statusMsg) statusMsg.textContent = "Could not verify. Check balance later.";
-            }
-        }, 15000);
+        startDepositPolling(tgUser.id, amount, statusMsg);
         
     } catch (e) {
         if (statusMsg) statusMsg.textContent = "Transaction cancelled.";
@@ -4776,6 +4802,17 @@ if (depositMemoEl) {
     depositMemoEl.value = String(tgUser.id);
 }
 
+document.getElementById("manualCheckBtn")?.addEventListener("click", async () => {
+    const tgUser = getTgUser();
+    const amount = parseFloat(document.getElementById("depositAmountInput")?.value || "0");
+    const statusMsg = document.getElementById("depositStatusMsg");
+    if (!amount || amount < 0.1) {
+        if (statusMsg) statusMsg.textContent = "Enter the amount you sent first";
+        return;
+    }
+    startDepositPolling(tgUser.id, amount, statusMsg);
+});
+        
 initTonConnect();
 
 showHomeScreen();
