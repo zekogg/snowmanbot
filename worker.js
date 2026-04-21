@@ -93,6 +93,15 @@ async function ensureSchema(env) {
   ).run().catch(() => {});
 }
 
+await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS ton_deposits (
+      tx_hash TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      created_at INTEGER NOT NULL
+    )
+`).run();
+
 async function getUser(env, userId) {
   return await env.DB
     .prepare(
@@ -668,9 +677,23 @@ const match = transactions.find(tx => {
 
     if (!match) return json({ found: false });
 
-    await env.DB.prepare(
-      `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
-    ).bind(amount, Date.now(), userId).run();
+const txHash = match.transaction_id?.hash || "";
+
+if (txHash) {
+  const already = await env.DB.prepare(
+    `SELECT tx_hash FROM ton_deposits WHERE tx_hash = ?`
+  ).bind(txHash).first();
+  
+  if (already) return json({ found: true, already_credited: true });
+  
+  await env.DB.prepare(
+    `INSERT INTO ton_deposits (tx_hash, user_id, amount, created_at) VALUES (?, ?, ?, ?)`
+  ).bind(txHash, userId, amount, Date.now()).run();
+}
+
+await env.DB.prepare(
+  `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
+).bind(amount, Date.now(), userId).run();
 
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
