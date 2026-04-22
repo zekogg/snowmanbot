@@ -758,9 +758,9 @@ if (url.pathname === "/api/mint" && request.method === "POST") {
 
     const now = Date.now();
     await env.DB.prepare(
-      `UPDATE users SET ton_balance = ton_balance - ?, snowman_count = snowman_count + ?, updated_at = ? WHERE user_id = ?`
-    ).bind(cost, PACKS[pack].snowmen, now, userId).run();
-
+  `UPDATE users SET ton_balance = ton_balance - ?, snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ? WHERE user_id = ?`
+).bind(cost, PACKS[pack].snowmen, now, now, userId).run();
+    
     await env.DB.prepare(
       `INSERT INTO mint_purchases (user_id, pack, purchased_at) VALUES (?, ?, ?)`
     ).bind(userId, pack, now).run();
