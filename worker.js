@@ -100,6 +100,16 @@ async function ensureSchema(env) {
         created_at INTEGER NOT NULL
       )
   `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS mint_purchases (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      pack TEXT NOT NULL,
+      purchased_at INTEGER NOT NULL,
+      UNIQUE(user_id, pack)
+    )
+  `).run().catch(() => {});
 }
 
 async function getUser(env, userId) {
@@ -718,6 +728,71 @@ if (url.pathname === "/tonconnect-manifest.json") {
   }), {
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
   });
+}
+
+if (url.pathname === "/api/mint" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const pack = String(body.pack || "").trim();
+
+    const PACKS = {
+      starter: { ton: 1,  snowmen: 2450,   speed: 7   },
+      pro:     { ton: 5,  snowmen: 10500,  speed: 30  },
+      whale:   { ton: 99, snowmen: 175000, speed: 500 }
+    };
+
+    if (!userId || !PACKS[pack]) return json({ error: "Invalid params" }, 400);
+
+    const already = await env.DB.prepare(
+      `SELECT id FROM mint_purchases WHERE user_id = ? AND pack = ?`
+    ).bind(userId, pack).first();
+    if (already) return json({ error: "Already purchased" }, 400);
+
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+
+    const tonBalance = Number(user.ton_balance || 0);
+    const cost = PACKS[pack].ton;
+    if (tonBalance < cost) return json({ error: "Not enough TON" }, 400);
+
+    const now = Date.now();
+    await env.DB.prepare(
+      `UPDATE users SET ton_balance = ton_balance - ?, snowman_count = snowman_count + ?, updated_at = ? WHERE user_id = ?`
+    ).bind(cost, PACKS[pack].snowmen, now, userId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO mint_purchases (user_id, pack, purchased_at) VALUES (?, ?, ?)`
+    ).bind(userId, pack, now).run();
+
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: userId,
+        text: `You purchased the ${pack.charAt(0).toUpperCase() + pack.slice(1)} Pack! +${PACKS[pack].snowmen} Snowmen added to your account.`
+      })
+    });
+
+    const updatedUser = await getUser(env, userId);
+    return json({ ok: true, pack, snowmen: PACKS[pack].snowmen, user: updatedUser });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/mint/status" && request.method === "GET") {
+  try {
+    const userId = Number(url.searchParams.get("user_id"));
+    if (!userId) return json({ error: "Missing user_id" }, 400);
+    const purchases = await env.DB.prepare(
+      `SELECT pack FROM mint_purchases WHERE user_id = ?`
+    ).bind(userId).all();
+    const bought = (purchases.results || []).map(r => r.pack);
+    return json({ bought });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
 }
     
 if (url.pathname === "/api/tasks/create" && request.method === "POST") {
