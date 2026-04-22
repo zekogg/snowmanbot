@@ -3044,6 +3044,37 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     max-width: 100%;
 }
 
+.mint-buy-btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3CC7FF, #129FDF);
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.mint-buy-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.35);
+    cursor: not-allowed;
+}
+
+.pack-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+@keyframes mintPop {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+        
 </style>
 </head>
 <body>
@@ -3288,22 +3319,51 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 <div id="mintModal">
     <div class="mint-content">
         <h2 class="mint-title">Mint Snowmen ☃️</h2>
-        <div class="pack-box">
-            <h3>Starter Pack</h3>
-            <p class="pack-price">1 TON ➔ 2450 ☃️</p>
-            <p class="pack-speed">Mining Speed: 7.00 ❄️/hr</p>
+        <p style="text-align:center; font-size:11px; color:#FF6B6B; margin:-10px 0 12px; letter-spacing:0.5px;">
+            You can only buy 1 pack
+        </p>
+        <div class="pack-box" id="packBox_starter">
+    <h3>Starter Pack</h3>
+    <div class="pack-row">
+        <button class="mint-buy-btn" data-pack="starter" data-ton="1" data-snowmen="2450" type="button">Buy</button>
+        <p class="pack-price" style="margin:0;">1 TON ➔ 2,450 ☃️</p>
+    </div>
+    <p class="pack-speed">Mining Speed: +7.00 ❄️/hr</p>
+</div>
+<div class="pack-box" id="packBox_pro">
+    <h3>Pro Pack</h3>
+    <div class="pack-row">
+        <button class="mint-buy-btn" data-pack="pro" data-ton="5" data-snowmen="10500" type="button">Buy</button>
+        <p class="pack-price" style="margin:0;">5 TON ➔ 10,500 ☃️</p>
+    </div>
+    <p class="pack-speed">Mining Speed: +30.00 ❄️/hr</p>
+</div>
+<div class="pack-box" id="packBox_whale" style="margin-bottom:18px;">
+    <h3>Whale Pack</h3>
+    <div class="pack-row">
+        <button class="mint-buy-btn" data-pack="whale" data-ton="99" data-snowmen="175000" type="button">Buy</button>
+        <p class="pack-price" style="margin:0;">99 TON ➔ 175,000 ☃️</p>
+    </div>
+    <p class="pack-speed">Mining Speed: +500.00 ❄️/hr</p>
+</div>
+<button class="close-mint" id="closeMintBtn" type="button">CANCEL</button>
+    </div>
+</div>
+
+<div id="mintSuccessOverlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column;">
+    <div id="mintSuccessCard" style="background:rgba(10,25,40,0.97); border:2px solid #3CC7FF; border-radius:28px; padding:32px 28px; text-align:center; max-width:320px; width:90%; animation: mintPop 0.4s ease;">
+        <div style="font-size:60px; margin-bottom:12px;">☃️</div>
+        <div style="font-size:22px; font-weight:900; color:#7ee6ff; margin-bottom:8px;">Pack Purchased!</div>
+        <div id="mintSuccessPackName" style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:16px;"></div>
+        <div style="background:rgba(60,199,255,0.12); border-radius:16px; padding:14px; margin-bottom:20px;">
+            <div id="mintSuccessSnowmen" style="font-size:28px; font-weight:900; color:#3CC7FF;"></div>
+            <div style="font-size:13px; color:#B2DAFF; margin-top:4px;">Snowmen Added</div>
+            <div id="mintSuccessSpeed" style="font-size:15px; font-weight:700; color:#7ee6ff; margin-top:8px;"></div>
         </div>
-        <div class="pack-box">
-            <h3>Pro Pack</h3>
-            <p class="pack-price">5 TON ➔ 10,500 ☃️</p>
-            <p class="pack-speed">Mining Speed: 30.00 ❄️/hr</p>
-        </div>
-        <div class="pack-box" style="margin-bottom: 18px;">
-            <h3>Whale Pack</h3>
-            <p class="pack-price">99 TON ➔ 175,000 ☃️</p>
-            <p class="pack-speed">Mining Speed: 500.00 ❄️/hr</p>
-        </div>
-        <button class="close-mint" id="closeMintBtn" type="button">CANCEL</button>
+        <button onclick="document.getElementById('mintSuccessOverlay').style.display='none'" 
+            style="width:100%; padding:14px; border:none; border-radius:20px; background:linear-gradient(135deg,#3CC7FF,#129FDF); color:white; font-size:18px; font-weight:900; cursor:pointer;">
+            Awesome! 🎉
+        </button>
     </div>
 </div>
 
@@ -4362,9 +4422,77 @@ function startTaskJoin(task, button) {
     }, 1000);
 }
 
-openMintBtn?.addEventListener('click', () => mintModal.style.display = 'flex');
+openMintBtn?.addEventListener('click', async () => {
+    mintModal.style.display = 'flex';
+    const tgUser = getTgUser();
+    try {
+        const res = await fetch(`${API_BASE}/api/mint/status?user_id=${tgUser.id}`);
+        const data = await res.json();
+        const bought = data.bought || [];
+        document.querySelectorAll('.mint-buy-btn').forEach(btn => {
+            const pack = btn.dataset.pack;
+            if (bought.includes(pack)) {
+                btn.textContent = 'Purchased ✓';
+                btn.disabled = true;
+            }
+        });
+    } catch(e) {}
+});
+
 closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
 
+document.querySelectorAll('.mint-buy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const pack = btn.dataset.pack;
+        const ton = Number(btn.dataset.ton);
+        const snowmen = Number(btn.dataset.snowmen);
+        const tgUser = getTgUser();
+
+        if (miningState.tonBalance < ton) {
+            alert(`You need ${ton} TON. Your balance: ${miningState.tonBalance.toFixed(2)} TON`);
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/mint`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: tgUser.id, pack })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Purchase failed');
+                btn.disabled = false;
+                btn.textContent = `Buy — ${ton} TON`;
+                return;
+            }
+
+            btn.textContent = 'Purchased ✓';
+
+            const speedMap = { starter: 7, pro: 30, whale: 500 };
+            const packNames = { starter: 'Starter Pack', pro: 'Pro Pack', whale: 'Whale Pack' };
+
+            document.getElementById('mintSuccessPackName').textContent = packNames[pack];
+            document.getElementById('mintSuccessSnowmen').textContent = `+${snowmen.toLocaleString()} ☃️`;
+            document.getElementById('mintSuccessSpeed').textContent = `+${speedMap[pack]} ❄️/hr Mining Speed`;
+
+            mintModal.style.display = 'none';
+            const overlay = document.getElementById('mintSuccessOverlay');
+            overlay.style.display = 'flex';
+
+            await loadMiningState();
+        } catch(e) {
+            alert('Purchase failed');
+            btn.disabled = false;
+            btn.textContent = `Buy — ${ton} TON`;
+        }
+    });
+});
+        
 openHatchBtn?.addEventListener('click', () => {
     if (hatchModal) hatchModal.style.display = 'flex';
     updateHatchUI();
