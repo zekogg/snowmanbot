@@ -110,6 +110,14 @@ async function ensureSchema(env) {
       UNIQUE(user_id, pack)
     )
   `).run().catch(() => {});
+
+  await env.DB.prepare(
+    `ALTER TABLE users ADD COLUMN referred_by INTEGER`
+  ).run().catch(() => {});
+
+  await env.DB.prepare(
+    `ALTER TABLE users ADD COLUMN referral_ton_earned REAL NOT NULL DEFAULT 0`
+  ).run().catch(() => {});
 }
 
 async function getUser(env, userId) {
@@ -523,6 +531,13 @@ async function settleUserMining(env, userId, username = null, displayName = null
       .run();
 
     user = await getUser(env, userId);
+
+    if (user?.referred_by) {
+      const snowBonus = computed.earnedNow * 0.05;
+      await env.DB.prepare(
+        `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+      ).bind(snowBonus, now, user.referred_by).run();
+    }
   } else if (!user.last_mined_at || user.last_mined_at === 0) {
     await env.DB
       .prepare(
@@ -578,8 +593,25 @@ export default {
         const text = update.message?.text;
         const chatId = update.message?.chat?.id;
 
-        if (text === "/start" && chatId) {
-          await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      if (text && text.startsWith("/start") && chatId) {
+  const parts = text.split(" ");
+  const refId = parts[1] ? Number(parts[1]) : null;
+
+  if (refId && refId !== chatId) {
+    await ensureSchema(env);
+    const newUser = await createUserIfMissing(env, chatId);
+    if (newUser && !newUser.referred_by) {
+      await env.DB.prepare(
+        `UPDATE users SET referred_by = ? WHERE user_id = ? AND referred_by IS NULL`
+      ).bind(refId, chatId).run();
+
+      await env.DB.prepare(
+        `UPDATE users SET snowman_count = snowman_count + 1, last_mined_at = ?, updated_at = ? WHERE user_id = ?`
+      ).bind(Date.now(), Date.now(), refId).run();
+    }
+  }
+
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -629,6 +661,29 @@ export default {
       return new Response("ok");
     }
 
+if (url.pathname === "/api/friends" && request.method === "GET") {
+  try {
+    const userId = Number(url.searchParams.get("user_id"));
+    if (!userId) return json({ error: "Missing user_id" }, 400);
+
+    const friends = await env.DB.prepare(
+      `SELECT user_id, username, display_name, created_at FROM users WHERE referred_by = ? ORDER BY updated_at DESC`
+    ).bind(userId).all();
+
+    const rewardRow = await env.DB.prepare(
+      `SELECT referral_ton_earned FROM users WHERE user_id = ?`
+    ).bind(userId).first();
+
+    return json({
+      friends: friends.results || [],
+      count: (friends.results || []).length,
+      ton_earned: Number(rewardRow?.referral_ton_earned || 0)
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+    
     if (url.pathname === "/api/status" && request.method === "GET") {
   return json({ status: "ok", message: "SnowmanBot API is running" });
 }
@@ -765,6 +820,23 @@ if (url.pathname === "/api/mint" && request.method === "POST") {
       `INSERT INTO mint_purchases (user_id, pack, purchased_at) VALUES (?, ?, ?)`
     ).bind(userId, pack, now).run();
 
+const buyer = await getUser(env, userId);
+if (buyer?.referred_by) {
+  const refReward = cost * 0.15;
+  await env.DB.prepare(
+    `UPDATE users SET ton_balance = ton_balance + ?, referral_ton_earned = referral_ton_earned + ?, updated_at = ? WHERE user_id = ?`
+  ).bind(refReward, refReward, now, buyer.referred_by).run();
+
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: buyer.referred_by,
+      text: `Your friend bought a pack! You earned ${refReward.toFixed(2)} TON referral bonus.`
+    })
+  });
+}
+    
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
