@@ -532,12 +532,6 @@ async function settleUserMining(env, userId, username = null, displayName = null
 
     user = await getUser(env, userId);
 
-    if (user?.referred_by) {
-      const snowBonus = computed.earnedNow * 0.05;
-      await env.DB.prepare(
-        `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
-      ).bind(snowBonus, now, user.referred_by).run();
-    }
   } else if (!user.last_mined_at || user.last_mined_at === 0) {
     await env.DB
       .prepare(
@@ -959,6 +953,14 @@ const result = await env.DB
 if (result.meta.changes === 0) {
   return json({ error: "Not enough Snow." }, 400);
 }
+
+        const hatchUser = await getUser(env, userId);
+        if (hatchUser?.referred_by) {
+          const snowBonus = baseAmount * 0.05;
+          await env.DB.prepare(
+            `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+          ).bind(snowBonus, now, hatchUser.referred_by).run();
+        }
 
         const updatedUser = await getUser(env, userId);
 
