@@ -3539,42 +3539,30 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <div class="friends-grid">
         <div class="friends-card">
             <div class="friends-card-label">Your Reward</div>
-            <div class="friends-card-value">
-<span class="ton-icon" style="width: 50px; height: 50px;"></span> 0</div>
+            <div class="friends-card-value" id="friendsTonEarned">
+                <span class="ton-icon" style="width: 35px; height: 35px;"></span> 0
+            </div>
         </div>
         <div class="friends-card">
             <div class="friends-card-label">Your Friends</div>
-            <div class="friends-card-value">0</div>
+            <div class="friends-card-value" id="friendsCount">0</div>
         </div>
     </div>
-    <div class="friends-stats-row" style="display:flex; gap:10px; margin-bottom:12px;">
-    <div class="friends-stat-box" style="flex:1; background:rgba(10,25,40,0.7); border:1px solid rgba(60,199,255,0.2); border-radius:16px; padding:14px; text-align:center;">
-        <div style="font-size:12px; color:#9EC8E0; margin-bottom:6px;">Your Reward</div>
-        <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
-            <span class="ton-icon"></span>
-            <span id="friendsTonEarned" style="font-size:22px; font-weight:900; color:#fff;">0</span>
-        </div>
-    </div>
-    <div class="friends-stat-box" style="flex:1; background:rgba(10,25,40,0.7); border:1px solid rgba(60,199,255,0.2); border-radius:16px; padding:14px; text-align:center;">
-        <div style="font-size:12px; color:#9EC8E0; margin-bottom:6px;">Your Friends</div>
-        <div style="font-size:22px; font-weight:900; color:#fff;" id="friendsCount">0</div>
-    </div>
-</div>
     <div class="friends-reward-card">
         <div class="friends-reward-line">☃️ +1 free SnowMan per Friend</div>
         <div class="friends-reward-line">❄️ 5% Snow when they Hatch</div>
         <div class="friends-reward-line"><span class="ton-icon"></span> 15% TON when they buy SnowMans </div>
     </div>
     <div class="friends-link-card" id="friendsLinkCard">
-    Loading...
-</div>
-<div class="friends-actions">
-    <button class="friends-btn friends-btn-copy" id="friendsCopyBtn" type="button">📋 Copy</button>
-    <button class="friends-btn friends-btn-share" id="friendsShareBtn" type="button">📤 Share</button>
-</div>
-<div id="friendsList">
-    <div class="friends-empty">No friends yet <span class="friends-empty-emoji">🧱</span></div>
-</div>
+        Loading...
+    </div>
+    <div class="friends-actions">
+        <button class="friends-btn friends-btn-copy" id="friendsCopyBtn" type="button">📋 Copy</button>
+        <button class="friends-btn friends-btn-share" id="friendsShareBtn" type="button">📤 Share</button>
+    </div>
+    <div id="friendsList">
+        <div class="friends-empty">No friends yet <span class="friends-empty-emoji">🧱</span></div>
+    </div>
 </div>
 
 <div id="profileScreen" class="profile-screen screen-overlay">
@@ -4810,7 +4798,7 @@ loadTaskHistory();
 
 async function loadFriends() {
     const tgUser = getTgUser();
-    const refLink = `https://t.me/SnowManBot?start=${tgUser.id}`;
+    const refLink = `https://t.me/Snow0ManBot?start=${tgUser.id}`;
 
     const linkCard = document.getElementById('friendsLinkCard');
     if (linkCard) linkCard.textContent = refLink;
@@ -4836,8 +4824,10 @@ async function loadFriends() {
         const countEl = document.getElementById('friendsCount');
         const tonEl = document.getElementById('friendsTonEarned');
         if (countEl) countEl.textContent = data.count || 0;
-        if (tonEl) tonEl.textContent = Number(data.ton_earned || 0).toFixed(2);
-
+        if (tonEl) {
+    const tonValue = Number(data.ton_earned || 0).toFixed(2);
+    tonEl.innerHTML = `<span class="ton-icon" style="width:35px; height:35px;"></span> ${tonValue}`;
+}
         const listEl = document.getElementById('friendsList');
         if (!listEl) return;
         if (!data.friends || data.friends.length === 0) {
