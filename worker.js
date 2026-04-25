@@ -642,7 +642,9 @@ if (update.callback_query) {
         body: JSON.stringify({
           chat_id: chatIdCallback,
           message_id: messageId,
-          text: `✅ Withdrawal Completed\n\n👤 User: ${withdrawal.ton_address}\n💎 Net Amount: ${withdrawal.net_amount} TON\n🏦 Status: Paid\nTon Address: ${withdrawal.ton_address}\n\n☃️ SnowManBot — Play & Earn TON\n👉 @Snow0ManBot`
+          const wUser = await getUser(env, withdrawal.user_id);
+         const wName = wUser?.display_name || wUser?.username || String(withdrawal.user_id);
+         text: `✅ Withdrawal Completed\n\n👤 User: ${wName}\n💎 Net Amount: ${withdrawal.net_amount} TON\n🏦 Status: Paid\nTon Address: ${withdrawal.ton_address}\n\n☃️ SnowManBot — Play & Earn TON\n👉 @Snow0ManBot`
         })
       });
 
