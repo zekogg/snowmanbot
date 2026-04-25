@@ -257,6 +257,9 @@ async function getOnlineTasks(env) {
 }
 
 async function sendTaskReviewToChannel(env, task) {
+  const creator = await getUser(env, task.creator_user_id);
+  const creatorName = creator?.username ? `@${creator.username}` : (creator?.display_name || String(task.creator_user_id));
+
   const text = [
     "New task pending review",
     "",
@@ -265,7 +268,8 @@ async function sendTaskReviewToChannel(env, task) {
     `Target users: ${task.target_users}`,
     `Completion limit: ${task.completion_limit}`,
     `Cost: ${task.cost_snow} Snow`,
-    `Task ID: ${task.task_id}`
+    `Task ID: ${task.task_id}`,
+    `Creator: ${creatorName}`
   ].join("\n");
 
   const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
@@ -744,13 +748,26 @@ if (update.callback_query) {
           });
         }
         if (update.callback_query) {
-          const data = update.callback_query.data || "";
-          const callbackId = update.callback_query.id;
-          const [action, taskIdRaw] = data.split(":");
-          const taskId = Number(taskIdRaw);
+  const data = update.callback_query.data || "";
+  const callbackId = update.callback_query.id;
+  const fromId = update.callback_query.from?.id;
+  const [action, taskIdRaw] = data.split(":");
+  const taskId = Number(taskIdRaw);
 
-          try {
-            if (action === "task_approve") {
+  const isTaskAdmin = await fetch(
+    `https://api.telegram.org/bot${env.BOT_TOKEN}/getChatMember?chat_id=@snowchannels&user_id=${fromId}`
+  ).then(r => r.json())
+   .then(d => ["creator","administrator"].includes(d.result?.status))
+   .catch(() => false);
+
+  if (!isTaskAdmin) {
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ callback_query_id: callbackId, text: "Not authorized." })
+    });
+  } else try {
+    if (action === "task_approve") {
               await handleTaskApproval(env, taskId, true);
             } else if (action === "task_reject") {
               await handleTaskApproval(env, taskId, false);
