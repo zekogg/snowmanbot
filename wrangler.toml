@@ -12,3 +12,6 @@ run_worker_first = true
 binding = "DB"
 database_name = "<user_data>"
 database_id = "<8ede3654-b27d-4648-9eb6-163cb803df73>"
+
+[vars]
+ADMIN_CHANNEL_ID = "-1003718907769"
