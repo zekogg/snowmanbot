@@ -670,6 +670,45 @@ if (update.callback_query) {
     });
   }
 
+if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_reject:")) {
+    const isTaskAdmin = await fetch(
+      `https://api.telegram.org/bot${env.BOT_TOKEN}/getChatMember?chat_id=@snowchannels&user_id=${callbackUserId}`
+    ).then(r => r.json())
+     .then(d => ["creator","administrator"].includes(d.result?.status))
+     .catch(() => false);
+
+    if (!isTaskAdmin) {
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callback_query_id: callbackQuery.id, text: "Not authorized." })
+      });
+      return new Response("ok");
+    }
+
+    const [action, taskIdRaw] = callbackData.split(":");
+    const taskId = Number(taskIdRaw);
+    try {
+      if (action === "task_approve") {
+        await handleTaskApproval(env, taskId, true);
+      } else if (action === "task_reject") {
+        await handleTaskApproval(env, taskId, false);
+      }
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callback_query_id: callbackQuery.id, text: "Updated" })
+      });
+    } catch (e) {
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callback_query_id: callbackQuery.id, text: "Failed" })
+      });
+    }
+    return new Response("ok");
+  }
+  
   if (callbackData.startsWith("reject_")) {
     const withdrawId = Number(callbackData.replace("reject_", ""));
     const withdrawal = await env.DB.prepare(
@@ -747,51 +786,7 @@ if (update.callback_query) {
             })
           });
         }
-        if (update.callback_query) {
-  const data = update.callback_query.data || "";
-  const callbackId = update.callback_query.id;
-  const fromId = update.callback_query.from?.id;
-  const [action, taskIdRaw] = data.split(":");
-  const taskId = Number(taskIdRaw);
-
-  const isTaskAdmin = await fetch(
-    `https://api.telegram.org/bot${env.BOT_TOKEN}/getChatMember?chat_id=@snowchannels&user_id=${fromId}`
-  ).then(r => r.json())
-   .then(d => ["creator","administrator"].includes(d.result?.status))
-   .catch(() => false);
-
-  if (!isTaskAdmin) {
-    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ callback_query_id: callbackId, text: "Not authorized." })
-    });
-  } else try {
-    if (action === "task_approve") {
-              await handleTaskApproval(env, taskId, true);
-            } else if (action === "task_reject") {
-              await handleTaskApproval(env, taskId, false);
-            }
-
-            await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                callback_query_id: callbackId,
-                text: "Updated"
-              })
-            });
-          } catch (error) {
-            await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                callback_query_id: callbackId,
-                text: "Failed"
-              })
-            });
-          }
-        }
+        
       } catch (e) {}
       return new Response("ok");
     }
