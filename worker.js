@@ -632,31 +632,32 @@ if (update.callback_query) {
     ).bind(withdrawId).first();
 
     if (withdrawal && withdrawal.status === "pending") {
-      await env.DB.prepare(
-        `UPDATE withdrawals SET status = 'completed', updated_at = ? WHERE id = ?`
-      ).bind(Date.now(), withdrawId).run();
+  await env.DB.prepare(
+    `UPDATE withdrawals SET status = 'completed', updated_at = ? WHERE id = ?`
+  ).bind(Date.now(), withdrawId).run();
 
-      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/editMessageText`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatIdCallback,
-          message_id: messageId,
-          const wUser = await getUser(env, withdrawal.user_id);
-         const wName = wUser?.display_name || wUser?.username || String(withdrawal.user_id);
-         text: `✅ Withdrawal Completed\n\n👤 User: ${wName}\n💎 Net Amount: ${withdrawal.net_amount} TON\n🏦 Status: Paid\nTon Address: ${withdrawal.ton_address}\n\n☃️ SnowManBot — Play & Earn TON\n👉 @Snow0ManBot`
-        })
-      });
+  const wUser = await getUser(env, withdrawal.user_id);
+  const wName = wUser?.display_name || wUser?.username || String(withdrawal.user_id);
 
-      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: withdrawal.user_id,
-          text: `✅ Your withdrawal of ${withdrawal.net_amount} TON has been completed and sent to your wallet.`
-        })
-      });
-    }
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/editMessageText`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatIdCallback,
+      message_id: messageId,
+      text: `✅ Withdrawal Completed\n\n👤 User: ${wName}\n💎 Net Amount: ${withdrawal.net_amount} TON\n🏦 Status: Paid\nTon Address: ${withdrawal.ton_address}\n\n☃️ SnowManBot — Play & Earn TON\n👉 @Snow0ManBot`
+    })
+  });
+
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: withdrawal.user_id,
+      text: `✅ Your withdrawal of ${withdrawal.net_amount} TON has been completed and sent to your wallet.`
+    })
+  });
+}
 
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
       method: "POST",
