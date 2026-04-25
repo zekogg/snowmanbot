@@ -3288,23 +3288,52 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 </div>
 
         <div class="transfer-panel" id="withdrawPanel">
-            <div class="transfer-section">
-                <div class="transfer-section-title">Withdraw Amount</div>
-                <input class="transfer-amount-input" type="number" min="0.2" step="0.01" placeholder="0.2">
-                <div class="transfer-withdraw-foot">
-                    <span>min 0.2</span>
-                    <span>fee %5</span>
-                </div>
-            </div>
-
-            <div class="transfer-section">
-                <div class="transfer-section-title">Ton Address</div>
-                <input class="transfer-text-input" type="text" placeholder="Enter TON address">
-            </div>
-
-            <button class="transfer-action-btn" type="button">Withdraw</button>
-            <button class="transfer-history-btn" type="button">History</button>
+    <div class="transfer-section">
+        <div class="transfer-section-title">Withdraw Amount</div>
+        <input class="transfer-amount-input" id="withdrawAmountInput" type="number" min="0.2" step="0.01" placeholder="0.2">
+        <div class="transfer-withdraw-foot">
+            <span>min 0.2</span>
+            <span>fee 5%</span>
         </div>
+    </div>
+
+    <div class="transfer-section">
+        <div class="transfer-section-title">Ton Address</div>
+        <input class="transfer-text-input" id="withdrawAddressInput" type="text" placeholder="Enter TON address">
+    </div>
+
+    <div id="withdrawStatusMsg" style="text-align:center; font-size:13px; color:#7ee6ff; min-height:18px; margin:6px 0;"></div>
+
+    <button class="transfer-action-btn" id="withdrawBtn" type="button">Withdraw</button>
+    <button class="transfer-history-btn" id="withdrawHistoryBtn" type="button">History</button>
+</div>
+
+<div id="withdrawSuccessOverlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+    <div style="background:rgba(10,25,40,0.97); border:2px solid #3CC7FF; border-radius:28px; padding:32px 28px; text-align:center; max-width:320px; width:90%; animation:mintPop 0.4s ease;">
+        <div style="font-size:55px; margin-bottom:12px;">💸</div>
+        <div style="font-size:22px; font-weight:900; color:#7ee6ff; margin-bottom:10px;">Withdraw Requested</div>
+        <div style="font-size:14px; color:#B2DAFF; margin-bottom:24px; line-height:1.6;">
+            Withdrawals may take from<br><strong>1 hour to 12 hours</strong><br>to arrive in your wallet.
+        </div>
+        <button onclick="document.getElementById('withdrawSuccessOverlay').style.display='none'"
+            style="width:100%; padding:14px; border:none; border-radius:20px; background:linear-gradient(135deg,#3CC7FF,#129FDF); color:white; font-size:18px; font-weight:900; cursor:pointer;">
+            Got it! 👍
+        </button>
+    </div>
+</div>
+
+<div id="historyOverlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.85); justify-content:center; align-items:flex-end;">
+    <div style="background:rgba(10,25,40,0.97); border:2px solid #3CC7FF; border-radius:28px 28px 0 0; padding:24px 20px; width:100%; max-height:75dvh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div style="font-size:18px; font-weight:900; color:#7ee6ff;">Transaction History</div>
+            <button onclick="document.getElementById('historyOverlay').style.display='none'"
+                style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">×</button>
+        </div>
+        <div id="historyList">
+            <div style="text-align:center; color:#9EC8E0; padding:20px;">Loading...</div>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -5004,6 +5033,104 @@ document.getElementById("manualCheckBtn")?.addEventListener("click", async () =>
         return;
     }
     startDepositPolling(tgUser.id, amount, statusMsg);
+});
+
+document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    const amount = parseFloat(document.getElementById('withdrawAmountInput')?.value || '0');
+    const tonAddress = document.getElementById('withdrawAddressInput')?.value?.trim();
+    const statusMsg = document.getElementById('withdrawStatusMsg');
+
+    if (!amount || amount < 0.2) {
+        if (statusMsg) statusMsg.textContent = 'Minimum withdrawal is 0.2 TON';
+        return;
+    }
+    if (!tonAddress) {
+        if (statusMsg) statusMsg.textContent = 'Please enter your TON address';
+        return;
+    }
+    if (miningState.tonBalance < amount) {
+        if (statusMsg) statusMsg.textContent = `Insufficient balance. Your balance: ${miningState.tonBalance.toFixed(2)} TON`;
+        return;
+    }
+
+    const btn = document.getElementById('withdrawBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/withdraw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, amount, ton_address: tonAddress })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (statusMsg) statusMsg.textContent = data.error || 'Withdrawal failed';
+            if (btn) { btn.disabled = false; btn.textContent = 'Withdraw'; }
+            return;
+        }
+
+        if (statusMsg) statusMsg.textContent = '';
+        document.getElementById('withdrawSuccessOverlay').style.display = 'flex';
+        await loadMiningState();
+    } catch (e) {
+        if (statusMsg) statusMsg.textContent = 'Request failed. Try again.';
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Withdraw'; }
+});
+
+document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    const overlay = document.getElementById('historyOverlay');
+    const listEl = document.getElementById('historyList');
+    overlay.style.display = 'flex';
+    listEl.innerHTML = '<div style="text-align:center; color:#9EC8E0; padding:20px;">Loading...</div>';
+
+    try {
+        const res = await fetch(`${API_BASE}/api/withdraw/history?user_id=${tgUser.id}`);
+        const data = await res.json();
+
+        const withdrawals = data.withdrawals || [];
+        const deposits = data.deposits || [];
+
+        if (withdrawals.length === 0 && deposits.length === 0) {
+            listEl.innerHTML = '<div style="text-align:center; color:#9EC8E0; padding:20px;">No transactions yet</div>';
+            return;
+        }
+
+        const allItems = [
+            ...deposits.map(d => ({ ...d, type: 'deposit', time: d.created_at })),
+            ...withdrawals.map(w => ({ ...w, type: 'withdraw', time: w.created_at }))
+        ].sort((a, b) => b.time - a.time);
+
+        listEl.innerHTML = allItems.map(item => {
+            if (item.type === 'deposit') {
+                return `
+                <div style="background:rgba(60,199,255,0.08); border:1px solid rgba(60,199,255,0.2); border-radius:14px; padding:14px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-weight:900; font-size:15px;">Deposit</span>
+                        <span style="color:#4CAF50; font-weight:700; font-size:13px;">Completed</span>
+                    </div>
+                    <div style="font-size:13px; color:#B2DAFF;">Amount: ${Number(item.amount).toFixed(2)} TON</div>
+                </div>`;
+            } else {
+                const statusColor = item.status === 'completed' ? '#4CAF50' : item.status === 'rejected' ? '#FF6B6B' : '#FFD166';
+                return `
+                <div style="background:rgba(60,199,255,0.08); border:1px solid rgba(60,199,255,0.2); border-radius:14px; padding:14px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-weight:900; font-size:15px;">Withdraw</span>
+                        <span style="color:${statusColor}; font-weight:700; font-size:13px; text-transform:capitalize;">${item.status}</span>
+                    </div>
+                    <div style="font-size:13px; color:#B2DAFF;">Fee: ${Number(item.fee).toFixed(4)} TON</div>
+                    <div style="font-size:13px; color:#B2DAFF;">Net Amount: ${Number(item.net_amount).toFixed(4)} TON</div>
+                </div>`;
+            }
+        }).join('');
+    } catch (e) {
+        listEl.innerHTML = '<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load history</div>';
+    }
 });
         
 initTonConnect();
