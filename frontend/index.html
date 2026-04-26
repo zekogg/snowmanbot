@@ -5156,6 +5156,38 @@ document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async (
     }
 });
 
+window.buyMarketOrder = async function(listingId) {
+    const tgUser = getTgUser();
+    if (!confirm('Confirm purchase?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/market/buy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
+        });
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Purchase failed'); return; }
+        await loadMarketListings();
+        await loadMiningState();
+    } catch (e) { alert('Purchase failed'); }
+};
+
+window.cancelMarketOrder = async function(listingId) {
+    const tgUser = getTgUser();
+    if (!confirm('Cancel this order?\n-20 ❄️ cancellation fee will apply.')) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/market/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
+        });
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Cancel failed'); return; }
+        await loadMarketListings();
+        await loadMiningState();
+    } catch (e) { alert('Cancel failed'); }
+};
+        
 async function loadMarketListings() {
     const tgUser = getTgUser();
     const allEl = document.getElementById('marketAllList');
@@ -5171,21 +5203,14 @@ async function loadMarketListings() {
         if (allListings.length === 0) {
             allEl.innerHTML = `<div style="text-align:center; color:#9EC8E0; padding:30px;">No orders available yet</div>`;
         } else {
-            allEl.innerHTML = allListings.map(l => `
-                <div class="market-order-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-size:15px; font-weight:900; color:#7ee6ff;">❄️ ${Number(l.snow_amount).toLocaleString()} Snow</div>
-                            <div style="font-size:12px; color:#9EC8E0; margin-top:4px;">@${l.username || l.display_name || 'user'}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:14px; font-weight:900; color:#fff;">${Number(l.total_price).toFixed(4)} TON</div>
-                            <button class="market-buy-btn" style="margin-top:6px; padding:6px 16px; font-size:13px;" 
-                                onclick="buyMarketOrder(${l.id})">Buy</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            allEl.innerHTML = `<div class="market-grid">${allListings.map(l => `
+    <div class="market-card">
+        <div class="market-badge">SNOW</div>
+        <div class="market-pill market-snow-pill">❄️ ${Number(l.snow_amount).toLocaleString()}</div>
+        <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>${Number(l.total_price).toFixed(4)}</span></div>
+        <button class="market-buy-btn" type="button" onclick="window.buyMarketOrder(${l.id})">Buy</button>
+    </div>
+`).join('')}</div>`;
         }
 
         if (yourListings.length === 0) {
@@ -5213,43 +5238,6 @@ async function loadMarketListings() {
         }
     } catch (e) {
         if (allEl) allEl.innerHTML = `<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load</div>`;
-    }
-}
-
-async function buyMarketOrder(listingId) {
-    const tgUser = getTgUser();
-    if (!confirm('Confirm purchase?')) return;
-    try {
-        const res = await fetch(`${API_BASE}/api/market/buy`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
-        });
-        const data = await res.json();
-        if (!res.ok) { alert(data.error || 'Purchase failed'); return; }
-        await loadMarketListings();
-        await loadMiningState();
-    } catch (e) {
-        alert('Purchase failed');
-    }
-}
-
-async function cancelMarketOrder(listingId, snowAmount) {
-    const tgUser = getTgUser();
-    const confirmed = confirm(`Cancel this order?\n-20 ❄️ cancellation fee will apply.`);
-    if (!confirmed) return;
-    try {
-        const res = await fetch(`${API_BASE}/api/market/cancel`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
-        });
-        const data = await res.json();
-        if (!res.ok) { alert(data.error || 'Cancel failed'); return; }
-        await loadMarketListings();
-        await loadMiningState();
-    } catch (e) {
-        alert('Cancel failed');
     }
 }
 
@@ -5312,10 +5300,11 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
         document.body.appendChild(successOverlay);
 
         await loadMarketListings();
-        await loadMiningState();
-        const marketScreen = document.getElementById('marketScreen');
-        const allMode = document.querySelector('[data-market-mode="all"]');
-        if (allMode) allMode.click();
+await loadMiningState();
+document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
+document.getElementById('market-all')?.classList.add('active');
+document.querySelectorAll('[data-market-mode]').forEach(b => b.classList.remove('active'));
+document.querySelector('[data-market-mode="all"]')?.classList.add('active');
 
     } catch (e) {
         if (statusEl) statusEl.textContent = 'Request failed';
