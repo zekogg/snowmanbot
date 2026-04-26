@@ -135,6 +135,19 @@ async function ensureSchema(env) {
   `).run().catch(() => {});
 }
 
+await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS market_listings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      seller_id INTEGER NOT NULL,
+      snow_amount REAL NOT NULL,
+      price_per_snow REAL NOT NULL,
+      total_price REAL NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `).run().catch(() => {});
+
 async function getUser(env, userId) {
   return await env.DB
     .prepare(
@@ -983,6 +996,141 @@ if (buyer?.referred_by) {
   }
 }
 
+if (url.pathname === "/api/market/listings" && request.method === "GET") {
+  try {
+    const userId = Number(url.searchParams.get("user_id") || 0);
+    const listings = await env.DB.prepare(
+      `SELECT m.*, u.display_name, u.username FROM market_listings m
+       LEFT JOIN users u ON u.user_id = m.seller_id
+       WHERE m.status = 'active'
+       ORDER BY m.created_at DESC LIMIT 50`
+    ).all();
+    const yours = listings.results?.filter(l => l.seller_id === userId) || [];
+    const all = listings.results?.filter(l => l.seller_id !== userId) || [];
+    return json({ all, yours });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/market/create" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const snowAmount = Number(body.snow_amount);
+    const pricePerSnow = Number(body.price_per_snow);
+
+    if (!userId) return json({ error: "Missing user_id" }, 400);
+    if (snowAmount < 100) return json({ error: "Minimum 100 Snow" }, 400);
+    if (pricePerSnow < 0.00005) return json({ error: "Minimum price 0.00005 TON per Snow" }, 400);
+
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+
+    const activeCount = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM market_listings WHERE seller_id = ? AND status = 'active'`
+    ).bind(userId).first();
+    if ((activeCount?.cnt || 0) >= 3) return json({ error: "Max 3 active orders allowed" }, 400);
+
+    const fee = snowAmount * 0.05;
+    const totalSnowCost = snowAmount + fee;
+    if (Number(user.snow_balance) < totalSnowCost) return json({ error: "Not enough Snow" }, 400);
+
+    const totalPrice = parseFloat((snowAmount * pricePerSnow).toFixed(6));
+    const now = Date.now();
+
+    await env.DB.prepare(
+      `UPDATE users SET snow_balance = snow_balance - ?, updated_at = ? WHERE user_id = ?`
+    ).bind(totalSnowCost, now, userId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO market_listings (seller_id, snow_amount, price_per_snow, total_price, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 'active', ?, ?)`
+    ).bind(userId, snowAmount, pricePerSnow, totalPrice, now, now).run();
+
+    return json({ ok: true, snow_amount: snowAmount, fee, total_price: totalPrice });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/market/buy" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const listingId = Number(body.listing_id);
+
+    const listing = await env.DB.prepare(
+      `SELECT * FROM market_listings WHERE id = ? AND status = 'active'`
+    ).bind(listingId).first();
+    if (!listing) return json({ error: "Listing not found or already sold" }, 404);
+    if (listing.seller_id === userId) return json({ error: "Cannot buy your own listing" }, 400);
+
+    const buyer = await getUser(env, userId);
+    if (!buyer) return json({ error: "User not found" }, 404);
+    if (Number(buyer.ton_balance) < listing.total_price) return json({ error: "Not enough TON" }, 400);
+
+    const now = Date.now();
+    await env.DB.prepare(
+      `UPDATE market_listings SET status = 'sold', updated_at = ? WHERE id = ?`
+    ).bind(now, listingId).run();
+
+    await env.DB.prepare(
+      `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? WHERE user_id = ?`
+    ).bind(listing.total_price, now, userId).run();
+
+    await env.DB.prepare(
+      `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+    ).bind(listing.snow_amount, now, userId).run();
+
+    await env.DB.prepare(
+      `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
+    ).bind(listing.total_price, now, listing.seller_id).run();
+
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: listing.seller_id,
+        text: `Your order of ${listing.snow_amount} Snow has been sold for ${listing.total_price} TON! 🎉`
+      })
+    });
+
+    return json({ ok: true });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/market/cancel" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const listingId = Number(body.listing_id);
+
+    const listing = await env.DB.prepare(
+      `SELECT * FROM market_listings WHERE id = ? AND status = 'active' AND seller_id = ?`
+    ).bind(listingId, userId).first();
+    if (!listing) return json({ error: "Listing not found" }, 404);
+
+    const CANCEL_FEE = 20;
+    const refundSnow = listing.snow_amount - CANCEL_FEE;
+    const now = Date.now();
+
+    await env.DB.prepare(
+      `UPDATE market_listings SET status = 'cancelled', updated_at = ? WHERE id = ?`
+    ).bind(now, listingId).run();
+
+    await env.DB.prepare(
+      `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+    ).bind(Math.max(0, refundSnow), now, userId).run();
+
+    return json({ ok: true, refund: Math.max(0, refundSnow), fee: CANCEL_FEE });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+    
 if (url.pathname === "/api/withdraw" && request.method === "POST") {
   try {
     const body = await request.json();
