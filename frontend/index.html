@@ -5158,7 +5158,19 @@ document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async (
 
 window.buyMarketOrder = async function(listingId) {
     const tgUser = getTgUser();
-    
+
+    const allCards = document.querySelectorAll('.market-card');
+    let buyBtn = null;
+    allCards.forEach(card => {
+        const btn = card.querySelector('.market-buy-btn');
+        if (btn?.getAttribute('onclick')?.includes(String(listingId))) {
+            buyBtn = btn;
+        }
+    });
+    const snowPill = buyBtn?.closest('.market-card')?.querySelector('.market-snow-pill');
+    const snowAmount = snowPill?.textContent || '';
+    if (buyBtn) { buyBtn.textContent = `✅ ${snowAmount}`; buyBtn.disabled = true; }
+
     try {
         const res = await fetch(`${API_BASE}/api/market/buy`, {
             method: 'POST',
@@ -5174,10 +5186,7 @@ window.buyMarketOrder = async function(listingId) {
 
 window.cancelMarketOrder = async function(listingId) {
     const tgUser = getTgUser();
-const buyBtn = document.querySelector(`[onclick="window.buyMarketOrder(${listingId})"]`);
-const snowPill = buyBtn?.closest('.market-card')?.querySelector('.market-snow-pill');
-const snowAmount = snowPill?.textContent || '';
-if (buyBtn) { buyBtn.textContent = `✅ ${snowAmount}`; buyBtn.disabled = true; }  
+    
     try {
         const res = await fetch(`${API_BASE}/api/market/cancel`, {
             method: 'POST',
