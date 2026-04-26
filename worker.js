@@ -133,7 +133,6 @@ async function ensureSchema(env) {
       updated_at INTEGER NOT NULL
     )
   `).run().catch(() => {});
-}
 
 await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS market_listings (
@@ -147,6 +146,7 @@ await env.DB.prepare(`
       updated_at INTEGER NOT NULL
     )
   `).run().catch(() => {});
+}
 
 async function getUser(env, userId) {
   return await env.DB
