@@ -5158,7 +5158,7 @@ document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async (
 
 window.buyMarketOrder = async function(listingId) {
     const tgUser = getTgUser();
-    if (!confirm('Confirm purchase?')) return;
+    
     try {
         const res = await fetch(`${API_BASE}/api/market/buy`, {
             method: 'POST',
@@ -5174,7 +5174,10 @@ window.buyMarketOrder = async function(listingId) {
 
 window.cancelMarketOrder = async function(listingId) {
     const tgUser = getTgUser();
-    if (!confirm('Cancel this order?\n-20 ❄️ cancellation fee will apply.')) return;
+const buyBtn = document.querySelector(`[onclick="window.buyMarketOrder(${listingId})"]`);
+const snowPill = buyBtn?.closest('.market-card')?.querySelector('.market-snow-pill');
+const snowAmount = snowPill?.textContent || '';
+if (buyBtn) { buyBtn.textContent = `✅ ${snowAmount}`; buyBtn.disabled = true; }  
     try {
         const res = await fetch(`${API_BASE}/api/market/cancel`, {
             method: 'POST',
@@ -5228,7 +5231,7 @@ async function loadMarketListings() {
                             <div style="font-size:15px; font-weight:900; color:#7ee6ff;">❄️ ${Number(l.snow_amount).toLocaleString()} Snow</div>
                             <div style="font-size:12px; color:#9EC8E0; margin-top:4px;">${Number(l.total_price).toFixed(4)} TON</div>
                         </div>
-                        <button class="market-cancel-btn" onclick="cancelMarketOrder(${l.id}, ${l.snow_amount})">
+                        <button class="market-cancel-btn" onclick="window.cancelMarketOrder(${l.id})">
                             Cancel
                             <span class="market-cancel-fee">-20 ❄️</span>
                         </button>
@@ -5286,6 +5289,7 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
         if (statusEl) statusEl.textContent = '';
 
         const successOverlay = document.createElement('div');
+        successOverlay.id = 'marketSuccessOverlay';
         successOverlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;';
         successOverlay.innerHTML = `
             <div style="background:rgba(10,25,40,0.97);border:2px solid #3CC7FF;border-radius:28px;padding:32px 28px;text-align:center;max-width:300px;width:90%;animation:marketPop 0.3s ease;">
@@ -5293,7 +5297,7 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
                 <div style="font-size:20px;font-weight:900;color:#7ee6ff;margin-bottom:8px;">Order Created!</div>
                 <div style="font-size:14px;color:#B2DAFF;margin-bottom:6px;">❄️ ${snowAmount.toLocaleString()} Snow listed</div>
                 <div style="font-size:13px;color:#9EC8E0;margin-bottom:20px;">Fee: ${data.fee} ❄️ deducted</div>
-                <button onclick="this.closest('div[style]').remove()" style="width:100%;padding:12px;border:none;border-radius:20px;background:linear-gradient(135deg,#3CC7FF,#129FDF);color:white;font-size:16px;font-weight:900;cursor:pointer;">
+                <button onclick="document.getElementById('marketSuccessOverlay').remove()" style="width:100%;padding:12px;border:none;border-radius:20px;background:linear-gradient(135deg,#3CC7FF,#129FDF);color:white;font-size:16px;font-weight:900;cursor:pointer;">
                     Awesome! 🎉
                 </button>
             </div>`;
