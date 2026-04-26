@@ -5167,9 +5167,7 @@ window.buyMarketOrder = async function(listingId) {
             buyBtn = btn;
         }
     });
-    const snowPill = buyBtn?.closest('.market-card')?.querySelector('.market-snow-pill');
-    const snowAmount = snowPill?.textContent || '';
-    if (buyBtn) { buyBtn.textContent = `✅ ${snowAmount}`; buyBtn.disabled = true; }
+    if (buyBtn) { buyBtn.textContent = `✅`; buyBtn.disabled = true; }
 
     try {
         const res = await fetch(`${API_BASE}/api/market/buy`, {
