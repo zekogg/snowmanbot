@@ -3074,6 +3074,38 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     from { transform: scale(0.7); opacity: 0; }
     to   { transform: scale(1);   opacity: 1; }
 }
+
+@keyframes marketPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+.market-order-card {
+    background: rgba(10,25,40,0.7);
+    border: 1px solid rgba(60,199,255,0.2);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 10px;
+    animation: marketPop 0.3s ease;
+}
+
+.market-cancel-btn {
+    background: rgba(255,80,80,0.15);
+    border: 1px solid rgba(255,80,80,0.4);
+    color: #FF6B6B;
+    border-radius: 12px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.market-cancel-fee {
+    font-size: 9px;
+    color: rgba(255,107,107,0.7);
+    display: block;
+    margin-top: 2px;
+}
         
 </style>
 </head>
@@ -3483,30 +3515,20 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <div class="market-create-cta-wrap">
         <button class="market-create-cta" id="marketCreateBtn" type="button">+ Create Order</button>
     </div>
-    <div class="market-sub-page active" id="market-all">
-        <div class="market-grid">
-            <div class="market-card">
-                <div class="market-badge">SNOW</div>
-                <div class="market-pill market-snow-pill">❄️ 0</div>
-                <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>0.00</span></div>
-                <button class="market-buy-btn" type="button">Buy</button>
-            </div>
-            <div class="market-card">
-                <div class="market-badge">SNOW</div>
-                <div class="market-pill market-snow-pill">❄️ 0</div>
-                <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>0.00</span></div>
-                <button class="market-buy-btn" type="button">Buy</button>
-            </div>
-        </div>
+   <div class="market-sub-page active" id="market-all">
+    <div id="marketAllList" style="padding:8px 0;">
+        <div style="text-align:center; color:#9EC8E0; padding:30px;">Loading...</div>
     </div>
-    <div class="market-sub-page" id="market-yours">
+</div>
+<div class="market-sub-page" id="market-yours">
+    <div id="marketYoursList" style="padding:8px 0;">
         <div class="market-empty">
             <div class="market-empty-icon">☃️</div>
             <div class="market-empty-title">No active orders yet.</div>
             <p class="market-empty-text">Create a Snow order to start trading.</p>
-            <button class="market-buy-btn market-create-inline" id="openCreateOrderBtn" type="button">+ Create Order</button>
         </div>
     </div>
+</div>
     <div class="market-sub-page" id="market-lootbox">
     <div class="market-grid">
         <div class="market-card loot-card">
@@ -3542,18 +3564,19 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
                 <h3 class="market-panel-title">New Snow Order</h3>
             </div>
             <div class="form-group">
-                <label>Amount of Snow ❄️</label>
-                <input type="number" class="form-input" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label>Price in Ton <span class="ton-icon"></span></label>
-                <input type="number" class="form-input" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label>Total Value</label>
-                <input type="text" class="form-input" value="0.00" disabled>
-            </div>
-            <button class="market-create-btn" type="button">Confirm Order</button>
+    <label>Amount of Snow ❄️ <span style="font-size:11px; color:#9EC8E0;">(min. 100)</span></label>
+    <input type="number" class="form-input" id="marketSnowInput" placeholder="100" min="100">
+</div>
+<div class="form-group">
+    <label>Price per Snow <span class="ton-icon"></span> <span style="font-size:11px; color:#9EC8E0;">(min. 0.00005)</span></label>
+    <input type="number" class="form-input" id="marketPriceInput" placeholder="0.00005" min="0.00005" step="0.00001">
+</div>
+<div class="form-group">
+    <label>Total Value</label>
+    <input type="text" class="form-input" id="marketTotalValue" value="0.00 TON" disabled>
+</div>
+<div id="marketCreateStatus" style="text-align:center; font-size:13px; color:#FF6B6B; min-height:16px; margin-bottom:8px;"></div>
+<button class="market-create-btn" id="marketConfirmBtn" type="button">Confirm Order</button>
         </div>
     </div>
 </div>
@@ -5131,6 +5154,198 @@ document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async (
     } catch (e) {
         listEl.innerHTML = '<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load history</div>';
     }
+});
+
+async function loadMarketListings() {
+    const tgUser = getTgUser();
+    const allEl = document.getElementById('marketAllList');
+    const yoursEl = document.getElementById('marketYoursList');
+
+    try {
+        const res = await fetch(`${API_BASE}/api/market/listings?user_id=${tgUser.id}`);
+        const data = await res.json();
+
+        const allListings = data.all || [];
+        const yourListings = data.yours || [];
+
+        if (allListings.length === 0) {
+            allEl.innerHTML = `<div style="text-align:center; color:#9EC8E0; padding:30px;">No orders available yet</div>`;
+        } else {
+            allEl.innerHTML = allListings.map(l => `
+                <div class="market-order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:15px; font-weight:900; color:#7ee6ff;">❄️ ${Number(l.snow_amount).toLocaleString()} Snow</div>
+                            <div style="font-size:12px; color:#9EC8E0; margin-top:4px;">@${l.username || l.display_name || 'user'}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px; font-weight:900; color:#fff;">${Number(l.total_price).toFixed(4)} TON</div>
+                            <button class="market-buy-btn" style="margin-top:6px; padding:6px 16px; font-size:13px;" 
+                                onclick="buyMarketOrder(${l.id})">Buy</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (yourListings.length === 0) {
+            yoursEl.innerHTML = `
+                <div class="market-empty">
+                    <div class="market-empty-icon">☃️</div>
+                    <div class="market-empty-title">No active orders yet.</div>
+                    <p class="market-empty-text">Create a Snow order to start trading.</p>
+                </div>`;
+        } else {
+            yoursEl.innerHTML = yourListings.map(l => `
+                <div class="market-order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:15px; font-weight:900; color:#7ee6ff;">❄️ ${Number(l.snow_amount).toLocaleString()} Snow</div>
+                            <div style="font-size:12px; color:#9EC8E0; margin-top:4px;">${Number(l.total_price).toFixed(4)} TON</div>
+                        </div>
+                        <button class="market-cancel-btn" onclick="cancelMarketOrder(${l.id}, ${l.snow_amount})">
+                            Cancel
+                            <span class="market-cancel-fee">-20 ❄️</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        if (allEl) allEl.innerHTML = `<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load</div>`;
+    }
+}
+
+async function buyMarketOrder(listingId) {
+    const tgUser = getTgUser();
+    if (!confirm('Confirm purchase?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/market/buy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
+        });
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Purchase failed'); return; }
+        await loadMarketListings();
+        await loadMiningState();
+    } catch (e) {
+        alert('Purchase failed');
+    }
+}
+
+async function cancelMarketOrder(listingId, snowAmount) {
+    const tgUser = getTgUser();
+    const confirmed = confirm(`Cancel this order?\n-20 ❄️ cancellation fee will apply.`);
+    if (!confirmed) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/market/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
+        });
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Cancel failed'); return; }
+        await loadMarketListings();
+        await loadMiningState();
+    } catch (e) {
+        alert('Cancel failed');
+    }
+}
+
+document.getElementById('marketSnowInput')?.addEventListener('input', () => {
+    const snow = parseFloat(document.getElementById('marketSnowInput')?.value || 0);
+    const price = parseFloat(document.getElementById('marketPriceInput')?.value || 0);
+    const total = snow && price ? (snow * price).toFixed(6) : '0.00';
+    const totalEl = document.getElementById('marketTotalValue');
+    if (totalEl) totalEl.value = `${total} TON`;
+});
+
+document.getElementById('marketPriceInput')?.addEventListener('input', () => {
+    const snow = parseFloat(document.getElementById('marketSnowInput')?.value || 0);
+    const price = parseFloat(document.getElementById('marketPriceInput')?.value || 0);
+    const total = snow && price ? (snow * price).toFixed(6) : '0.00';
+    const totalEl = document.getElementById('marketTotalValue');
+    if (totalEl) totalEl.value = `${total} TON`;
+});
+
+document.getElementById('marketConfirmBtn')?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    const snowAmount = parseFloat(document.getElementById('marketSnowInput')?.value || 0);
+    const pricePerSnow = parseFloat(document.getElementById('marketPriceInput')?.value || 0);
+    const statusEl = document.getElementById('marketCreateStatus');
+
+    if (snowAmount < 100) { if (statusEl) statusEl.textContent = 'Minimum 100 Snow'; return; }
+    if (pricePerSnow < 0.00005) { if (statusEl) statusEl.textContent = 'Minimum price 0.00005 TON'; return; }
+
+    const btn = document.getElementById('marketConfirmBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/market/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, snow_amount: snowAmount, price_per_snow: pricePerSnow })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (statusEl) statusEl.textContent = data.error || 'Failed';
+            if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
+            return;
+        }
+
+        if (statusEl) statusEl.textContent = '';
+
+        const successOverlay = document.createElement('div');
+        successOverlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;';
+        successOverlay.innerHTML = `
+            <div style="background:rgba(10,25,40,0.97);border:2px solid #3CC7FF;border-radius:28px;padding:32px 28px;text-align:center;max-width:300px;width:90%;animation:marketPop 0.3s ease;">
+                <div style="font-size:50px;margin-bottom:12px;">📦</div>
+                <div style="font-size:20px;font-weight:900;color:#7ee6ff;margin-bottom:8px;">Order Created!</div>
+                <div style="font-size:14px;color:#B2DAFF;margin-bottom:6px;">❄️ ${snowAmount.toLocaleString()} Snow listed</div>
+                <div style="font-size:13px;color:#9EC8E0;margin-bottom:20px;">Fee: ${data.fee} ❄️ deducted</div>
+                <button onclick="this.closest('div[style]').remove()" style="width:100%;padding:12px;border:none;border-radius:20px;background:linear-gradient(135deg,#3CC7FF,#129FDF);color:white;font-size:16px;font-weight:900;cursor:pointer;">
+                    Awesome! 🎉
+                </button>
+            </div>`;
+        document.body.appendChild(successOverlay);
+
+        await loadMarketListings();
+        await loadMiningState();
+        const marketScreen = document.getElementById('marketScreen');
+        const allMode = document.querySelector('[data-market-mode="all"]');
+        if (allMode) allMode.click();
+
+    } catch (e) {
+        if (statusEl) statusEl.textContent = 'Request failed';
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
+});
+
+document.getElementById('marketRefreshBtn')?.addEventListener('click', loadMarketListings);
+
+document.querySelectorAll('[data-market-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-market-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.dataset.marketMode;
+        document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`market-${mode}`)?.classList.add('active');
+        if (mode === 'all' || mode === 'yours') loadMarketListings();
+    });
+});
+
+document.getElementById('marketNavBtn')?.addEventListener('click', loadMarketListings);
+document.getElementById('marketCreateBtn')?.addEventListener('click', () => {
+    document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('market-create')?.classList.add('active');
+});
+document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
+    document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('market-all')?.classList.add('active');
+    loadMarketListings();
 });
         
 initTonConnect();
