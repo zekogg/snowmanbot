@@ -146,6 +146,79 @@ await env.DB.prepare(`
       updated_at INTEGER NOT NULL
     )
   `).run().catch(() => {});
+
+await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS pvp_rounds (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      status TEXT NOT NULL DEFAULT 'waiting',
+      total_pot REAL NOT NULL DEFAULT 0,
+      winner_id INTEGER,
+      winner_amount REAL,
+      winner_share REAL,
+      started_at INTEGER,
+      locked_at INTEGER,
+      ended_at INTEGER,
+      created_at INTEGER NOT NULL
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS pvp_bets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      round_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      username TEXT,
+      display_name TEXT,
+      amount REAL NOT NULL,
+      created_at INTEGER NOT NULL
+    )
+  `).run().catch(() => {});
+}
+
+async function getPvpBets(env, roundId) {
+  const result = await env.DB.prepare(
+    `SELECT user_id, username, display_name, SUM(amount) as amount
+     FROM pvp_bets WHERE round_id = ?
+     GROUP BY user_id ORDER BY MIN(created_at) ASC`
+  ).bind(roundId).all();
+  return result.results || [];
+}
+
+async function getOrCreatePvpRound(env) {
+  const now = Date.now();
+  let round = await env.DB.prepare(
+    `SELECT * FROM pvp_rounds WHERE status IN ('waiting','countdown') ORDER BY id DESC LIMIT 1`
+  ).first();
+  if (!round) {
+    const res = await env.DB.prepare(
+      `INSERT INTO pvp_rounds (status, total_pot, created_at) VALUES ('waiting', 0, ?)`
+    ).bind(now).run();
+    round = await env.DB.prepare(`SELECT * FROM pvp_rounds WHERE id = ?`).bind(res.meta.last_row_id).first();
+  }
+  return round;
+}
+
+async function processPvpWinner(env, round, bets) {
+  const total = bets.reduce((s, b) => s + Number(b.amount), 0);
+  if (total === 0 || bets.length < 2) return null;
+  const fee = total * 0.15;
+  const prize = parseFloat((total - fee).toFixed(2));
+  let cumulative = 0;
+  const rand = Math.random() * total;
+  let winner = bets[bets.length - 1];
+  for (const bet of bets) {
+    cumulative += Number(bet.amount);
+    if (rand <= cumulative) { winner = bet; break; }
+  }
+  const winnerShare = parseFloat(((Number(winner.amount) / total) * 100).toFixed(2));
+  const now = Date.now();
+  await env.DB.prepare(
+    `UPDATE pvp_rounds SET status='finished', winner_id=?, winner_amount=?, winner_share=?, ended_at=?, total_pot=? WHERE id=?`
+  ).bind(winner.user_id, prize, winnerShare, now, total, round.id).run();
+  await env.DB.prepare(
+    `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+  ).bind(prize, now, winner.user_id).run();
+  return { winner, prize, winnerShare };
 }
 
 async function getUser(env, userId) {
@@ -996,6 +1069,108 @@ if (buyer?.referred_by) {
   }
 }
 
+if (url.pathname === "/api/pvp/current" && request.method === "GET") {
+  try {
+    await ensureSchema(env);
+    const now = Date.now();
+    let round = await getOrCreatePvpRound(env);
+    let winner = null;
+    let timeLeft = null;
+
+    if (round.status === 'countdown' && round.started_at) {
+      const elapsed = Math.floor((now - round.started_at) / 1000);
+      timeLeft = Math.max(0, 20 - elapsed);
+
+      if (timeLeft <= 2 && !round.locked_at) {
+        await env.DB.prepare(`UPDATE pvp_rounds SET locked_at=? WHERE id=?`).bind(now, round.id).run();
+        round = { ...round, locked_at: now };
+      }
+
+      if (timeLeft === 0) {
+        const bets = await getPvpBets(env, round.id);
+        const result = await processPvpWinner(env, round, bets);
+        if (result) {
+          winner = result;
+          round = { ...round, status: 'finished' };
+          const newRes = await env.DB.prepare(
+            `INSERT INTO pvp_rounds (status, total_pot, created_at) VALUES ('waiting', 0, ?)`
+          ).bind(now).run();
+          const newRound = await env.DB.prepare(`SELECT * FROM pvp_rounds WHERE id=?`).bind(newRes.meta.last_row_id).first();
+          const bets2 = await getPvpBets(env, round.id);
+          return json({ round, bets: bets2, time_left: 0, locked: true, winner, server_time: now, new_round: newRound });
+        }
+      }
+    }
+
+    const bets = await getPvpBets(env, round.id);
+    return json({ round, bets, time_left: timeLeft, locked: !!round.locked_at, winner, server_time: now });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
+  try {
+    await ensureSchema(env);
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const amount = Number(body.amount);
+    if (!userId || amount < 50) return json({ error: "Minimum bet is 50 Snow" }, 400);
+
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+    if (Number(user.snow_balance) < amount) return json({ error: "Not enough Snow" }, 400);
+
+    const now = Date.now();
+    let round = await getOrCreatePvpRound(env);
+
+    if (round.locked_at) return json({ error: "Bets are locked" }, 400);
+    if (round.status === 'countdown' && round.started_at) {
+      const elapsed = (now - round.started_at) / 1000;
+      if (elapsed >= 18) return json({ error: "Bets are locked" }, 400);
+    }
+
+    await env.DB.prepare(
+      `UPDATE users SET snow_balance = snow_balance - ?, updated_at = ? WHERE user_id = ?`
+    ).bind(amount, now, userId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO pvp_bets (round_id, user_id, username, display_name, amount, created_at) VALUES (?,?,?,?,?,?)`
+    ).bind(round.id, userId, user.username, user.display_name, amount, now).run();
+
+    await env.DB.prepare(
+      `UPDATE pvp_rounds SET total_pot = total_pot + ? WHERE id = ?`
+    ).bind(amount, round.id).run();
+
+    const bets = await getPvpBets(env, round.id);
+    const uniqueUsers = new Set(bets.map(b => b.user_id)).size;
+    if (uniqueUsers >= 2 && round.status === 'waiting') {
+      await env.DB.prepare(
+        `UPDATE pvp_rounds SET status='countdown', started_at=? WHERE id=?`
+      ).bind(now, round.id).run();
+    }
+
+    return json({ ok: true });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/pvp/history" && request.method === "GET") {
+  try {
+    const rounds = await env.DB.prepare(
+      `SELECT r.*, u.username, u.display_name
+       FROM pvp_rounds r
+       LEFT JOIN users u ON u.user_id = r.winner_id
+       WHERE r.status = 'finished'
+       ORDER BY r.id DESC LIMIT 20`
+    ).all();
+    return json({ rounds: rounds.results || [] });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+    
 if (url.pathname === "/api/market/listings" && request.method === "GET") {
   try {
     const userId = Number(url.searchParams.get("user_id") || 0);
