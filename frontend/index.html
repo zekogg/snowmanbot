@@ -4584,7 +4584,13 @@ finalHatchBtn?.addEventListener('click', submitHatch);
             if (event.target === pvpScreen) pvpScreen.classList.remove('show');
         });
 
-pvpBtn?.addEventListener('click', showPvpScreen);
+pvpBtn?.addEventListener('click', () => {
+    showPvpScreen();
+    if (!pvpPollTimer) {
+        pvpPoll();
+        pvpPollTimer = setInterval(pvpPoll, 1000);
+    }
+});
 
 function showExchangeModal() {
     if (exchangeModal) exchangeModal.style.display = 'flex';
@@ -4601,21 +4607,165 @@ window.addEventListener('click', (event) => {
     if (event.target === exchangeModal) hideExchangeModal();
 });
 
-document.querySelector('.pvp-wheel-wrap')?.addEventListener('click', () => {
-    pvpWheel.classList.remove('spin-once');
-    void pvpWheel.offsetWidth;
-    pvpWheel.classList.add('spin-once');
+const PVP_COLORS = ['#3CC7FF','#FF6B6B','#FFD166','#06D6A0','#9F66FF','#FF9F1C'];
+let pvpState = { round:null, bets:[], timeLeft:null, locked:false, spinning:false, showingResult:false, currentRotation:0 };
+let pvpPollTimer = null;
+
+function renderPvpWheel(bets) {
+    const wheel = document.getElementById('pvpWheel');
+    if (!wheel) return [];
+    if (!bets || bets.length === 0) {
+        wheel.style.background = 'rgba(60,199,255,0.08)';
+        return [];
+    }
+    const total = bets.reduce((s,b) => s + Number(b.amount), 0);
+    let deg = 0;
+    const sectors = bets.map((b,i) => {
+        const share = Number(b.amount) / total;
+        const degrees = share * 360;
+        const color = PVP_COLORS[i % PVP_COLORS.length];
+        const start = deg;
+        deg += degrees;
+        return { ...b, share, degrees, color, start, mid: start + degrees/2, end: deg };
+    });
+    wheel.style.background = `conic-gradient(${sectors.map(s=>`${s.color} ${s.start}deg ${s.end}deg`).join(',')})`;
+    return sectors;
+}
+
+function updatePvpCenter(text, color) {
+    const el = document.querySelector('.pvp-wheel-center span');
+    if (el) { el.textContent = text; el.style.color = color || '#fff'; }
+}
+
+function showPvpWinnerPopup(winner, prize, share) {
+    pvpState.showingResult = true;
+    const name = winner.username ? `@${winner.username}` : (winner.display_name || 'Player');
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.75);display:flex;justify-content:center;align-items:center;';
+    el.innerHTML = `
+        <div style="background:rgba(10,25,40,0.97);border:2px solid #FFD166;border-radius:24px;padding:28px 24px;text-align:center;min-width:260px;animation:mintPop 0.3s ease;">
+            <div style="font-size:40px;margin-bottom:8px;">🏆</div>
+            <div style="font-size:18px;font-weight:900;color:#FFD166;margin-bottom:6px;">${name}</div>
+            <div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:4px;">+${Math.round(prize)} ❄️</div>
+            <div style="font-size:13px;color:#9EC8E0;">${Number(share).toFixed(1)}% win chance</div>
+        </div>`;
+    document.body.appendChild(el);
+    setTimeout(() => { el.remove(); pvpState.showingResult = false; }, 3000);
+}
+
+function startPvpSpin(sectors, winnerId, prize, share) {
+    pvpState.spinning = true;
+    updatePvpCenter('LIVE', '#FF6B6B');
+    const wheel = document.getElementById('pvpWheel');
+    if (!wheel) return;
+    const winnerSector = sectors.find(s => s.user_id === winnerId);
+    if (!winnerSector) { pvpState.spinning = false; return; }
+    const midpoint = winnerSector.mid;
+    const targetAngle = pvpState.currentRotation + 360 * 6 + (360 - (midpoint % 360));
+    pvpState.currentRotation = targetAngle;
+    wheel.style.transition = 'transform 6s cubic-bezier(0.17,0.67,0.12,0.99)';
+    wheel.style.transform = `rotate(${targetAngle}deg)`;
+    setTimeout(() => {
+        const winnerBet = sectors.find(s => s.user_id === winnerId);
+        showPvpWinnerPopup(winnerBet || { display_name: 'Player' }, prize, share);
+        setTimeout(() => {
+            pvpState.spinning = false;
+            pvpState.currentRotation = 0;
+            wheel.style.transition = 'none';
+            wheel.style.transform = 'rotate(0deg)';
+            loadMiningState();
+        }, 3000);
+    }, 6200);
+}
+
+async function pvpPoll() {
+    if (pvpState.spinning || pvpState.showingResult) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/pvp/current`);
+        const data = await res.json();
+        pvpState.round = data.round;
+        pvpState.bets = data.bets || [];
+        pvpState.timeLeft = data.time_left;
+        pvpState.locked = data.locked;
+
+        const bets = data.bets || [];
+        const total = bets.reduce((s,b) => s + Number(b.amount), 0);
+        const totalEl = document.getElementById('pvpTotalValue');
+        if (totalEl) totalEl.textContent = Math.round(total * 0.85);
+
+        if (data.round.status === 'finished' && data.winner) {
+            const sectors = renderPvpWheel(bets);
+            startPvpSpin(sectors, data.winner.winner.user_id, data.winner.prize, data.winner.winnerShare);
+        } else {
+            renderPvpWheel(bets);
+            if (data.round.status === 'waiting') {
+                updatePvpCenter('WAITING', '#9EC8E0');
+            } else if (data.round.status === 'countdown') {
+                const t = data.time_left;
+                updatePvpCenter(t > 0 ? String(t) : 'GO!', t <= 5 ? '#FF6B6B' : '#FFD166');
+            }
+        }
+    } catch(e) { console.error('pvp poll', e); }
+}
+
+pvpSetBtn?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    let amount = parseInt(pvpAmountInput?.value.trim(), 10);
+    if (isNaN(amount) || amount < 50) { amount = 50; if (pvpAmountInput) pvpAmountInput.value = 50; }
+    if (pvpState.locked) { alert('Bets are locked!'); return; }
+    pvpSetBtn.disabled = true; pvpSetBtn.textContent = '...';
+    try {
+        const res = await fetch(`${API_BASE}/api/pvp/bet`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: tgUser.id, amount })
+        });
+        const data = await res.json();
+        if (!res.ok) alert(data.error || 'Failed');
+        else { await loadMiningState(); await pvpPoll(); }
+    } catch(e) { alert('Failed to place bet'); }
+    pvpSetBtn.disabled = false; pvpSetBtn.textContent = 'Set';
 });
 
-pvpSetBtn?.addEventListener('click', () => {
-    let rawValue = pvpAmountInput?.value.trim();
-    let value = parseInt(rawValue, 10);
-    
-    if (isNaN(value) || value < 50) {
-        value = 50;
-    }
-    
-    if (pvpAmountInput) pvpAmountInput.value = value;
+document.getElementById('pvpHistoryBtn')?.addEventListener('click', async () => {
+    const panel = document.getElementById('pvpHistoryPanel');
+    if (!panel) return;
+    const isShown = panel.classList.contains('show');
+    if (isShown) { panel.classList.remove('show'); return; }
+    panel.classList.add('show');
+    panel.querySelectorAll('.pvp-history-item').forEach(el => el.remove());
+    try {
+        const res = await fetch(`${API_BASE}/api/pvp/history`);
+        const data = await res.json();
+        const header = panel.querySelector('.pvp-history-header');
+        if (!data.rounds?.length) {
+            const empty = document.createElement('div');
+            empty.style.cssText = 'text-align:center;color:#9EC8E0;padding:20px;font-size:14px;';
+            empty.textContent = 'No history yet';
+            header.after(empty);
+            return;
+        }
+        data.rounds.forEach(r => {
+            const name = r.username ? `@${r.username}` : (r.display_name || 'Player');
+            const item = document.createElement('div');
+            item.className = 'pvp-history-item';
+            item.innerHTML = `
+                <div class="pvp-history-row1">
+                    <span class="pvp-history-id">#${r.id}</span>
+                    <span class="pvp-history-user">${name}</span>
+                    <span class="pvp-history-winner">Winner</span>
+                </div>
+                <div class="pvp-history-row2">
+                    <span class="pvp-history-won">Won ${Math.round(r.winner_amount||0)} ❄️</span>
+                    <span class="pvp-history-percent">${Number(r.winner_share||0).toFixed(1)}%</span>
+                </div>`;
+            panel.appendChild(item);
+        });
+    } catch(e) {}
+});
+
+document.getElementById('closePvpHistoryBtn')?.addEventListener('click', () => {
+    document.getElementById('pvpHistoryPanel')?.classList.remove('show');
 });
 
 // ----- Leaderboard (الكأس) - واجهة فقط -----
