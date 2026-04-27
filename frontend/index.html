@@ -1846,6 +1846,29 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     animation: pvpColorSpin 5s linear infinite;
 }
 
+.pvp-wheel.pvp-active::before {
+    animation: none !important;
+    background: transparent !important;
+}
+
+.pvp-avatar {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.75);
+    border: 2.5px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 900;
+    color: white;
+    z-index: 10;
+    pointer-events: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+        
 .pvp-wheel::after {
     content: "";
     position: absolute;
@@ -4614,13 +4637,20 @@ let pvpPollTimer = null;
 function renderPvpWheel(bets) {
     const wheel = document.getElementById('pvpWheel');
     if (!wheel) return [];
+
+    wheel.querySelectorAll('.pvp-avatar').forEach(el => el.remove());
+
     if (!bets || bets.length === 0) {
-        wheel.style.background = 'rgba(60,199,255,0.08)';
+        wheel.classList.remove('pvp-active');
+        wheel.style.background = '';
         return [];
     }
+
+    wheel.classList.add('pvp-active');
+
     const total = bets.reduce((s,b) => s + Number(b.amount), 0);
     let deg = 0;
-    const sectors = bets.map((b,i) => {
+    const sectors = bets.map((b, i) => {
         const share = Number(b.amount) / total;
         const degrees = share * 360;
         const color = PVP_COLORS[i % PVP_COLORS.length];
@@ -4628,7 +4658,24 @@ function renderPvpWheel(bets) {
         deg += degrees;
         return { ...b, share, degrees, color, start, mid: start + degrees/2, end: deg };
     });
+
     wheel.style.background = `conic-gradient(${sectors.map(s=>`${s.color} ${s.start}deg ${s.end}deg`).join(',')})`;
+
+    sectors.forEach(s => {
+        const midRad = (s.mid * Math.PI) / 180;
+        const radius = 34;
+        const x = 50 + radius * Math.sin(midRad);
+        const y = 50 - radius * Math.cos(midRad);
+        const size = Math.max(36, Math.min(60, s.share * 80));
+        const name = s.username ? `@${s.username}` : (s.display_name || '?');
+        const short = name.length > 7 ? name.substring(0, 7) : name;
+        const avatar = document.createElement('div');
+        avatar.className = 'pvp-avatar';
+        avatar.style.cssText = `left:${x}%;top:${y}%;width:${size}px;height:${size}px;transform:translate(-50%,-50%);font-size:${Math.max(7, size * 0.18)}px;`;
+        avatar.textContent = short;
+        wheel.appendChild(avatar);
+    });
+
     return sectors;
 }
 
