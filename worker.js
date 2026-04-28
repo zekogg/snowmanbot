@@ -200,7 +200,7 @@ async function getOrCreatePvpRound(env) {
 
 async function processPvpWinner(env, round, bets) {
   const total = bets.reduce((s, b) => s + Number(b.amount), 0);
-  if (total === 0 || bets.length < 1) return null;
+  if (total === 0 || bets.length < 2) return null;
   const fee = total * 0.15;
   const prize = parseFloat((total - fee).toFixed(2));
   let cumulative = 0;
@@ -1144,7 +1144,7 @@ if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
 
     const bets = await getPvpBets(env, round.id);
     const uniqueUsers = new Set(bets.map(b => b.user_id)).size;
-    if (uniqueUsers >= 1 && round.status === 'waiting') {
+    if (uniqueUsers >= 2 && round.status === 'waiting') {
       await env.DB.prepare(
         `UPDATE pvp_rounds SET status='countdown', started_at=? WHERE id=?`
       ).bind(now, round.id).run();
