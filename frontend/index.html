@@ -2724,8 +2724,10 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     backdrop-filter: blur(12px);
     display: none;
     z-index: 960;
+    max-height: 60dvh;
+    overflow-y: auto;
 }
-
+        
 .pvp-history-header {
     display: flex;
     justify-content: space-between;
@@ -4736,6 +4738,9 @@ async function pvpPoll() {
     try {
         const res = await fetch(`${API_BASE}/api/pvp/current`);
         const data = await res.json();
+
+        if (pvpState.spinning || pvpState.showingResult) return;
+
         pvpState.round = data.round;
         pvpState.bets = data.bets || [];
         pvpState.timeLeft = data.time_left;
@@ -4787,6 +4792,7 @@ document.getElementById('pvpHistoryBtn')?.addEventListener('click', async () => 
     if (isShown) { panel.classList.remove('show'); return; }
     panel.classList.add('show');
     panel.querySelectorAll('.pvp-history-item').forEach(el => el.remove());
+    panel.querySelectorAll('div[style]').forEach(el => el.remove());
     try {
         const res = await fetch(`${API_BASE}/api/pvp/history`);
         const data = await res.json();
