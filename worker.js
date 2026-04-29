@@ -1156,6 +1156,63 @@ if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
   }
 }
 
+if (url.pathname === "/api/leaderboard" && request.method === "GET") {
+  try {
+    const userId = Number(url.searchParams.get("user_id"));
+
+    const refTop = await env.DB.prepare(`
+      SELECT u.user_id, u.username, u.display_name,
+             COUNT(r.user_id) as ref_count
+      FROM users u
+      LEFT JOIN users r ON r.referred_by = u.user_id
+      GROUP BY u.user_id
+      ORDER BY ref_count DESC
+      LIMIT 20
+    `).all();
+
+    const snowTop = await env.DB.prepare(`
+      SELECT user_id, username, display_name, snowman_count
+      FROM users
+      ORDER BY snowman_count DESC
+      LIMIT 20
+    `).all();
+
+    let refRank = 0, refValue = 0;
+    let snowRank = 0, snowValue = 0;
+
+    if (userId) {
+      const refAll = await env.DB.prepare(`
+        SELECT u.user_id, COUNT(r.user_id) as ref_count
+        FROM users u
+        LEFT JOIN users r ON r.referred_by = u.user_id
+        GROUP BY u.user_id
+        ORDER BY ref_count DESC
+      `).all();
+      const refList = refAll.results || [];
+      const refIdx = refList.findIndex(r => Number(r.user_id) === userId);
+      refRank = refIdx >= 0 ? refIdx + 1 : 0;
+      refValue = refIdx >= 0 ? Number(refList[refIdx].ref_count) : 0;
+
+      const snowAll = await env.DB.prepare(`
+        SELECT user_id, snowman_count
+        FROM users
+        ORDER BY snowman_count DESC
+      `).all();
+      const snowList = snowAll.results || [];
+      const snowIdx = snowList.findIndex(r => Number(r.user_id) === userId);
+      snowRank = snowIdx >= 0 ? snowIdx + 1 : 0;
+      snowValue = snowIdx >= 0 ? Number(snowList[snowIdx].snowman_count) : 0;
+    }
+
+    return json({
+      referrals: { top: refTop.results || [], user_rank: refRank, user_value: refValue },
+      snowmen: { top: snowTop.results || [], user_rank: snowRank, user_value: snowValue }
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+    
 if (url.pathname === "/api/pvp/history" && request.method === "GET") {
   try {
     const rounds = await env.DB.prepare(
