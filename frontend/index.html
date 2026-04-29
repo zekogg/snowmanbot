@@ -4847,6 +4847,7 @@ if (leagueBtn) {
     leagueBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         showLeagueScreen();
+        loadLeaderboard();
     });
 }
 if (leagueCloseBtn) {
@@ -5556,6 +5557,59 @@ document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
     document.getElementById('market-all')?.classList.add('active');
     loadMarketListings();
 });
+
+async function loadLeaderboard() {
+    const tgUser = getTgUser();
+    const refList = document.getElementById('refLeaderboardList');
+    const snowList = document.getElementById('snowLeaderboardList');
+
+    try {
+        const res = await fetch(`${API_BASE}/api/leaderboard?user_id=${tgUser.id}`);
+        const data = await res.json();
+
+        const refRankEl = document.getElementById('refUserRank');
+        const refValEl = document.getElementById('refUserValue');
+        const snowRankEl = document.getElementById('snowUserRank');
+        const snowValEl = document.getElementById('snowUserValue');
+
+        if (refRankEl) refRankEl.textContent = `#${data.referrals.user_rank || 0}`;
+        if (refValEl) refValEl.textContent = data.referrals.user_value || 0;
+        if (snowRankEl) snowRankEl.textContent = `#${data.snowmen.user_rank || 0}`;
+        if (snowValEl) snowValEl.textContent = formatNum(data.snowmen.user_value || 0);
+
+        const medals = ['🥇','🥈','🥉'];
+
+        if (refList) {
+            refList.innerHTML = (data.referrals.top || []).map((u, i) => {
+                const name = u.username ? `@${u.username}` : (u.display_name || 'Player');
+                const medal = medals[i] || `#${i + 1}`;
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(60,199,255,0.07);border-radius:14px;margin-bottom:8px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:16px;min-width:24px;">${medal}</span>
+                        <span style="font-size:14px;font-weight:700;">${name}</span>
+                    </div>
+                    <span style="font-size:13px;color:#7ee6ff;font-weight:800;">${u.ref_count} 👥</span>
+                </div>`;
+            }).join('');
+        }
+
+        if (snowList) {
+            snowList.innerHTML = (data.snowmen.top || []).map((u, i) => {
+                const name = u.username ? `@${u.username}` : (u.display_name || 'Player');
+                const medal = medals[i] || `#${i + 1}`;
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(60,199,255,0.07);border-radius:14px;margin-bottom:8px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:16px;min-width:24px;">${medal}</span>
+                        <span style="font-size:14px;font-weight:700;">${name}</span>
+                    </div>
+                    <span style="font-size:13px;color:#7ee6ff;font-weight:800;">${formatNum(u.snowman_count)} ☃️</span>
+                </div>`;
+            }).join('');
+        }
+    } catch (e) {
+        console.error('loadLeaderboard error', e);
+    }
+}
         
 initTonConnect();
 
