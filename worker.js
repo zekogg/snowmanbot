@@ -173,6 +173,27 @@ await env.DB.prepare(`
       created_at INTEGER NOT NULL
     )
   `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS promo_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      reward_snow REAL NOT NULL DEFAULT 0,
+      max_uses INTEGER NOT NULL DEFAULT 100,
+      uses_count INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT 0
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS promo_uses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      used_at INTEGER NOT NULL,
+      UNIQUE(code, user_id)
+    )
+  `).run().catch(() => {});
 }
 
 async function getPvpBets(env, roundId) {
@@ -591,28 +612,7 @@ async function handleTaskComplete(env, body) {
     success: true,
     reward: 2,
     completions: afterCount
-  };
-
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS promo_codes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      code TEXT NOT NULL UNIQUE,
-      reward_snow REAL NOT NULL DEFAULT 0,
-      max_uses INTEGER NOT NULL DEFAULT 100,
-      uses_count INTEGER NOT NULL DEFAULT 0,
-      created_at INTEGER NOT NULL DEFAULT 0
-    )
-  `).run().catch(() => {});
-
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS promo_uses (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      code TEXT NOT NULL,
-      user_id INTEGER NOT NULL,
-      used_at INTEGER NOT NULL,
-      UNIQUE(code, user_id)
-    )
-  `).run().catch(() => {});
+  }; 
 }
 
 function computeMiningState(user, now = Date.now()) {
