@@ -5161,7 +5161,6 @@ async function loadFriends() {
     }
 }
 
-loadFriends();
         
 taskHistoryBtn?.addEventListener('click', () => {
     if (taskHistoryModal) taskHistoryModal.style.display = 'flex';
@@ -5609,6 +5608,7 @@ document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
 });
         
 initTonConnect();
+loadFriends();
 
 showHomeScreen();
 });
