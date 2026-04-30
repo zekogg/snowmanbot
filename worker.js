@@ -592,6 +592,27 @@ async function handleTaskComplete(env, body) {
     reward: 2,
     completions: afterCount
   };
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS promo_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      reward_snow REAL NOT NULL DEFAULT 0,
+      max_uses INTEGER NOT NULL DEFAULT 100,
+      uses_count INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT 0
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS promo_uses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      used_at INTEGER NOT NULL,
+      UNIQUE(code, user_id)
+    )
+  `).run().catch(() => {});
 }
 
 function computeMiningState(user, now = Date.now()) {
@@ -1156,6 +1177,45 @@ if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
   }
 }
 
+if (url.pathname === "/api/promo/redeem" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const userId = Number(body.user_id);
+    const code = String(body.code || "").trim().toUpperCase();
+
+    if (!userId || !code) return json({ error: "Missing params" }, 400);
+
+    const promo = await env.DB.prepare(
+      `SELECT * FROM promo_codes WHERE code = ?`
+    ).bind(code).first();
+
+    if (!promo) return json({ error: "Invalid code" }, 400);
+    if (promo.uses_count >= promo.max_uses) return json({ error: "Code has reached maximum uses" }, 400);
+
+    const alreadyUsed = await env.DB.prepare(
+      `SELECT id FROM promo_uses WHERE code = ? AND user_id = ?`
+    ).bind(code, userId).first();
+    if (alreadyUsed) return json({ error: "You already used this code" }, 400);
+
+    const now = Date.now();
+    await env.DB.prepare(
+      `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+    ).bind(promo.reward_snow, now, userId).run();
+
+    await env.DB.prepare(
+      `UPDATE promo_codes SET uses_count = uses_count + 1 WHERE code = ?`
+    ).bind(code).run();
+
+    await env.DB.prepare(
+      `INSERT INTO promo_uses (code, user_id, used_at) VALUES (?, ?, ?)`
+    ).bind(code, userId, now).run();
+
+    return json({ ok: true, reward_snow: promo.reward_snow, code });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+    
 if (url.pathname === "/api/leaderboard" && request.method === "GET") {
   try {
     const userId = Number(url.searchParams.get("user_id"));
