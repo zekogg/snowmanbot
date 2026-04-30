@@ -5108,8 +5108,9 @@ loadTaskFeed();
 loadTaskHistory();
 
 async function loadFriends() {
-    const tgUser = getTgUser();
-    const refLink = `https://t.me/Snow0ManBot?start=${tgUser.id}`;
+    const userId = miningState.userId || getTgUser().id;
+    const tgUser = { id: userId };
+    const refLink = `https://t.me/Snow0ManBot?start=${userId}`;
 
     const linkCard = document.getElementById('friendsLinkCard');
     if (linkCard) linkCard.textContent = refLink;
