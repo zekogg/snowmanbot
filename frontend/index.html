@@ -5093,10 +5093,12 @@ async function loadMiningState() {
     tickMiningTimer();
 }
 
-loadMiningState().catch((error) => {
+loadMiningState().then(() => {
+    loadFriends();
+}).catch((error) => {
     console.error(error);
     renderMiningUI();
-   updateHatchUI();
+    updateHatchUI();
     tickMiningTimer();
 });
 
@@ -5608,7 +5610,6 @@ document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
 });
         
 initTonConnect();
-loadFriends();
 
 showHomeScreen();
 });
