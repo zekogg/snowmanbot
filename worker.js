@@ -883,8 +883,8 @@ if (url.pathname === "/api/friends" && request.method === "GET") {
     if (!userId) return json({ error: "Missing user_id" }, 400);
 
     const friends = await env.DB.prepare(
-      `SELECT user_id, username, display_name, created_at FROM users WHERE referred_by = ? ORDER BY updated_at DESC`
-    ).bind(userId).all();
+  `SELECT user_id, username, display_name FROM users WHERE referred_by = ? ORDER BY updated_at DESC`
+).bind(userId).all();
 
     const rewardRow = await env.DB.prepare(
       `SELECT referral_ton_earned FROM users WHERE user_id = ?`
