@@ -4970,16 +4970,54 @@ if (promoModal) {
     });
 }
 if (applyPromoBtn) {
-    applyPromoBtn.addEventListener('click', () => {
+    applyPromoBtn.addEventListener('click', async () => {
+        const tgUser = getTgUser();
         const input = document.querySelector('.promo-input');
-        if (input) {
-            alert('Promo code applied (demo): ' + input.value);
-            input.value = '';
+        const code = input?.value?.trim().toUpperCase();
+        if (!code) return;
+
+        applyPromoBtn.disabled = true;
+        applyPromoBtn.textContent = '...';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/promo/redeem`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: tgUser.id, code })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Invalid code');
+                applyPromoBtn.disabled = false;
+                applyPromoBtn.textContent = 'Apply';
+                return;
+            }
+
+            if (promoModal) promoModal.style.display = 'none';
+            if (input) input.value = '';
+
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.75);display:flex;justify-content:center;align-items:center;pointer-events:none;';
+            overlay.innerHTML = `
+                <div style="background:rgba(10,25,40,0.97);border:2px solid #FFD166;border-radius:24px;padding:28px 24px;text-align:center;min-width:240px;animation:mintPop 0.3s ease;">
+                    <div style="font-size:44px;margin-bottom:10px;">🎁</div>
+                    <div style="font-size:18px;font-weight:900;color:#FFD166;margin-bottom:8px;">Promo Activated!</div>
+                    <div style="font-size:26px;font-weight:900;color:#7ee6ff;">+${data.reward_snow} ❄️</div>
+                    <div style="font-size:13px;color:#9EC8E0;margin-top:6px;">Snow added to your balance</div>
+                </div>`;
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.remove(), 5000);
+
+            await loadMiningState();
+        } catch (e) {
+            alert('Failed to redeem code');
         }
-        if (promoModal) promoModal.style.display = 'none';
+
+        applyPromoBtn.disabled = false;
+        applyPromoBtn.textContent = 'Apply';
     });
 }
-
 
    const HOUR_MS = 60 * 60 * 1000;
 
