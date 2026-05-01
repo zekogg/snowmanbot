@@ -3838,6 +3838,14 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <script>
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
+
+function getAuthHeaders() {
+    const initData = window.Telegram?.WebApp?.initData || '';
+    return {
+        'Content-Type': 'application/json',
+        'X-Telegram-Init-Data': initData
+    };
+}
     
     document.addEventListener('DOMContentLoaded', () => {
       const addTaskModal = document.getElementById('addTaskModal');
@@ -4472,7 +4480,7 @@ function startTaskJoin(task, button) {
             
             const response = await fetch(`${API_BASE}/api/tasks/complete`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders()
                 body: JSON.stringify({
                     user_id: userId,
                     task_id: task.task_id
@@ -4537,7 +4545,7 @@ document.querySelectorAll('.mint-buy-btn').forEach(btn => {
         try {
             const res = await fetch(`${API_BASE}/api/mint`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders()
                 body: JSON.stringify({ user_id: tgUser.id, pack })
             });
             const data = await res.json();
@@ -4775,7 +4783,7 @@ pvpSetBtn?.addEventListener('click', async () => {
     try {
         const res = await fetch(`${API_BASE}/api/pvp/bet`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders()
             body: JSON.stringify({ user_id: tgUser.id, amount })
         });
         const data = await res.json();
@@ -4981,7 +4989,7 @@ if (applyPromoBtn) {
         try {
             const res = await fetch(`${API_BASE}/api/promo/redeem`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders()
                 body: JSON.stringify({ user_id: tgUser.id, code })
             });
             const data = await res.json();
@@ -5239,7 +5247,7 @@ function initTonConnect() {
                 const tgUser = getTgUser();
                 fetch(`${API_BASE}/api/wallet/save`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: getAuthHeaders()
                     body: JSON.stringify({ user_id: tgUser.id, wallet_address: address })
                 });
             }
@@ -5381,7 +5389,7 @@ document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
     try {
         const res = await fetch(`${API_BASE}/api/withdraw`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders()
             body: JSON.stringify({ user_id: tgUser.id, amount, ton_address: tonAddress })
         });
         const data = await res.json();
@@ -5470,7 +5478,7 @@ window.buyMarketOrder = async function(listingId) {
     try {
         const res = await fetch(`${API_BASE}/api/market/buy`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders()
             body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
         });
         const data = await res.json();
@@ -5486,7 +5494,7 @@ window.cancelMarketOrder = async function(listingId) {
     try {
         const res = await fetch(`${API_BASE}/api/market/cancel`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders()
             body: JSON.stringify({ user_id: tgUser.id, listing_id: listingId })
         });
         const data = await res.json();
@@ -5580,7 +5588,7 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
     try {
         const res = await fetch(`${API_BASE}/api/market/create`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders()
             body: JSON.stringify({ user_id: tgUser.id, snow_amount: snowAmount, price_per_snow: pricePerSnow })
         });
         const data = await res.json();
