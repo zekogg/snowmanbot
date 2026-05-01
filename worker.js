@@ -1262,6 +1262,8 @@ if (!checkRateLimit(userId, 'pvp_bet', 5)) {
 }
 
 if (url.pathname === "/api/promo/redeem" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
@@ -1390,6 +1392,8 @@ if (url.pathname === "/api/market/listings" && request.method === "GET") {
 }
 
 if (url.pathname === "/api/market/create" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
@@ -1672,6 +1676,8 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
 }
 
 if (url.pathname === "/api/tasks/complete" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const result = await handleTaskComplete(env, body);
