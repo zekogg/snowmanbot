@@ -40,6 +40,62 @@ function rawToFriendly(raw) {
   }
 }
 
+async function verifyTelegramAuth(request, env) {
+  const initData = request.headers.get('X-Telegram-Init-Data');
+  if (!initData) return false;
+  
+  const params = new URLSearchParams(initData);
+  const hash = params.get('hash');
+  params.delete('hash');
+  
+  const dataCheckString = [...params.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
+  
+  const encoder = new TextEncoder();
+  const secretKey = await crypto.subtle.importKey(
+    'raw', encoder.encode('WebAppData'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const botKeyBytes = await crypto.subtle.sign('HMAC', secretKey, encoder.encode(env.BOT_TOKEN));
+  const dataKey = await crypto.subtle.importKey(
+    'raw', botKeyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', dataKey, encoder.encode(dataCheckString));
+  const expectedHash = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  if (expectedHash !== hash) return false;
+  
+  const authDate = Number(params.get('auth_date'));
+  if (Date.now() / 1000 - authDate > 86400) return false;
+  
+  return true;
+}
+
+const rateLimitMap = new Map();
+
+function checkRateLimit(userId, action, maxPerMinute = 10) {
+  const key = `${userId}:${action}`;
+  const now = Date.now();
+  const windowMs = 60000;
+  
+  if (!rateLimitMap.has(key)) {
+    rateLimitMap.set(key, { count: 1, start: now });
+    return true;
+  }
+  
+  const data = rateLimitMap.get(key);
+  if (now - data.start > windowMs) {
+    rateLimitMap.set(key, { count: 1, start: now });
+    return true;
+  }
+  
+  if (data.count >= maxPerMinute) return false;
+  data.count++;
+  return true;
+}
+
 async function ensureSchema(env) {
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS users (
@@ -899,6 +955,8 @@ if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_re
     }
 
 if (url.pathname === "/api/friends" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const userId = Number(url.searchParams.get("user_id"));
     if (!userId) return json({ error: "Missing user_id" }, 400);
@@ -926,14 +984,26 @@ if (url.pathname === "/api/friends" && request.method === "GET") {
 }
 
 if (url.pathname === "/api/wallet/save" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
     const walletAddress = String(body.wallet_address || "").trim();
-    if (!userId || !walletAddress) return json({ error: "Missing params" }, 400);
+
+    if (!userId || !walletAddress) {
+      return json({ error: "Missing params" }, 400);
+    }
+
+    if (!checkRateLimit(userId, "wallet_save", 5)) {
+      return json({ error: "Too many requests" }, 429);
+    }
+
     await env.DB.prepare(
       `UPDATE users SET wallet_address = ?, updated_at = ? WHERE user_id = ?`
     ).bind(walletAddress, Date.now(), userId).run();
+
     return json({ ok: true });
   } catch (e) {
     return json({ error: e.message }, 500);
@@ -941,6 +1011,8 @@ if (url.pathname === "/api/wallet/save" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/ton/check" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const userId = Number(url.searchParams.get("user_id"));
     const amount = Number(url.searchParams.get("amount"));
@@ -1023,11 +1095,17 @@ if (url.pathname === "/tonconnect-manifest.json") {
 }
 
 if (url.pathname === "/api/mint" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
     const pack = String(body.pack || "").trim();
 
+if (!checkRateLimit(userId, 'mint', 5)) {
+    return json({ error: "Too many requests" }, 429);
+}
+    
     const PACKS = {
       starter: { ton: 1,  snowmen: 2450,   speed: 7   },
       pro:     { ton: 5,  snowmen: 10500,  speed: 30  },
@@ -1131,6 +1209,8 @@ if (url.pathname === "/api/pvp/current" && request.method === "GET") {
 }
 
 if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     await ensureSchema(env);
     const body = await request.json();
@@ -1138,6 +1218,10 @@ if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
     const amount = Number(body.amount);
     if (!userId || amount < 50) return json({ error: "Minimum bet is 50 Snow" }, 400);
 
+if (!checkRateLimit(userId, 'pvp_bet', 5)) {
+    return json({ error: "Too many requests" }, 429);
+}
+    
     const user = await getUser(env, userId);
     if (!user) return json({ error: "User not found" }, 404);
     if (Number(user.snow_balance) < amount) return json({ error: "Not enough Snow" }, 400);
@@ -1347,11 +1431,17 @@ if (url.pathname === "/api/market/create" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/market/buy" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
     const listingId = Number(body.listing_id);
 
+if (!checkRateLimit(userId, 'market_buy', 5)) {
+        return json({ error: "Too many requests" }, 429);
+}
+    
     const listing = await env.DB.prepare(
       `SELECT * FROM market_listings WHERE id = ? AND status = 'active'`
     ).bind(listingId).first();
@@ -1424,6 +1514,8 @@ if (url.pathname === "/api/market/cancel" && request.method === "POST") {
 }
     
 if (url.pathname === "/api/withdraw" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
@@ -1437,6 +1529,10 @@ if (url.pathname === "/api/withdraw" && request.method === "POST") {
     if (!user) return json({ error: "User not found" }, 404);
     if (Number(user.ton_balance || 0) < amount) return json({ error: "Not enough TON balance" }, 400);
 
+if (!checkRateLimit(userId, 'withdraw', 3)) {
+    return json({ error: "Too many requests" }, 429);
+}
+    
     const fee = parseFloat((amount * 0.05).toFixed(4));
     const netAmount = parseFloat((amount - fee).toFixed(4));
     const now = Date.now();
@@ -1485,6 +1581,8 @@ if (url.pathname === "/api/withdraw" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/withdraw/history" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const userId = Number(url.searchParams.get("user_id"));
     if (!userId) return json({ error: "Missing user_id" }, 400);
@@ -1497,6 +1595,10 @@ if (url.pathname === "/api/withdraw/history" && request.method === "GET") {
       `SELECT * FROM ton_deposits WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
     ).bind(userId).all();
 
+if (!checkRateLimit(userId, 'withdraw_history', 10)) {
+    return json({ error: "Too many requests" }, 429);
+}
+    
     return json({
       withdrawals: withdrawals.results || [],
       deposits: deposits.results || []
@@ -1541,6 +1643,8 @@ if (url.pathname === "/api/tasks/submit-channel" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/tasks/list" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   const userId = Number(url.searchParams.get("user_id"));
   const tasks = await getOnlineTasks(env);
   
@@ -1556,6 +1660,8 @@ if (url.pathname === "/api/tasks/list" && request.method === "GET") {
 }
 
 if (url.pathname === "/api/tasks/history" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   const userId = Number(url.searchParams.get("user_id"));
   if (!userId || Number.isNaN(userId)) {
     return json({ error: "Invalid user_id" }, 400);
@@ -1576,6 +1682,8 @@ if (url.pathname === "/api/tasks/complete" && request.method === "POST") {
 }
     
 if (url.pathname === "/api/hatch" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
       try {
         const body = await request.json();
         const userId = Number(body.user_id);
@@ -1587,6 +1695,10 @@ if (url.pathname === "/api/hatch" && request.method === "POST") {
           return json({ error: "Invalid user_id." }, 400);
         }
 
+if (!checkRateLimit(userId, 'hatch', 5)) {
+    return json({ error: "Too many requests" }, 429);
+}
+        
         if (!Number.isFinite(baseAmount) || baseAmount < 100) {
           return json({ error: "Minimum hatch amount is 100." }, 400);
         }
@@ -1647,25 +1759,31 @@ if (result.meta.changes === 0) {
     }
     
     if (url.pathname === "/api/me" && request.method === "GET") {
-      const userIdParam = url.searchParams.get("user_id");
-      const userId = Number(userIdParam);
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
 
-      // التحقق من أن user_id رقم صحيح
-      if (!userIdParam || isNaN(userId) || userId <= 0) {
-        return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
-      }
+  const userIdParam = url.searchParams.get("user_id");
+  const userId = Number(userIdParam);
 
-      const username = url.searchParams.get("username");
-      const displayName = url.searchParams.get("display_name");
+  if (!userIdParam || isNaN(userId) || userId <= 0) {
+    return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
+  }
 
-      try {
-        const result = await settleUserMining(env, userId, username, displayName);
-        return json(result);
-      } catch (error) {
-        return json({ error: error.message }, 500);
-      }
-    }
+  if (!checkRateLimit(userId, "settle_mining", 5)) {
+    return json({ error: "Too many requests" }, 429);
+  }
 
-    return env.ASSETS.fetch(request);
+  const username = url.searchParams.get("username");
+  const displayName = url.searchParams.get("display_name");
+
+  try {
+    const result = await settleUserMining(env, userId, username, displayName);
+    return json(result);
+  } catch (error) {
+    return json({ error: error.message }, 500);
+  }
+}
+
+return env.ASSETS.fetch(request);
   }
 };
