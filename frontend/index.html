@@ -3497,8 +3497,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     
     <div class="channel-submit-card">
         <div class="channel-submit-text">
-            Have a Telegram channel?<br>
-            Submit your channel where you'll promote our bot and get a task reward when approved!
+            Post about Our "Bot" on your channel and earn 5 to 1000 Snow <br> plus a "task reward" per approved post .
         </div>
         <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
         <button class="submit-channel-btn" id="submitChannelBtn" type="button">Submit Channel</button>
@@ -4453,11 +4452,11 @@ ${status === 'online' ? `<span style="font-size:9px; background:rgba(60,199,255,
 function startTaskJoin(task, button) {
     if (!button || button.dataset.running === '1') return;
     button.dataset.running = '1';
-    button.textContent = '4';
+    button.textContent = '15';
     
     window.open(task.link, '_blank'); // ← هذا السطر الجديد
     
-    let remaining = 4;
+    let remaining = 15;
     const timer = setInterval(async () => {
         remaining -= 1;
         if (remaining > 0) {
@@ -4703,7 +4702,7 @@ function showPvpWinnerPopup(winner, prize, share) {
             <div style="font-size:13px;color:#9EC8E0;">${Number(share).toFixed(1)}% win chance</div>
         </div>`;
     document.body.appendChild(el);
-    setTimeout(() => { el.remove(); pvpState.showingResult = false; }, 3000);
+    setTimeout(() => { el.remove(); pvpState.showingResult = false; }, 5000);
 }
 
 function startPvpSpin(sectors, winnerId, prize, share) {
