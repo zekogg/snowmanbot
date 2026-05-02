@@ -4221,7 +4221,7 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         
         const response = await fetch(`${API_BASE}/api/tasks/create`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 user_id: userId,
                 link,
@@ -4263,7 +4263,7 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         
         const response = await fetch(`${API_BASE}/api/tasks/submit-channel`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 user_id: userId,
                 link: channelUrl,
@@ -5177,7 +5177,9 @@ async function loadFriends() {
     });
 
     try {
-        const res = await fetch(`${API_BASE}/api/friends?user_id=${tgUser.id}`);
+        const res = await fetch(`${API_BASE}/api/friends?user_id=${tgUser.id}`, {
+    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+});
         const data = await res.json();
 
         const countEl = document.getElementById('friendsCount');
@@ -5290,8 +5292,9 @@ function startDepositPolling(userId, amount, statusMsg) {
         attempts++;
         try {
             const res = await fetch(
-                `${API_BASE}/api/ton/check?user_id=${userId}&amount=${amount}`
-            );
+    `${API_BASE}/api/ton/check?user_id=${userId}&amount=${amount}`,
+    { headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' } }
+);
             const data = await res.json();
             if (data.found) {
                 clearInterval(interval);
@@ -5418,7 +5421,9 @@ document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async (
     listEl.innerHTML = '<div style="text-align:center; color:#9EC8E0; padding:20px;">Loading...</div>';
 
     try {
-        const res = await fetch(`${API_BASE}/api/withdraw/history?user_id=${tgUser.id}`);
+        const res = await fetch(`${API_BASE}/api/withdraw/history?user_id=${tgUser.id}`, {
+    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+});
         const data = await res.json();
 
         const withdrawals = data.withdrawals || [];
