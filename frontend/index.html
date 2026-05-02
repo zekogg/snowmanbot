@@ -4347,8 +4347,7 @@ async function submitHatch() {
     
     const response = await fetch(`${API_BASE}/api/hatch`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
+        headers: getAuthHeaders(),
         },
         body: JSON.stringify({
             user_id: userId,
@@ -4410,7 +4409,9 @@ async function loadTaskFeed() {
         const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
         const userId = tgUser?.id || 12345;
         
-        const response = await fetch(`${API_BASE}/api/tasks/list?user_id=${userId}`);
+        const response = await fetch(`${API_BASE}/api/tasks/list?user_id=${userId}`, {
+    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+});
         const data = await response.json();
         renderTaskFeed(data.tasks || [], data.completed_ids || []);
     } catch (error) {
@@ -4422,8 +4423,9 @@ async function loadTaskHistory() {
     try {
         const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
         const userId = tgUser?.id || 12345;
-        
-        const response = await fetch(`${API_BASE}/api/tasks/history?user_id=${userId}`);
+        const response = await fetch(`${API_BASE}/api/tasks/history?user_id=${userId}`, {
+    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+});
         const data = await response.json();
         
         if (!taskHistoryList) return;
