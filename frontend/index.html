@@ -5109,7 +5109,9 @@ async function loadMiningState() {
         display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
     });
     
-    const response = await fetch(`${API_BASE}/api/me?${params.toString()}`);
+    const response = await fetch(`${API_BASE}/api/me?${params.toString()}`, {
+    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+});
     if (!response.ok) {
         throw new Error(`Mining state request failed: ${response.status}`);
     }
