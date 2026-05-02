@@ -1489,6 +1489,8 @@ if (!checkRateLimit(userId, 'market_buy', 5)) {
 }
 
 if (url.pathname === "/api/market/cancel" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const userId = Number(body.user_id);
@@ -1529,13 +1531,13 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     if (!userId || !tonAddress) return json({ error: "Missing params" }, 400);
     if (amount < 0.2) return json({ error: "Minimum withdrawal is 0.2 TON" }, 400);
 
+    if (!checkRateLimit(userId, 'withdraw', 3)) {
+    return json({ error: "Too many requests" }, 429);
+}
+
     const user = await getUser(env, userId);
     if (!user) return json({ error: "User not found" }, 404);
     if (Number(user.ton_balance || 0) < amount) return json({ error: "Not enough TON balance" }, 400);
-
-if (!checkRateLimit(userId, 'withdraw', 3)) {
-    return json({ error: "Too many requests" }, 429);
-}
     
     const fee = parseFloat((amount * 0.05).toFixed(4));
     const netAmount = parseFloat((amount - fee).toFixed(4));
@@ -1591,6 +1593,10 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     const userId = Number(url.searchParams.get("user_id"));
     if (!userId) return json({ error: "Missing user_id" }, 400);
 
+    if (!checkRateLimit(userId, 'withdraw_history', 10)) {
+    return json({ error: "Too many requests" }, 429);
+}
+
     const withdrawals = await env.DB.prepare(
       `SELECT * FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
     ).bind(userId).all();
@@ -1598,10 +1604,6 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     const deposits = await env.DB.prepare(
       `SELECT * FROM ton_deposits WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
     ).bind(userId).all();
-
-if (!checkRateLimit(userId, 'withdraw_history', 10)) {
-    return json({ error: "Too many requests" }, 429);
-}
     
     return json({
       withdrawals: withdrawals.results || [],
@@ -1627,6 +1629,8 @@ if (url.pathname === "/api/mint/status" && request.method === "GET") {
 }
     
 if (url.pathname === "/api/tasks/create" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const result = await handleTaskCreate(env, body, "add_task");
@@ -1637,6 +1641,8 @@ if (url.pathname === "/api/tasks/create" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/tasks/submit-channel" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
     const result = await handleTaskCreate(env, body, "submit_channel");
