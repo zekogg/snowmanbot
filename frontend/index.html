@@ -3095,6 +3095,75 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     margin: 4px 0;
 }
 
+.lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(60,199,255,0.1);
+    border: 1px solid rgba(60,199,255,0.2);
+    border-radius: 12px;
+    padding: 8px 14px;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+}
+
+.lang-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+}
+
+.lang-modal.show {
+    display: flex;
+}
+
+.lang-modal-content {
+    background: #1a1a2e;
+    border-radius: 20px;
+    padding: 20px;
+    width: 90%;
+    max-width: 380px;
+    max-height: 80dvh;
+    overflow-y: auto;
+}
+
+.lang-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.lang-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    border: 1.5px solid transparent;
+}
+
+.lang-item:hover, .lang-item.active {
+    border-color: #3CC7FF;
+    background: rgba(60,199,255,0.1);
+}
+
+.lang-flag {
+    font-size: 20px;
+}
+        
 @keyframes mintPop {
     from { transform: scale(0.7); opacity: 0; }
     to   { transform: scale(1);   opacity: 1; }
@@ -3657,15 +3726,25 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             Your Balance: <strong>0.00 TON</strong><br>
         </div>
     </div>
-    <div class="profile-card">
-        <div class="profile-name-row">
-            <div class="avatar">👤</div>
-            <div class="name-details">
-                <div class="display-name" id="profileDisplayName">Name</div>
-<div class="username" id="profileUsername">@Username</div>
-            </div>
+<div class="profile-card">
+    <div class="profile-name-row">
+        <div class="avatar">👤</div>
+        <div class="name-details">
+            <div class="display-name" id="profileDisplayName">Name</div>
+            <div class="username" id="profileUsername">@Username</div>
         </div>
+        <button class="lang-btn" id="langBtn" type="button">
+            <span id="langFlag">🇬🇧</span>
+            <span id="langName">English</span>
+        </button>
     </div>
+</div>
+    
+<div id="langModal" class="lang-modal">
+    <div class="lang-modal-content">
+        <div class="lang-grid" id="langGrid"></div>
+    </div>
+</div>
    <div class="profile-card">
     <div class="stats-two-columns">
         <div class="stat-col">
@@ -3839,6 +3918,219 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 <script>
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
 
+const LANGUAGES = [
+    { code: 'en', flag: '🇬🇧', name: 'English' },
+    { code: 'id', flag: '🇮🇩', name: 'Bahasa Indonesia' },
+    { code: 'ru', flag: '🇷🇺', name: 'Русский' },
+    { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
+    { code: 'uk', flag: '🇺🇦', name: 'Українська' },
+    { code: 'uz', flag: '🇺🇿', name: "O'zbekcha" },
+    { code: 'tr2', flag: '🇹🇷', name: 'Türkçe' },
+    { code: 'vi', flag: '🇻🇳', name: 'Tiếng Việt' },
+    { code: 'ar', flag: '🇸🇦', name: 'العربية' },
+    { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
+    { code: 'fa', flag: '🇮🇷', name: 'فارسی' },
+    { code: 'pl', flag: '🇵🇱', name: 'Polski' },
+    { code: 'ur', flag: '🇵🇰', name: 'اردو' },
+    { code: 'th', flag: '🇹🇭', name: 'ไทย' },
+    { code: 'bn', flag: '🇧🇩', name: 'বাংলা' },
+    { code: 'pt', flag: '🇵🇹', name: 'Português' },
+    { code: 'es', flag: '🇪🇸', name: 'Español' },
+    { code: 'it', flag: '🇮🇹', name: 'Italiano' },
+    { code: 'fr', flag: '🇫🇷', name: 'Français' },
+    { code: 'my', flag: '🇲🇲', name: 'ဗမာစာ' }
+];
+
+const T = {
+    en: {
+        mining: 'Mining', market: 'Market', friends: 'Friends', tasks: 'Tasks', profile: 'Profile',
+        balance: 'Balance', withdraw: 'Withdraw', deposit: 'Deposit', history: 'History',
+        buy: 'Buy', sell: 'Sell', cancel: 'Cancel', confirm: 'Confirm', submit: 'Submit',
+        loading: 'Loading...', success: 'Success!', failed: 'Failed', insufficient: 'Insufficient balance',
+        copy: '📋 Copy', share: '📤 Share', set: 'Set', hatch: 'Hatch', join: 'Join',
+        waiting: 'WAITING', live: 'LIVE', winner: 'Winner', won: 'Won',
+        noFriends: 'No friends yet 🧱', noOrders: 'No orders available yet',
+        createOrder: '+ Create Order', confirmOrder: 'Confirm Order',
+        totalValue: 'Total Value', pricePerSnow: 'Price per Snow',
+        mintTitle: 'Mint Snowmen ☃️', buyPack: 'Buy', purchased: 'Purchased ✓',
+        withdraw_requested: 'Withdraw Requested', awesome: 'Awesome! 🎉',
+        promoActivated: 'Promo Activated!', snowAdded: 'Snow added to your balance',
+        apply: 'Apply', tooMany: 'Too many requests', unauthorized: 'Unauthorized',
+        packPurchased: 'Pack Purchased!', snowmenAdded: 'Snowmen Added',
+    },
+    ar: {
+        mining: 'التعدين', market: 'السوق', friends: 'الأصدقاء', tasks: 'المهام', profile: 'الملف',
+        balance: 'الرصيد', withdraw: 'سحب', deposit: 'إيداع', history: 'السجل',
+        buy: 'شراء', sell: 'بيع', cancel: 'إلغاء', confirm: 'تأكيد', submit: 'إرسال',
+        loading: 'جاري التحميل...', success: 'نجح!', failed: 'فشل', insufficient: 'رصيد غير كافٍ',
+        copy: '📋 نسخ', share: '📤 مشاركة', set: 'تعيين', hatch: 'تحويل', join: 'انضمام',
+        waiting: 'انتظار', live: 'مباشر', winner: 'الفائز', won: 'فاز بـ',
+        noFriends: 'لا أصدقاء بعد 🧱', noOrders: 'لا توجد طلبات متاحة',
+        createOrder: '+ إنشاء طلب', confirmOrder: 'تأكيد الطلب',
+        totalValue: 'القيمة الإجمالية', pricePerSnow: 'السعر لكل Snow',
+        mintTitle: 'سك Snowmen ☃️', buyPack: 'شراء', purchased: 'تم الشراء ✓',
+        withdraw_requested: 'تم طلب السحب', awesome: 'رائع! 🎉',
+        promoActivated: 'تم تفعيل الكود!', snowAdded: 'تمت إضافة Snow لرصيدك',
+        apply: 'تفعيل', tooMany: 'طلبات كثيرة جداً', unauthorized: 'غير مصرح',
+        packPurchased: 'تم شراء الباقة!', snowmenAdded: 'تمت إضافة Snowmen',
+    },
+    ru: {
+        mining: 'Майнинг', market: 'Рынок', friends: 'Друзья', tasks: 'Задания', profile: 'Профиль',
+        balance: 'Баланс', withdraw: 'Вывод', deposit: 'Депозит', history: 'История',
+        buy: 'Купить', sell: 'Продать', cancel: 'Отмена', confirm: 'Подтвердить', submit: 'Отправить',
+        loading: 'Загрузка...', success: 'Успешно!', failed: 'Ошибка', insufficient: 'Недостаточно средств',
+        copy: '📋 Копировать', share: '📤 Поделиться', set: 'Задать', hatch: 'Конвертировать', join: 'Вступить',
+        waiting: 'ОЖИДАНИЕ', live: 'ПРЯМОЙ', winner: 'Победитель', won: 'Выиграл',
+        noFriends: 'Пока нет друзей 🧱', noOrders: 'Нет доступных ордеров',
+        createOrder: '+ Создать ордер', confirmOrder: 'Подтвердить ордер',
+        totalValue: 'Итоговая стоимость', pricePerSnow: 'Цена за Snow',
+        mintTitle: 'Создать Snowmen ☃️', buyPack: 'Купить', purchased: 'Куплено ✓',
+        withdraw_requested: 'Запрос на вывод', awesome: 'Отлично! 🎉',
+        promoActivated: 'Промокод активирован!', snowAdded: 'Snow добавлен на баланс',
+        apply: 'Применить', tooMany: 'Слишком много запросов', unauthorized: 'Не авторизован',
+        packPurchased: 'Пакет куплен!', snowmenAdded: 'Snowmen добавлены',
+    },
+    tr: {
+        mining: 'Madencilik', market: 'Pazar', friends: 'Arkadaşlar', tasks: 'Görevler', profile: 'Profil',
+        balance: 'Bakiye', withdraw: 'Çekim', deposit: 'Yatırım', history: 'Geçmiş',
+        buy: 'Satın Al', sell: 'Sat', cancel: 'İptal', confirm: 'Onayla', submit: 'Gönder',
+        loading: 'Yükleniyor...', success: 'Başarılı!', failed: 'Başarısız', insufficient: 'Yetersiz bakiye',
+        copy: '📋 Kopyala', share: '📤 Paylaş', set: 'Ayarla', hatch: 'Dönüştür', join: 'Katıl',
+        waiting: 'BEKLİYOR', live: 'CANLI', winner: 'Kazanan', won: 'Kazandı',
+        noFriends: 'Henüz arkadaş yok 🧱', noOrders: 'Sipariş yok',
+        createOrder: '+ Sipariş Oluştur', confirmOrder: 'Siparişi Onayla',
+        totalValue: 'Toplam Değer', pricePerSnow: 'Snow Başına Fiyat',
+        mintTitle: 'Snowmen Oluştur ☃️', buyPack: 'Satın Al', purchased: 'Satın Alındı ✓',
+        withdraw_requested: 'Çekim Talep Edildi', awesome: 'Harika! 🎉',
+        promoActivated: 'Promosyon Aktif!', snowAdded: 'Snow bakiyenize eklendi',
+        apply: 'Uygula', tooMany: 'Çok fazla istek', unauthorized: 'Yetkisiz',
+        packPurchased: 'Paket Satın Alındı!', snowmenAdded: 'Snowmen Eklendi',
+    },
+    de: {
+        mining: 'Mining', market: 'Markt', friends: 'Freunde', tasks: 'Aufgaben', profile: 'Profil',
+        balance: 'Guthaben', withdraw: 'Auszahlung', deposit: 'Einzahlung', history: 'Verlauf',
+        buy: 'Kaufen', sell: 'Verkaufen', cancel: 'Abbrechen', confirm: 'Bestätigen', submit: 'Absenden',
+        loading: 'Laden...', success: 'Erfolg!', failed: 'Fehlgeschlagen', insufficient: 'Unzureichendes Guthaben',
+        copy: '📋 Kopieren', share: '📤 Teilen', set: 'Setzen', hatch: 'Konvertieren', join: 'Beitreten',
+        waiting: 'WARTEN', live: 'LIVE', winner: 'Gewinner', won: 'Gewonnen',
+        noFriends: 'Noch keine Freunde 🧱', noOrders: 'Keine Bestellungen verfügbar',
+        createOrder: '+ Bestellung erstellen', confirmOrder: 'Bestellung bestätigen',
+        totalValue: 'Gesamtwert', pricePerSnow: 'Preis pro Snow',
+        mintTitle: 'Snowmen erstellen ☃️', buyPack: 'Kaufen', purchased: 'Gekauft ✓',
+        withdraw_requested: 'Auszahlung beantragt', awesome: 'Toll! 🎉',
+        promoActivated: 'Promo aktiviert!', snowAdded: 'Snow zu Ihrem Guthaben hinzugefügt',
+        apply: 'Anwenden', tooMany: 'Zu viele Anfragen', unauthorized: 'Nicht autorisiert',
+        packPurchased: 'Paket gekauft!', snowmenAdded: 'Snowmen hinzugefügt',
+    },
+    es: {
+        mining: 'Minería', market: 'Mercado', friends: 'Amigos', tasks: 'Tareas', profile: 'Perfil',
+        balance: 'Saldo', withdraw: 'Retirar', deposit: 'Depositar', history: 'Historial',
+        buy: 'Comprar', sell: 'Vender', cancel: 'Cancelar', confirm: 'Confirmar', submit: 'Enviar',
+        loading: 'Cargando...', success: '¡Éxito!', failed: 'Fallido', insufficient: 'Saldo insuficiente',
+        copy: '📋 Copiar', share: '📤 Compartir', set: 'Establecer', hatch: 'Convertir', join: 'Unirse',
+        waiting: 'ESPERANDO', live: 'EN VIVO', winner: 'Ganador', won: 'Ganó',
+        noFriends: 'Aún no hay amigos 🧱', noOrders: 'No hay pedidos disponibles',
+        createOrder: '+ Crear pedido', confirmOrder: 'Confirmar pedido',
+        totalValue: 'Valor total', pricePerSnow: 'Precio por Snow',
+        mintTitle: 'Crear Snowmen ☃️', buyPack: 'Comprar', purchased: 'Comprado ✓',
+        withdraw_requested: 'Retiro solicitado', awesome: '¡Genial! 🎉',
+        promoActivated: '¡Promo activada!', snowAdded: 'Snow añadido a tu saldo',
+        apply: 'Aplicar', tooMany: 'Demasiadas solicitudes', unauthorized: 'No autorizado',
+        packPurchased: '¡Paquete comprado!', snowmenAdded: 'Snowmen añadidos',
+    },
+    fr: {
+        mining: 'Minage', market: 'Marché', friends: 'Amis', tasks: 'Tâches', profile: 'Profil',
+        balance: 'Solde', withdraw: 'Retrait', deposit: 'Dépôt', history: 'Historique',
+        buy: 'Acheter', sell: 'Vendre', cancel: 'Annuler', confirm: 'Confirmer', submit: 'Soumettre',
+        loading: 'Chargement...', success: 'Succès!', failed: 'Échec', insufficient: 'Solde insuffisant',
+        copy: '📋 Copier', share: '📤 Partager', set: 'Définir', hatch: 'Convertir', join: 'Rejoindre',
+        waiting: 'EN ATTENTE', live: 'EN DIRECT', winner: 'Gagnant', won: 'Gagné',
+        noFriends: 'Pas encore d\'amis 🧱', noOrders: 'Aucune commande disponible',
+        createOrder: '+ Créer commande', confirmOrder: 'Confirmer commande',
+        totalValue: 'Valeur totale', pricePerSnow: 'Prix par Snow',
+        mintTitle: 'Créer Snowmen ☃️', buyPack: 'Acheter', purchased: 'Acheté ✓',
+        withdraw_requested: 'Retrait demandé', awesome: 'Super! 🎉',
+        promoActivated: 'Promo activée!', snowAdded: 'Snow ajouté à votre solde',
+        apply: 'Appliquer', tooMany: 'Trop de demandes', unauthorized: 'Non autorisé',
+        packPurchased: 'Pack acheté!', snowmenAdded: 'Snowmen ajoutés',
+    },
+    pt: { mining: 'Mineração', market: 'Mercado', friends: 'Amigos', tasks: 'Tarefas', profile: 'Perfil', balance: 'Saldo', withdraw: 'Sacar', deposit: 'Depositar', history: 'Histórico', buy: 'Comprar', sell: 'Vender', cancel: 'Cancelar', confirm: 'Confirmar', submit: 'Enviar', loading: 'Carregando...', success: 'Sucesso!', failed: 'Falhou', insufficient: 'Saldo insuficiente', copy: '📋 Copiar', share: '📤 Compartilhar', set: 'Definir', hatch: 'Converter', join: 'Entrar', waiting: 'AGUARDANDO', live: 'AO VIVO', winner: 'Vencedor', won: 'Ganhou', noFriends: 'Sem amigos ainda 🧱', noOrders: 'Sem pedidos disponíveis', createOrder: '+ Criar pedido', confirmOrder: 'Confirmar pedido', totalValue: 'Valor total', pricePerSnow: 'Preço por Snow', mintTitle: 'Criar Snowmen ☃️', buyPack: 'Comprar', purchased: 'Comprado ✓', withdraw_requested: 'Saque solicitado', awesome: 'Incrível! 🎉', promoActivated: 'Promo ativada!', snowAdded: 'Snow adicionado ao saldo', apply: 'Aplicar', tooMany: 'Muitas solicitações', unauthorized: 'Não autorizado', packPurchased: 'Pacote comprado!', snowmenAdded: 'Snowmen adicionados' },
+    it: { mining: 'Mining', market: 'Mercato', friends: 'Amici', tasks: 'Attività', profile: 'Profilo', balance: 'Saldo', withdraw: 'Prelievo', deposit: 'Deposito', history: 'Cronologia', buy: 'Acquista', sell: 'Vendi', cancel: 'Annulla', confirm: 'Conferma', submit: 'Invia', loading: 'Caricamento...', success: 'Successo!', failed: 'Fallito', insufficient: 'Saldo insufficiente', copy: '📋 Copia', share: '📤 Condividi', set: 'Imposta', hatch: 'Converti', join: 'Unisciti', waiting: 'IN ATTESA', live: 'LIVE', winner: 'Vincitore', won: 'Vinto', noFriends: 'Nessun amico ancora 🧱', noOrders: 'Nessun ordine disponibile', createOrder: '+ Crea ordine', confirmOrder: 'Conferma ordine', totalValue: 'Valore totale', pricePerSnow: 'Prezzo per Snow', mintTitle: 'Crea Snowmen ☃️', buyPack: 'Acquista', purchased: 'Acquistato ✓', withdraw_requested: 'Prelievo richiesto', awesome: 'Fantastico! 🎉', promoActivated: 'Promo attivata!', snowAdded: 'Snow aggiunto al saldo', apply: 'Applica', tooMany: 'Troppe richieste', unauthorized: 'Non autorizzato', packPurchased: 'Pacchetto acquistato!', snowmenAdded: 'Snowmen aggiunti' },
+    vi: { mining: 'Khai thác', market: 'Thị trường', friends: 'Bạn bè', tasks: 'Nhiệm vụ', profile: 'Hồ sơ', balance: 'Số dư', withdraw: 'Rút tiền', deposit: 'Nạp tiền', history: 'Lịch sử', buy: 'Mua', sell: 'Bán', cancel: 'Hủy', confirm: 'Xác nhận', submit: 'Gửi', loading: 'Đang tải...', success: 'Thành công!', failed: 'Thất bại', insufficient: 'Số dư không đủ', copy: '📋 Sao chép', share: '📤 Chia sẻ', set: 'Đặt', hatch: 'Chuyển đổi', join: 'Tham gia', waiting: 'CHỜ ĐỢI', live: 'TRỰC TIẾP', winner: 'Người thắng', won: 'Đã thắng', noFriends: 'Chưa có bạn bè 🧱', noOrders: 'Không có đơn hàng', createOrder: '+ Tạo đơn hàng', confirmOrder: 'Xác nhận đơn hàng', totalValue: 'Tổng giá trị', pricePerSnow: 'Giá mỗi Snow', mintTitle: 'Tạo Snowmen ☃️', buyPack: 'Mua', purchased: 'Đã mua ✓', withdraw_requested: 'Yêu cầu rút tiền', awesome: 'Tuyệt vời! 🎉', promoActivated: 'Đã kích hoạt promo!', snowAdded: 'Snow đã được thêm', apply: 'Áp dụng', tooMany: 'Quá nhiều yêu cầu', unauthorized: 'Không được phép', packPurchased: 'Đã mua gói!', snowmenAdded: 'Đã thêm Snowmen' },
+    id: { mining: 'Penambangan', market: 'Pasar', friends: 'Teman', tasks: 'Tugas', profile: 'Profil', balance: 'Saldo', withdraw: 'Tarik', deposit: 'Setor', history: 'Riwayat', buy: 'Beli', sell: 'Jual', cancel: 'Batal', confirm: 'Konfirmasi', submit: 'Kirim', loading: 'Memuat...', success: 'Berhasil!', failed: 'Gagal', insufficient: 'Saldo tidak cukup', copy: '📋 Salin', share: '📤 Bagikan', set: 'Atur', hatch: 'Konversi', join: 'Bergabung', waiting: 'MENUNGGU', live: 'LANGSUNG', winner: 'Pemenang', won: 'Menang', noFriends: 'Belum ada teman 🧱', noOrders: 'Tidak ada pesanan', createOrder: '+ Buat Pesanan', confirmOrder: 'Konfirmasi Pesanan', totalValue: 'Total Nilai', pricePerSnow: 'Harga per Snow', mintTitle: 'Buat Snowmen ☃️', buyPack: 'Beli', purchased: 'Dibeli ✓', withdraw_requested: 'Penarikan diminta', awesome: 'Luar biasa! 🎉', promoActivated: 'Promo diaktifkan!', snowAdded: 'Snow ditambahkan', apply: 'Terapkan', tooMany: 'Terlalu banyak permintaan', unauthorized: 'Tidak sah', packPurchased: 'Paket dibeli!', snowmenAdded: 'Snowmen ditambahkan' },
+    uk: { mining: 'Майнінг', market: 'Ринок', friends: 'Друзі', tasks: 'Завдання', profile: 'Профіль', balance: 'Баланс', withdraw: 'Виведення', deposit: 'Депозит', history: 'Історія', buy: 'Купити', sell: 'Продати', cancel: 'Скасувати', confirm: 'Підтвердити', submit: 'Надіслати', loading: 'Завантаження...', success: 'Успішно!', failed: 'Помилка', insufficient: 'Недостатньо коштів', copy: '📋 Копіювати', share: '📤 Поділитись', set: 'Встановити', hatch: 'Конвертувати', join: 'Приєднатись', waiting: 'ОЧІКУВАННЯ', live: 'НАЖИВО', winner: 'Переможець', won: 'Виграв', noFriends: 'Поки немає друзів 🧱', noOrders: 'Немає доступних замовлень', createOrder: '+ Створити замовлення', confirmOrder: 'Підтвердити замовлення', totalValue: 'Загальна вартість', pricePerSnow: 'Ціна за Snow', mintTitle: 'Створити Snowmen ☃️', buyPack: 'Купити', purchased: 'Куплено ✓', withdraw_requested: 'Запит на виведення', awesome: 'Чудово! 🎉', promoActivated: 'Промокод активовано!', snowAdded: 'Snow додано до балансу', apply: 'Застосувати', tooMany: 'Забагато запитів', unauthorized: 'Не авторизовано', packPurchased: 'Пакет куплено!', snowmenAdded: 'Snowmen додано' },
+    fa: { mining: 'استخراج', market: 'بازار', friends: 'دوستان', tasks: 'وظایف', profile: 'پروفایل', balance: 'موجودی', withdraw: 'برداشت', deposit: 'واریز', history: 'تاریخچه', buy: 'خرید', sell: 'فروش', cancel: 'لغو', confirm: 'تأیید', submit: 'ارسال', loading: 'در حال بارگذاری...', success: 'موفق!', failed: 'ناموفق', insufficient: 'موجودی کافی نیست', copy: '📋 کپی', share: '📤 اشتراک‌گذاری', set: 'تنظیم', hatch: 'تبدیل', join: 'پیوستن', waiting: 'در انتظار', live: 'زنده', winner: 'برنده', won: 'برد', noFriends: 'هنوز دوستی نیست 🧱', noOrders: 'هیچ سفارشی موجود نیست', createOrder: '+ ایجاد سفارش', confirmOrder: 'تأیید سفارش', totalValue: 'ارزش کل', pricePerSnow: 'قیمت هر Snow', mintTitle: 'ایجاد Snowmen ☃️', buyPack: 'خرید', purchased: 'خریداری شد ✓', withdraw_requested: 'درخواست برداشت', awesome: 'عالی! 🎉', promoActivated: 'کد تخفیف فعال شد!', snowAdded: 'Snow به موجودی اضافه شد', apply: 'اعمال', tooMany: 'درخواست‌های زیاد', unauthorized: 'غیرمجاز', packPurchased: 'پکیج خریداری شد!', snowmenAdded: 'Snowmen اضافه شد' },
+    pl: { mining: 'Wydobycie', market: 'Rynek', friends: 'Przyjaciele', tasks: 'Zadania', profile: 'Profil', balance: 'Saldo', withdraw: 'Wypłata', deposit: 'Wpłata', history: 'Historia', buy: 'Kup', sell: 'Sprzedaj', cancel: 'Anuluj', confirm: 'Potwierdź', submit: 'Wyślij', loading: 'Ładowanie...', success: 'Sukces!', failed: 'Niepowodzenie', insufficient: 'Niewystarczające saldo', copy: '📋 Kopiuj', share: '📤 Udostępnij', set: 'Ustaw', hatch: 'Konwertuj', join: 'Dołącz', waiting: 'OCZEKIWANIE', live: 'NA ŻYWO', winner: 'Zwycięzca', won: 'Wygrał', noFriends: 'Brak znajomych 🧱', noOrders: 'Brak dostępnych zamówień', createOrder: '+ Utwórz zamówienie', confirmOrder: 'Potwierdź zamówienie', totalValue: 'Całkowita wartość', pricePerSnow: 'Cena za Snow', mintTitle: 'Utwórz Snowmen ☃️', buyPack: 'Kup', purchased: 'Kupiono ✓', withdraw_requested: 'Wypłata zażądana', awesome: 'Świetnie! 🎉', promoActivated: 'Promo aktywowane!', snowAdded: 'Snow dodany do salda', apply: 'Zastosuj', tooMany: 'Zbyt wiele żądań', unauthorized: 'Nieautoryzowany', packPurchased: 'Pakiet kupiony!', snowmenAdded: 'Snowmen dodani' },
+    uz: { mining: 'Qazib olish', market: 'Bozor', friends: 'Doʻstlar', tasks: 'Vazifalar', profile: 'Profil', balance: 'Balans', withdraw: 'Chiqarish', deposit: 'Kiritish', history: 'Tarix', buy: 'Sotib olish', sell: 'Sotish', cancel: 'Bekor qilish', confirm: 'Tasdiqlash', submit: 'Yuborish', loading: 'Yuklanmoqda...', success: 'Muvaffaqiyat!', failed: 'Muvaffaqiyatsiz', insufficient: 'Balans yetarli emas', copy: '📋 Nusxa', share: '📤 Ulashish', set: 'Belgilash', hatch: 'Konvertatsiya', join: 'Qoʻshilish', waiting: 'KUTISH', live: 'JONLI', winner: 'Gʻolib', won: 'Yutdi', noFriends: 'Hali doʻstlar yoʻq 🧱', noOrders: 'Buyurtmalar yoʻq', createOrder: '+ Buyurtma yaratish', confirmOrder: 'Buyurtmani tasdiqlash', totalValue: 'Jami qiymat', pricePerSnow: 'Har bir Snow narxi', mintTitle: 'Snowmen yaratish ☃️', buyPack: 'Sotib olish', purchased: 'Sotib olindi ✓', withdraw_requested: 'Chiqarish soʻraldi', awesome: 'Ajoyib! 🎉', promoActivated: 'Promo faollashtirildi!', snowAdded: 'Snow balansga qoʻshildi', apply: 'Qoʻllash', tooMany: 'Juda koʻp soʻrovlar', unauthorized: 'Ruxsatsiz', packPurchased: 'Paket sotib olindi!', snowmenAdded: 'Snowmen qoʻshildi' },
+    th: { mining: 'ขุด', market: 'ตลาด', friends: 'เพื่อน', tasks: 'งาน', profile: 'โปรไฟล์', balance: 'ยอดคงเหลือ', withdraw: 'ถอน', deposit: 'ฝาก', history: 'ประวัติ', buy: 'ซื้อ', sell: 'ขาย', cancel: 'ยกเลิก', confirm: 'ยืนยัน', submit: 'ส่ง', loading: 'กำลังโหลด...', success: 'สำเร็จ!', failed: 'ล้มเหลว', insufficient: 'ยอดคงเหลือไม่เพียงพอ', copy: '📋 คัดลอก', share: '📤 แชร์', set: 'ตั้งค่า', hatch: 'แปลง', join: 'เข้าร่วม', waiting: 'รอ', live: 'สด', winner: 'ผู้ชนะ', won: 'ชนะ', noFriends: 'ยังไม่มีเพื่อน 🧱', noOrders: 'ไม่มีคำสั่งซื้อ', createOrder: '+ สร้างคำสั่ง', confirmOrder: 'ยืนยันคำสั่ง', totalValue: 'มูลค่ารวม', pricePerSnow: 'ราคาต่อ Snow', mintTitle: 'สร้าง Snowmen ☃️', buyPack: 'ซื้อ', purchased: 'ซื้อแล้ว ✓', withdraw_requested: 'ร้องขอการถอน', awesome: 'ยอดเยี่ยม! 🎉', promoActivated: 'เปิดใช้งานโปรโมชัน!', snowAdded: 'เพิ่ม Snow ในยอดคงเหลือ', apply: 'ใช้', tooMany: 'คำขอมากเกินไป', unauthorized: 'ไม่ได้รับอนุญาต', packPurchased: 'ซื้อแพ็คเกจแล้ว!', snowmenAdded: 'เพิ่ม Snowmen แล้ว' },
+    bn: { mining: 'মাইনিং', market: 'বাজার', friends: 'বন্ধুরা', tasks: 'কাজ', profile: 'প্রোফাইল', balance: 'ব্যালেন্স', withdraw: 'উত্তোলন', deposit: 'জমা', history: 'ইতিহাস', buy: 'কিনুন', sell: 'বিক্রি', cancel: 'বাতিল', confirm: 'নিশ্চিত', submit: 'জমা দিন', loading: 'লোড হচ্ছে...', success: 'সফল!', failed: 'ব্যর্থ', insufficient: 'অপর্যাপ্ত ব্যালেন্স', copy: '📋 কপি', share: '📤 শেয়ার', set: 'সেট', hatch: 'রূপান্তর', join: 'যোগ দিন', waiting: 'অপেক্ষা', live: 'সরাসরি', winner: 'বিজয়ী', won: 'জিতেছে', noFriends: 'এখনো বন্ধু নেই 🧱', noOrders: 'কোনো অর্ডার নেই', createOrder: '+ অর্ডার তৈরি', confirmOrder: 'অর্ডার নিশ্চিত', totalValue: 'মোট মূল্য', pricePerSnow: 'প্রতি Snow মূল্য', mintTitle: 'Snowmen তৈরি ☃️', buyPack: 'কিনুন', purchased: 'কেনা হয়েছে ✓', withdraw_requested: 'উত্তোলন অনুরোধ', awesome: 'দারুণ! 🎉', promoActivated: 'প্রমো সক্রিয়!', snowAdded: 'Snow যোগ করা হয়েছে', apply: 'প্রয়োগ', tooMany: 'অনেক বেশি অনুরোধ', unauthorized: 'অননুমোদিত', packPurchased: 'প্যাক কেনা হয়েছে!', snowmenAdded: 'Snowmen যোগ হয়েছে' },
+    ur: { mining: 'مائننگ', market: 'مارکیٹ', friends: 'دوست', tasks: 'کام', profile: 'پروفائل', balance: 'بیلنس', withdraw: 'نکاسی', deposit: 'جمع', history: 'تاریخ', buy: 'خریدیں', sell: 'بیچیں', cancel: 'منسوخ', confirm: 'تصدیق', submit: 'جمع کریں', loading: 'لوڈ ہو رہا ہے...', success: 'کامیاب!', failed: 'ناکام', insufficient: 'ناکافی بیلنس', copy: '📋 کاپی', share: '📤 شیئر', set: 'سیٹ', hatch: 'تبدیل', join: 'شامل ہوں', waiting: 'انتظار', live: 'براہ راست', winner: 'فاتح', won: 'جیتا', noFriends: 'ابھی کوئی دوست نہیں 🧱', noOrders: 'کوئی آرڈر نہیں', createOrder: '+ آرڈر بنائیں', confirmOrder: 'آرڈر کی تصدیق', totalValue: 'کل قیمت', pricePerSnow: 'فی Snow قیمت', mintTitle: 'Snowmen بنائیں ☃️', buyPack: 'خریدیں', purchased: 'خریدا گیا ✓', withdraw_requested: 'نکاسی کی درخواست', awesome: 'شاندار! 🎉', promoActivated: 'پرومو فعال!', snowAdded: 'Snow بیلنس میں شامل', apply: 'لاگو کریں', tooMany: 'بہت زیادہ درخواستیں', unauthorized: 'غیر مجاز', packPurchased: 'پیکج خریدا!', snowmenAdded: 'Snowmen شامل' },
+    my: { mining: 'တူးဖော်ခြင်း', market: 'ဈေးကွက်', friends: 'သူငယ်ချင်းများ', tasks: 'တာဝန်များ', profile: 'ပရိုဖိုင်', balance: 'လက်ကျန်', withdraw: 'ထုတ်ယူ', deposit: 'ထည့်သွင်း', history: 'မှတ်တမ်း', buy: 'ဝယ်', sell: 'ရောင်း', cancel: 'ပယ်ဖျက်', confirm: 'အတည်ပြု', submit: 'တင်သွင်း', loading: 'တင်နေသည်...', success: 'အောင်မြင်သည်!', failed: 'မအောင်မြင်', insufficient: 'လက်ကျန်မလုံလောက်', copy: '📋 ကူးယူ', share: '📤 မျှဝေ', set: 'သတ်မှတ်', hatch: 'ပြောင်းလဲ', join: 'ပါဝင်', waiting: 'စောင့်နေသည်', live: 'တိုက်ရိုက်', winner: 'နိုင်သူ', won: 'နိုင်', noFriends: 'သူငယ်ချင်းမရှိသေး 🧱', noOrders: 'မှာယူမှုမရှိ', createOrder: '+ မှာယူမှုဖန်တီး', confirmOrder: 'မှာယူမှုအတည်ပြု', totalValue: 'စုစုပေါင်းတန်ဖိုး', pricePerSnow: 'Snow တစ်ခုစျေး', mintTitle: 'Snowmen ဖန်တီး ☃️', buyPack: 'ဝယ်', purchased: 'ဝယ်ပြီး ✓', withdraw_requested: 'ထုတ်ယူမှုတောင်းဆို', awesome: 'အံ့ဩဖွယ်! 🎉', promoActivated: 'ပရိုမိုဖွင့်ပြီ!', snowAdded: 'Snow လက်ကျန်ထည့်သွင်းပြီ', apply: 'အသုံးချ', tooMany: 'တောင်းဆိုမှုများလွန်း', unauthorized: 'ခွင့်မပြု', packPurchased: 'ပက်ကေ့ဝယ်ပြီ!', snowmenAdded: 'Snowmen ထည့်သွင်းပြီ' },
+};
+
+let currentLang = localStorage.getItem('snowman_lang') || 'en';
+
+function t(key) {
+    return (T[currentLang] && T[currentLang][key]) || T['en'][key] || key;
+}
+
+function applyLang() {
+    document.getElementById('langFlag').textContent = LANGUAGES.find(l => l.code === currentLang)?.flag || '🇬🇧';
+    document.getElementById('langName').textContent = LANGUAGES.find(l => l.code === currentLang)?.name || 'English';
+
+    const el = (id) => document.getElementById(id);
+    const setText = (id, key) => { const e = el(id); if (e) e.textContent = t(key); };
+
+    document.querySelectorAll('.friends-btn-copy').forEach(e => e.textContent = t('copy'));
+    document.querySelectorAll('.friends-btn-share').forEach(e => e.textContent = t('share'));
+    document.querySelectorAll('.market-create-cta').forEach(e => e.textContent = t('createOrder'));
+    document.querySelectorAll('.market-create-btn').forEach(e => e.textContent = t('confirmOrder'));
+    document.querySelectorAll('#pvpSetBtn').forEach(e => e.textContent = t('set'));
+    document.querySelectorAll('.friends-empty').forEach(e => { if(e) e.innerHTML = t('noFriends'); });
+    document.querySelectorAll('#friendsCopyBtn').forEach(e => e.textContent = t('copy'));
+    document.querySelectorAll('#friendsShareBtn').forEach(e => e.textContent = t('share'));
+    document.querySelectorAll('#applyPromoBtn').forEach(e => e.textContent = t('apply'));
+    document.querySelectorAll('#marketConfirmBtn').forEach(e => e.textContent = t('confirmOrder'));
+    document.querySelectorAll('#depositActionBtn').forEach(e => e.textContent = t('deposit'));
+    document.querySelectorAll('#withdrawBtn').forEach(e => e.textContent = t('withdraw'));
+    document.querySelectorAll('.transfer-history-btn').forEach(e => e.textContent = t('history'));
+    document.querySelectorAll('.mint-title').forEach(e => e.textContent = t('mintTitle'));
+    document.querySelectorAll('.close-mint').forEach(e => e.textContent = t('cancel'));
+}
+
+function initLangModal() {
+    const grid = document.getElementById('langGrid');
+    if (!grid) return;
+    grid.innerHTML = LANGUAGES.map(l => `
+        <div class="lang-item ${l.code === currentLang ? 'active' : ''}" data-code="${l.code}">
+            <span class="lang-flag">${l.flag}</span>
+            <span>${l.name}</span>
+        </div>
+    `).join('');
+
+    grid.querySelectorAll('.lang-item').forEach(item => {
+        item.addEventListener('click', () => {
+            currentLang = item.dataset.code;
+            localStorage.setItem('snowman_lang', currentLang);
+            applyLang();
+            grid.querySelectorAll('.lang-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            document.getElementById('langModal').classList.remove('show');
+        });
+    });
+}
+
+document.getElementById('langBtn')?.addEventListener('click', () => {
+    initLangModal();
+    document.getElementById('langModal')?.classList.add('show');
+});
+
+document.getElementById('langModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('langModal')) {
+        document.getElementById('langModal').classList.remove('show');
+    }
+});
+    
 function getAuthHeaders() {
     const initData = window.Telegram?.WebApp?.initData || '';
     return {
@@ -5661,6 +5953,8 @@ document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
     document.getElementById('market-all')?.classList.add('active');
     loadMarketListings();
 });
+
+applyLang();
         
 initTonConnect();
 
