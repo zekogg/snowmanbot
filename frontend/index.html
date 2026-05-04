@@ -412,6 +412,10 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.28);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: clamp(14px, 3.5vw, 22px);
 }
 
 .btn-hatch {
