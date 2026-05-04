@@ -4684,7 +4684,7 @@ function hideLootboxModal() {
 
 if (marketFilterBtn) {
     marketFilterBtn.addEventListener('click', () => {
-        console.log('Loot Box button clicked');
+        
         setMarketMode('lootbox');
     });
 }
@@ -4705,7 +4705,7 @@ if (lootboxModal) {
         if (e.target === lootboxModal) hideLootboxModal();
     });
 }
-        marketSortBtn?.addEventListener('click', () => console.log('Sort clicked'));
+        marketSortBtn?.addEventListener('click', () => 
         
         floatingAddTaskBtn?.addEventListener('click', () => {
     if (addTaskModal) addTaskModal.style.display = 'flex';
@@ -5644,22 +5644,17 @@ async function loadMiningState() {
     });
     
     const response = await fetch(`${API_BASE}/api/me?${params.toString()}`, {
-    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-});
+        headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+    });
+
     if (!response.ok) {
         throw new Error(`Mining state request failed: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log("Mining loaded", data);
-    
     miningState.serverTimeOffsetMs = Number(data.server_time || Date.now()) - Date.now();
     
     const user = data.user || {};
-    console.log("snowman_count", user.snowman_count);
-    console.log("snow_balance", user.snow_balance);
-    console.log("speed_per_hour", user.speed_per_hour);
-    
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
     miningState.displayName = user.display_name || tgUser.first_name || 'Player';
@@ -5677,12 +5672,11 @@ async function loadMiningState() {
 loadMiningState().then(() => {
     loadFriends();
 }).catch((error) => {
-    console.error(error);
     renderMiningUI();
     updateHatchUI();
     tickMiningTimer();
 });
-
+        
 setInterval(() => {
     tickMiningTimer();
 }, 1000);
