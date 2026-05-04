@@ -403,8 +403,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     width: 50%;
     border: none;
     border-radius: 32px;
-    padding: 28px 4px;
-    font-size: clamp(11px, 3.8vw, 22px);
+    padding: 27px 4px;
+    font-size: clamp(14px, 3.5vw, 22px);
     font-weight: 800;
     color: white;
     text-transform: uppercase;
@@ -4228,7 +4228,6 @@ function applyLang() {
     q('[data-market-mode="yours"]', 'yours');
     q('#marketCreateBtn', 'createOrder');
     q('#marketConfirmBtn', 'confirmOrder');
-    q('#backToMarketBtn', 'cancel');
     const marketFilter = document.querySelector('#marketFilterBtn span');
     if (marketFilter) marketFilter.textContent = t('lootBox');
     document.querySelectorAll('.market-empty-title').forEach(e => e.textContent = t('noYourOrders'));
