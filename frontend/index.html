@@ -4283,13 +4283,10 @@ function applyLang() {
         e.textContent = i === 0 ? t('yourReward') : t('yourFriends');
     });
     document.querySelectorAll('.friends-reward-line').forEach((e, i) => {
-        const keys = ['freeSnowman', 'snowHatch', 'tonMint'];
-        if (i === 2) {
-            e.innerHTML = `<span class="ton-icon"></span> ${t('tonMint')}`;
-        } else {
-            e.textContent = t(keys[i]);
-        }
-    });
+    if (i === 0) e.innerHTML = `☃️ ${t('freeSnowman')}`;
+    else if (i === 1) e.innerHTML = `❄️ ${t('snowHatch')}`;
+    else if (i === 2) e.innerHTML = `<span class="ton-icon"></span> ${t('tonMint')}`;
+});
     q('#friendsCopyBtn', 'copy');
     q('#friendsShareBtn', 'share');
     document.querySelectorAll('.friends-empty').forEach(e => e.textContent = t('noFriends'));
@@ -4335,7 +4332,12 @@ function applyLang() {
 
     // Promo
     q('#applyPromoBtn', 'apply');
-}  
+
+    // Buttons font size
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.style.fontSize = currentLang === 'en' ? '22px' : '';
+    });
+}
         
 function initLangModal() {
     const grid = document.getElementById('langGrid');
