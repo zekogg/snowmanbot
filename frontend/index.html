@@ -403,8 +403,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     width: 50%;
     border: none;
     border-radius: 32px;
-    padding: 20px 0;
-    font-size: 22px;
+    padding: 20px 4px;
+    font-size: clamp(11px, 3.8vw, 22px);
     font-weight: 800;
     color: white;
     text-transform: uppercase;
@@ -415,7 +415,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: clamp(16px, 5vw, 22px);
 }
 
 .btn-hatch {
