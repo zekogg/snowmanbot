@@ -1593,8 +1593,7 @@ if (url.pathname === "/api/market/cancel" && request.method === "POST") {
     return json({ error: e.message }, 500);
   }
 }
-    
-if (url.pathname === "/api/withdraw" && request.method === "POST") {
+
 if (url.pathname === "/api/withdraw" && request.method === "POST") {
   const isValid = await verifyTelegramAuth(request, env);
   if (!isValid) return json({ error: "Unauthorized" }, 401);
@@ -1867,7 +1866,7 @@ if (result.meta.changes === 0) {
         return json({ error: error.message }, 500);
       }
     }
-    
+  
 if (url.pathname === "/api/me" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
   if (!isValid) return json({ error: "Unauthorized" }, 401);
