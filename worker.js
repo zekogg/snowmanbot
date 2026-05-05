@@ -1898,7 +1898,6 @@ if (!await checkRateLimit(env, userId, "settle_mining", 5)) {
     return json({ error: error.message }, 500);
   }
 }
-
 return env.ASSETS.fetch(request);
   }
 };
