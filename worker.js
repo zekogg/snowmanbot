@@ -1427,6 +1427,10 @@ if (url.pathname === "/api/market/create" && request.method === "POST") {
 if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
+    const sessionUserId = await getUserIdFromRequest(request);
+    if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+        return json({ error: "Unauthorized" }, 401);
+    }
     const userId = Number(body.user_id);
     const snowAmount = Number(body.snow_amount);
     const pricePerSnow = Number(body.price_per_snow);
@@ -1450,9 +1454,11 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     const totalPrice = parseFloat((snowAmount * pricePerSnow).toFixed(6));
     const now = Date.now();
 
-    await env.DB.prepare(
-      `UPDATE users SET snow_balance = snow_balance - ?, updated_at = ? WHERE user_id = ?`
-    ).bind(totalSnowCost, now, userId).run();
+    const createResult = await env.DB.prepare(
+      `UPDATE users SET snow_balance = snow_balance - ?, updated_at = ? WHERE user_id = ? AND snow_balance >= ?`
+    ).bind(totalSnowCost, now, userId, totalSnowCost).run();
+
+    if (createResult.meta.changes === 0) return json({ error: "Not enough Snow" }, 400);
 
     await env.DB.prepare(
       `INSERT INTO market_listings (seller_id, snow_amount, price_per_snow, total_price, status, created_at, updated_at)
@@ -1527,7 +1533,11 @@ if (url.pathname === "/api/market/cancel" && request.method === "POST") {
   if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
-    const userId = Number(body.user_id);
+    const sessionUserId = await getUserIdFromRequest(request);
+    if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+        return json({ error: "Unauthorized" }, 401);
+    }
+    const userId = sessionUserId;
     const listingId = Number(body.listing_id);
 
     const listing = await env.DB.prepare(
@@ -1575,17 +1585,15 @@ if (!isValidTonAddress(tonAddress)) return json({ error: "Invalid TON address" }
     return json({ error: "Too many requests" }, 429);
 }
 
-    const user = await getUser(env, userId);
-    if (!user) return json({ error: "User not found" }, 404);
-    if (Number(user.ton_balance || 0) < amount) return json({ error: "Not enough TON balance" }, 400);
-    
     const fee = parseFloat((amount * 0.05).toFixed(4));
     const netAmount = parseFloat((amount - fee).toFixed(4));
     const now = Date.now();
 
-    await env.DB.prepare(
-      `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? WHERE user_id = ?`
-    ).bind(amount, now, userId).run();
+    const withdrawResult = await env.DB.prepare(
+      `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? WHERE user_id = ? AND ton_balance >= ?`
+    ).bind(amount, now, userId, amount).run();
+
+    if (withdrawResult.meta.changes === 0) return json({ error: "Not enough TON balance" }, 400);
 
     const insertResult = await env.DB.prepare(
       `INSERT INTO withdrawals (user_id, amount, fee, net_amount, ton_address, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`
@@ -1740,7 +1748,11 @@ if (url.pathname === "/api/hatch" && request.method === "POST") {
 if (!isValid) return json({ error: "Unauthorized" }, 401);
       try {
         const body = await request.json();
-        const userId = Number(body.user_id);
+        const sessionUserId = await getUserIdFromRequest(request);
+        if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+            return json({ error: "Unauthorized" }, 401);
+        }
+        const userId = sessionUserId;
         const baseAmount = Math.floor(Number(body.amount));
         const username = body.username || null;
         const displayName = body.display_name || null;
@@ -1749,7 +1761,7 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
           return json({ error: "Invalid user_id." }, 400);
         }
 
-if (!checkRateLimit(userId, 'hatch', 5)) {
+if (!await checkRateLimit(env, userId, 'hatch', 5)) {
     return json({ error: "Too many requests" }, 429);
 }
         
@@ -1816,6 +1828,7 @@ if (result.meta.changes === 0) {
   const isValid = await verifyTelegramAuth(request, env);
   if (!isValid) return json({ error: "Unauthorized" }, 401);
 
+  const sessionUserId = await getUserIdFromRequest(request);
   const userIdParam = url.searchParams.get("user_id");
   const userId = Number(userIdParam);
 
@@ -1823,7 +1836,11 @@ if (result.meta.changes === 0) {
     return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
   }
 
-  if (!checkRateLimit(userId, "settle_mining", 5)) {
+  if (sessionUserId && sessionUserId !== userId) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+if (!await checkRateLimit(env, userId, "settle_mining", 5)) {
     return json({ error: "Too many requests" }, 429);
   }
 
