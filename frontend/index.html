@@ -5078,7 +5078,11 @@ openMintBtn?.addEventListener('click', async () => {
     mintModal.style.display = 'flex';
     const tgUser = getTgUser();
     try {
-        const res = await fetch(`${API_BASE}/api/mint/status?user_id=${tgUser.id}`);
+        const res = await fetch(`${API_BASE}/api/mint/status?user_id=${tgUser.id}`, {
+            headers: {
+                'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
+            }
+        });
         const data = await res.json();
         const bought = data.bought || [];
         document.querySelectorAll('.mint-buy-btn').forEach(btn => {
