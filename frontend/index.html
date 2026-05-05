@@ -4221,7 +4221,40 @@ function applyLang() {
     q('.task-history-title', 'taskHistory');
     document.querySelectorAll('.task-join-btn:not([disabled])').forEach(e => e.textContent = t('join'));
     document.querySelectorAll('.task-join-btn[disabled]').forEach(e => e.textContent = t('done'));
+    document.querySelectorAll('.channel-submit-text').forEach(e => e.textContent = t('channelPost'));
 
+// Hatch modal texts
+    document.querySelectorAll('.hatch-label').forEach((e, i) => {
+        const keys = ['snowToHatch', 'craftFee', 'totalRequired'];
+        if (keys[i]) e.textContent = t(keys[i]);
+    });
+    document.querySelectorAll('.hatch-available').forEach(e => {
+        const num = e.textContent.match(/[\d.]+/)?.[0] || '';
+        e.textContent = `${t('available')}: ${num} ${t('snowflakes')}`;
+    });
+    q('#finalHatchBtn', 'hatch');
+
+    // Withdraw success
+    const withdrawNote = document.querySelector('#withdrawSuccessOverlay div[style*="14px"]');
+    if (withdrawNote) withdrawNote.textContent = t('withdrawNote');
+
+    // Market no orders
+    document.querySelectorAll('#marketAllList div').forEach(e => {
+        if (e.textContent.includes('No orders')) e.textContent = t('noOrders');
+    });
+
+    // Deposit/Withdraw tabs
+    q('#depositTabBtn', 'depositTab');
+    q('#withdrawTabBtn', 'withdrawTab');
+
+ // Promo
+    q('#applyPromoBtn', 'apply');
+    
+    // History no transactions
+    document.querySelectorAll('#historyList div').forEach(e => {
+        if (e.textContent.includes('No transactions')) e.textContent = t('noHistory');
+    });
+    
     // Market
     q('.market-title', 'marketTitle');
     q('[data-market-mode="all"]', 'all');
@@ -4329,9 +4362,6 @@ function applyLang() {
     // PVP
     const pvpCenter = document.querySelector('.pvp-wheel-center span');
     if (pvpCenter && pvpCenter.textContent === 'WAITING') pvpCenter.textContent = t('waiting');
-
-    // Promo
-    q('#applyPromoBtn', 'apply');
 
     // Buttons font size
     document.querySelectorAll('.btn').forEach(btn => {
