@@ -40,6 +40,24 @@ function rawToFriendly(raw) {
   }
 }
 
+async function getUserIdFromRequest(request) {
+    const initData = request.headers.get('X-Telegram-Init-Data');
+    if (!initData) return null;
+    const params = new URLSearchParams(initData);
+    const userStr = params.get('user');
+    if (!userStr) return null;
+    try {
+        return JSON.parse(userStr).id;
+    } catch { return null; }
+}
+
+function isValidTonAddress(addr) {
+    return typeof addr === 'string' &&
+           addr.length >= 48 &&
+           addr.length <= 66 &&
+           /^[A-Za-z0-9_\-+/=]+$/.test(addr);
+}
+
 async function verifyTelegramAuth(request, env) {
   const initData = request.headers.get('X-Telegram-Init-Data');
   if (!initData) return false;
@@ -73,27 +91,28 @@ async function verifyTelegramAuth(request, env) {
   return true;
 }
 
-const rateLimitMap = new Map();
+async function checkRateLimit(env, userId, action, maxPerMinute = 10) {
+    const key = `${userId}:${action}`;
+    const now = Date.now();
+    const windowMs = 60000;
 
-function checkRateLimit(userId, action, maxPerMinute = 10) {
-  const key = `${userId}:${action}`;
-  const now = Date.now();
-  const windowMs = 60000;
-  
-  if (!rateLimitMap.has(key)) {
-    rateLimitMap.set(key, { count: 1, start: now });
+    const existing = await env.DB.prepare(
+        `SELECT count, window_start FROM rate_limits WHERE key = ?`
+    ).bind(key).first();
+
+    if (!existing || now - existing.window_start > windowMs) {
+        await env.DB.prepare(
+            `INSERT OR REPLACE INTO rate_limits (key, count, window_start) VALUES (?, 1, ?)`
+        ).bind(key, now).run();
+        return true;
+    }
+
+    if (existing.count >= maxPerMinute) return false;
+
+    await env.DB.prepare(
+        `UPDATE rate_limits SET count = count + 1 WHERE key = ?`
+    ).bind(key).run();
     return true;
-  }
-  
-  const data = rateLimitMap.get(key);
-  if (now - data.start > windowMs) {
-    rateLimitMap.set(key, { count: 1, start: now });
-    return true;
-  }
-  
-  if (data.count >= maxPerMinute) return false;
-  data.count++;
-  return true;
 }
 
 async function ensureSchema(env) {
@@ -248,6 +267,14 @@ await env.DB.prepare(`
       user_id INTEGER NOT NULL,
       used_at INTEGER NOT NULL,
       UNIQUE(code, user_id)
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS rate_limits (
+      key TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 1,
+      window_start INTEGER NOT NULL
     )
   `).run().catch(() => {});
 }
@@ -1099,10 +1126,14 @@ if (url.pathname === "/api/mint" && request.method === "POST") {
 if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
-    const userId = Number(body.user_id);
-    const pack = String(body.pack || "").trim();
+const sessionUserId = await getUserIdFromRequest(request);
+const userId = sessionUserId || Number(body.user_id);
+if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+    return json({ error: "Unauthorized" }, 401);
+}
+const pack = String(body.pack || "").trim();
 
-if (!checkRateLimit(userId, 'mint', 5)) {
+if (!await checkRateLimit(env, userId, 'mint', 5)) {
     return json({ error: "Too many requests" }, 429);
 }
     
@@ -1122,14 +1153,14 @@ if (!checkRateLimit(userId, 'mint', 5)) {
     const user = await getUser(env, userId);
     if (!user) return json({ error: "User not found" }, 404);
 
-    const tonBalance = Number(user.ton_balance || 0);
     const cost = PACKS[pack].ton;
-    if (tonBalance < cost) return json({ error: "Not enough TON" }, 400);
+const now = Date.now();
+const mintResult = await env.DB.prepare(
+  `UPDATE users SET ton_balance = ton_balance - ?, snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ? 
+   WHERE user_id = ? AND ton_balance >= ?`
+).bind(cost, PACKS[pack].snowmen, now, now, userId, cost).run();
 
-    const now = Date.now();
-    await env.DB.prepare(
-  `UPDATE users SET ton_balance = ton_balance - ?, snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ? WHERE user_id = ?`
-).bind(cost, PACKS[pack].snowmen, now, now, userId).run();
+if (mintResult.meta.changes === 0) return json({ error: "Not enough TON" }, 400);
     
     await env.DB.prepare(
       `INSERT INTO mint_purchases (user_id, pack, purchased_at) VALUES (?, ?, ?)`
@@ -1218,7 +1249,7 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     const amount = Number(body.amount);
     if (!userId || amount < 50) return json({ error: "Minimum bet is 50 Snow" }, 400);
 
-if (!checkRateLimit(userId, 'pvp_bet', 5)) {
+if (!await checkRateLimit(env,userId, 'pvp_bet', 5)) {
     return json({ error: "Too many requests" }, 429);
 }
     
@@ -1439,10 +1470,14 @@ if (url.pathname === "/api/market/buy" && request.method === "POST") {
 if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
-    const userId = Number(body.user_id);
-    const listingId = Number(body.listing_id);
+const sessionUserId = await getUserIdFromRequest(request);
+if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+    return json({ error: "Unauthorized" }, 401);
+}
+const userId = sessionUserId;
+const listingId = Number(body.listing_id);
 
-if (!checkRateLimit(userId, 'market_buy', 5)) {
+if (!await checkRateLimit(env, userId, 'market_buy', 5)) {
         return json({ error: "Too many requests" }, 429);
 }
     
@@ -1452,19 +1487,18 @@ if (!checkRateLimit(userId, 'market_buy', 5)) {
     if (!listing) return json({ error: "Listing not found or already sold" }, 404);
     if (listing.seller_id === userId) return json({ error: "Cannot buy your own listing" }, 400);
 
-    const buyer = await getUser(env, userId);
-    if (!buyer) return json({ error: "User not found" }, 404);
-    if (Number(buyer.ton_balance) < listing.total_price) return json({ error: "Not enough TON" }, 400);
-
     const now = Date.now();
-    await env.DB.prepare(
-      `UPDATE market_listings SET status = 'sold', updated_at = ? WHERE id = ?`
-    ).bind(now, listingId).run();
+const deductResult = await env.DB.prepare(
+  `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? 
+   WHERE user_id = ? AND ton_balance >= ?`
+).bind(listing.total_price, now, userId, listing.total_price).run();
 
-    await env.DB.prepare(
-      `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? WHERE user_id = ?`
-    ).bind(listing.total_price, now, userId).run();
+if (deductResult.meta.changes === 0) return json({ error: "Not enough TON" }, 400);
 
+   await env.DB.prepare(
+  `UPDATE market_listings SET status = 'sold', updated_at = ? WHERE id = ? AND status = 'active'`
+   ).bind(now, listingId).run();
+    
     await env.DB.prepare(
       `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
     ).bind(listing.snow_amount, now, userId).run();
@@ -1523,15 +1557,21 @@ if (url.pathname === "/api/withdraw" && request.method === "POST") {
   const isValid = await verifyTelegramAuth(request, env);
 if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
-    const body = await request.json();
-    const userId = Number(body.user_id);
-    const amount = Number(body.amount);
-    const tonAddress = String(body.ton_address || "").trim();
+const body = await request.json();
+const sessionUserId = await getUserIdFromRequest(request);
+if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+    return json({ error: "Unauthorized" }, 401);
+}
+const userId = sessionUserId;
+const amount = Number(body.amount);
+const tonAddress = String(body.ton_address || "").trim();
+
+if (!isValidTonAddress(tonAddress)) return json({ error: "Invalid TON address" }, 400);
 
     if (!userId || !tonAddress) return json({ error: "Missing params" }, 400);
     if (amount < 0.2) return json({ error: "Minimum withdrawal is 0.2 TON" }, 400);
 
-    if (!checkRateLimit(userId, 'withdraw', 3)) {
+    if (!await checkRateLimit(env, userId, 'withdraw', 3)) {
     return json({ error: "Too many requests" }, 429);
 }
 
@@ -1593,7 +1633,7 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     const userId = Number(url.searchParams.get("user_id"));
     if (!userId) return json({ error: "Missing user_id" }, 400);
 
-    if (!checkRateLimit(userId, 'withdraw_history', 10)) {
+    if (!await checkRateLimit(env, userId, 'withdraw_history', 10)) {
     return json({ error: "Too many requests" }, 429);
 }
 
@@ -1615,6 +1655,8 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
 }
     
 if (url.pathname === "/api/mint/status" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const userId = Number(url.searchParams.get("user_id"));
     if (!userId) return json({ error: "Missing user_id" }, 400);
