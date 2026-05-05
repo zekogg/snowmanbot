@@ -1868,37 +1868,37 @@ if (result.meta.changes === 0) {
       }
     }
     
-    if (url.pathname === "/api/me" && request.method === "GET") {
-      const isValid = await verifyTelegramAuth(request, env);
-      if (!isValid) return json({ error: "Unauthorized" }, 401);
+if (url.pathname === "/api/me" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
 
-      const sessionUserId = await getUserIdFromRequest(request);
-      const userIdParam = url.searchParams.get("user_id");
-      const userId = Number(userIdParam);
+  const sessionUserId = await getUserIdFromRequest(request);
+  const userIdParam = url.searchParams.get("user_id");
+  const userId = Number(userIdParam);
 
-      if (!userIdParam || isNaN(userId) || userId <= 0) {
-        return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
-      }
+  if (!userIdParam || isNaN(userId) || userId <= 0) {
+    return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
+  }
 
-      if (!sessionUserId || sessionUserId !== userId) {
-        return json({ error: "Unauthorized" }, 401);
-      }
+  if (!sessionUserId || sessionUserId !== userId) {
+    return json({ error: "Unauthorized" }, 401);
+  }
 
-      if (!await checkRateLimit(env, userId, "settle_mining", 5)) {
-        return json({ error: "Too many requests" }, 429);
-      }
+  if (!await checkRateLimit(env, userId, "settle_mining", 5)) {
+    return json({ error: "Too many requests" }, 429);
+  }
 
-      const username = url.searchParams.get("username");
-      const displayName = url.searchParams.get("display_name");
+  const username = url.searchParams.get("username");
+  const displayName = url.searchParams.get("display_name");
 
-      try {
-        const result = await settleUserMining(env, userId, username, displayName);
-        return json(result);
-      } catch (error) {
-        return json({ error: error.message }, 500);
-      }
-    }
+  try {
+    const result = await settleUserMining(env, userId, username, displayName);
+    return json(result);
+  } catch (error) {
+    return json({ error: error.message }, 500);
+  }
+}
 
-    return env.ASSETS.fetch(request);
+return env.ASSETS.fetch(request);
   }
 };
