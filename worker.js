@@ -9,7 +9,7 @@ function json(data, status = 200) {
       "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": "*", // يسمح بالوصول من أي مصدر
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, X-Telegram-Init-Data",
       "Cache-Control": "no-store"
     }
   });
@@ -797,7 +797,7 @@ export default {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Headers": "Content-Type, X-Telegram-Init-Data",
         },
       });
     }
@@ -1311,9 +1311,6 @@ if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
 }
 
 if (url.pathname === "/api/promo/redeem" && request.method === "POST") {
-  const isValid = await verifyTelegramAuth(request, env);
-  if (!isValid) return json({ error: "Unauthorized" }, 401);
-
   try {
     const body = await request.json();
     const auth = await requireSessionUser(request, env, body.user_id);
