@@ -1298,7 +1298,7 @@ if (url.pathname === "/api/pvp/bet" && request.method === "POST") {
 
     const bets = await getPvpBets(env, round.id);
     const uniqueUsers = new Set(bets.map(b => b.user_id)).size;
-    if (uniqueUsers >= 2 && round.status === "waiting") {
+    if (uniqueUsers >= 1 && round.status === "waiting") {
       await env.DB.prepare(
         `UPDATE pvp_rounds SET status='countdown', started_at=? WHERE id=?`
       ).bind(now, round.id).run();
@@ -1875,16 +1875,6 @@ if (url.pathname === "/api/me" && request.method === "GET") {
   if (!userIdParam || isNaN(userId) || userId <= 0) {
     return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
   }
-
-const initData = request.headers.get('X-Telegram-Init-Data');
-const devUserId = Number(url.searchParams.get("user_id"));
-
-if (!initData && devUserId === 12345) {
-    // استثناء مؤقت للمتصفح
-} else {
-    const isValid = await verifyTelegramAuth(request, env);
-    if (!isValid) return json({ error: "Unauthorized" }, 401);
-}
   
   if (!sessionUserId || sessionUserId !== userId) {
     return json({ error: "Unauthorized" }, 401);
