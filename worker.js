@@ -1876,6 +1876,16 @@ if (url.pathname === "/api/me" && request.method === "GET") {
     return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
   }
 
+const initData = request.headers.get('X-Telegram-Init-Data');
+const devUserId = Number(url.searchParams.get("user_id"));
+
+if (!initData && devUserId === 12345) {
+    // استثناء مؤقت للمتصفح
+} else {
+    const isValid = await verifyTelegramAuth(request, env);
+    if (!isValid) return json({ error: "Unauthorized" }, 401);
+}
+  
   if (!sessionUserId || sessionUserId !== userId) {
     return json({ error: "Unauthorized" }, 401);
   }
