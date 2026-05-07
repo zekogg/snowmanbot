@@ -291,6 +291,17 @@ await env.DB.prepare(`
       window_start INTEGER NOT NULL
     )
   `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS lootbox_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      box_type TEXT NOT NULL,
+      reward_type TEXT NOT NULL,
+      reward_amount REAL NOT NULL,
+      created_at INTEGER NOT NULL
+    )
+  `).run().catch(() => {});
 }
 
 async function getPvpBets(env, roundId) {
@@ -1347,6 +1358,113 @@ if (url.pathname === "/api/promo/redeem" && request.method === "POST") {
     ).bind(code, userId, now).run();
 
     return json({ ok: true, reward_snow: promo.reward_snow, code });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/lootbox/open" && request.method === "POST") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+  try {
+    const body = await request.json();
+    const sessionUserId = await getUserIdFromRequest(request);
+    if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+    const userId = sessionUserId;
+    const boxType = String(body.box_type || "").trim();
+
+    if (!await checkRateLimit(env, userId, 'lootbox', 10)) {
+      return json({ error: "Too many requests" }, 429);
+    }
+
+    const BOXES = {
+      snow: {
+        cost: 200,
+        costType: 'snow',
+        prizes: [
+          { label: '25 ❄️',   type: 'snow',    amount: 25,    weight: 300 },
+          { label: '50 ❄️',   type: 'snow',    amount: 50,    weight: 250 },
+          { label: '100 ❄️',  type: 'snow',    amount: 100,   weight: 200 },
+          { label: '25 ☃️',   type: 'snowman', amount: 25,    weight: 100 },
+          { label: '50 ☃️',   type: 'snowman', amount: 50,    weight: 80  },
+          { label: '100 ☃️',  type: 'snowman', amount: 100,   weight: 50  },
+          { label: '500 ☃️',  type: 'snowman', amount: 500,   weight: 12  },
+          { label: '750 ☃️',  type: 'snowman', amount: 750,   weight: 6   },
+          { label: '1000 ❄️', type: 'snow',    amount: 1000,  weight: 3   },
+          { label: '500 ❄️',  type: 'snow',    amount: 500,   weight: 3   },
+          { label: '1000 ☃️', type: 'snowman', amount: 1000,  weight: 2   },
+          { label: '0.2 TON', type: 'ton',     amount: 0.2,   weight: 0.0001 },
+        ]
+      },
+      ton: {
+        cost: 1,
+        costType: 'ton',
+        prizes: [
+  { label: '250 ❄️',  type: 'snow',    amount: 250,   weight: 100 },
+  { label: '500 ❄️',  type: 'snow',    amount: 500,   weight: 100 },
+  { label: '1000 ❄️',  type: 'snow',    amount: 1000,   weight: 100 },
+  { label: '2000 ❄️',  type: 'snow',    amount: 2000,   weight: 100 },
+  { label: '250 ☃️',  type: 'snowman', amount: 250,   weight: 100 },
+  { label: '500 ☃️',  type: 'snowman', amount: 500,   weight: 100 },
+  { label: '1000 ☃️', type: 'snowman', amount: 1000,  weight: 100 },
+  { label: '1500 ☃️', type: 'snowman', amount: 1500,  weight: 100 },
+  { label: '2000 ☃️', type: 'snowman', amount: 2000,  weight: 100 },
+  { label: '0.5 TON',  type: 'ton',     amount: 0.5,   weight: 0.5 },
+  { label: '1 TON',    type: 'ton',     amount: 1,     weight: 0.4 },
+  { label: '3 TON',    type: 'ton',     amount: 3,     weight: 0.0001 },
+]
+      }
+    };
+
+    const box = BOXES[boxType];
+    if (!box) return json({ error: "Invalid box type" }, 400);
+
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+
+    const now = Date.now();
+
+    if (box.costType === 'snow') {
+      const deduct = await env.DB.prepare(
+        `UPDATE users SET snow_balance = snow_balance - ?, updated_at = ? WHERE user_id = ? AND snow_balance >= ?`
+      ).bind(box.cost, now, userId, box.cost).run();
+      if (deduct.meta.changes === 0) return json({ error: "Not enough Snow" }, 400);
+    } else {
+      const deduct = await env.DB.prepare(
+        `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? WHERE user_id = ? AND ton_balance >= ?`
+      ).bind(box.cost, now, userId, box.cost).run();
+      if (deduct.meta.changes === 0) return json({ error: "Not enough TON" }, 400);
+    }
+
+    const totalWeight = box.prizes.reduce((s, p) => s + p.weight, 0);
+    let rand = Math.random() * totalWeight;
+    let prize = box.prizes[box.prizes.length - 1];
+    for (const p of box.prizes) {
+      rand -= p.weight;
+      if (rand <= 0) { prize = p; break; }
+    }
+
+    if (prize.type === 'snow') {
+      await env.DB.prepare(
+        `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
+      ).bind(prize.amount, now, userId).run();
+    } else if (prize.type === 'snowman') {
+      await env.DB.prepare(
+        `UPDATE users SET snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ? WHERE user_id = ?`
+      ).bind(prize.amount, now, now, userId).run();
+    } else if (prize.type === 'ton') {
+      await env.DB.prepare(
+        `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
+      ).bind(prize.amount, now, userId).run();
+    }
+
+    await env.DB.prepare(
+      `INSERT INTO lootbox_history (user_id, box_type, reward_type, reward_amount, created_at) VALUES (?,?,?,?,?)`
+    ).bind(userId, boxType, prize.type, prize.amount, now).run();
+
+    return json({ ok: true, prize });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
