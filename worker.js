@@ -1426,13 +1426,17 @@ if (!user) return json({ error: "User not found" }, 404);
 
 const now = Date.now();
 
-const totalWeight = box.prizes.reduce((s, p) => s + p.weight, 0);
+const totalWeight = box.prizes.reduce((sum, p) => sum + p.weight, 0);
+
 let rand = Math.random() * totalWeight;
-let prize = box.prizes[box.prizes.length - 1];
-for (const p of box.prizes) {
-  rand -= p.weight;
+let prizeIndex = box.prizes.length - 1;
+let prize = box.prizes[prizeIndex];
+
+for (let i = 0; i < box.prizes.length; i++) {
+  rand -= box.prizes[i].weight;
   if (rand <= 0) {
-    prize = p;
+    prizeIndex = i;
+    prize = box.prizes[i];
     break;
   }
 }
@@ -1495,7 +1499,12 @@ if (results[0].meta.changes === 0) {
   return json({ error: box.costType === 'snow' ? "Not enough Snow" : "Not enough TON" }, 400);
 }
 
-return json({ ok: true, prize, prizes: box.prizes });
+return json({
+  ok: true,
+  prize,
+  prize_index: prizeIndex,
+  prizes: box.prizes
+});
   } catch (e) {
     return json({ error: e.message }, 500);
   }
