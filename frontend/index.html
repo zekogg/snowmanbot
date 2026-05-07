@@ -4605,6 +4605,11 @@ const finalHatchBtn = document.querySelector('.final-hatch-btn');
         const marketRefreshBtn = document.getElementById('marketRefreshBtn');
         const marketFilterBtn = document.getElementById('marketFilterBtn');
         const marketSortBtn = document.getElementById('marketSortBtn');
+
+marketFilterBtn?.addEventListener('click', () => {
+    document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('market-lootbox')?.classList.add('active');
+});
         
 const pvpBtn = document.getElementById('pvpBtn');
 const pvpScreen = document.getElementById('pvpScreen');
