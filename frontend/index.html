@@ -3249,14 +3249,14 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 }
 
 
-   .lootbox-slot-track.previewing {
+.lootbox-slot-track.previewing {
     animation: lootboxPreviewScroll 1.2s linear infinite;
 }
 
 @keyframes lootboxPreviewScroll {
     from { transform: translateX(0); }
     to { transform: translateX(-132px); }
-}     
+}
         
 .lootbox-slot-item {
     min-width: 120px;
@@ -6287,35 +6287,39 @@ document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
 let currentBoxType = 'snow';
 let lootboxSpinning = false;
 
-const lootboxTrackContents = {
-    snow: [
-        { type: 'snow', amount: 25, label: '25 ❄️' },
-        { type: 'snow', amount: 50, label: '50 ❄️' },
-        { type: 'snow', amount: 100, label: '100 ❄️' },
-        { type: 'snowman', amount: 25, label: '25 ☃️' },
-        { type: 'snowman', amount: 50, label: '50 ☃️' },
-        { type: 'snowman', amount: 100, label: '100 ☃️' },
-        { type: 'snowman', amount: 500, label: '500 ☃️' },
-        { type: 'snowman', amount: 750, label: '750 ☃️' },
-        { type: 'snow', amount: 1000, label: '1000 ❄️' },
-        { type: 'snow', amount: 500, label: '500 ❄️' },
-        { type: 'snowman', amount: 1000, label: '1000 ☃️' },
-        { type: 'ton', amount: 0.2, label: '0.2 TON' },
-    ],
-    ton: [
-        { type: 'snow', amount: 250, label: '250 ❄️' },
-        { type: 'snow', amount: 500, label: '500 ❄️' },
-        { type: 'snow', amount: 1000, label: '1000 ❄️' },
-        { type: 'snow', amount: 2000, label: '2000 ❄️' },
-        { type: 'snowman', amount: 250, label: '250 ☃️' },
-        { type: 'snowman', amount: 500, label: '500 ☃️' },
-        { type: 'snowman', amount: 1000, label: '1000 ☃️' },
-        { type: 'snowman', amount: 1500, label: '1500 ☃️' },
-        { type: 'snowman', amount: 2000, label: '2000 ☃️' },
-        { type: 'ton', amount: 0.5, label: '0.5 TON' },
-        { type: 'ton', amount: 1, label: '1 TON' },
-        { type: 'ton', amount: 3, label: '3 TON' },
-    ]
+const LOOTBOX_BOXES = {
+    snow: {
+        prizes: [
+            { label: '25 ❄️',   type: 'snow',    amount: 25,    weight: 300 },
+            { label: '50 ❄️',   type: 'snow',    amount: 50,    weight: 250 },
+            { label: '100 ❄️',  type: 'snow',    amount: 100,   weight: 200 },
+            { label: '25 ☃️',   type: 'snowman', amount: 25,    weight: 100 },
+            { label: '50 ☃️',   type: 'snowman', amount: 50,    weight: 80  },
+            { label: '100 ☃️',  type: 'snowman', amount: 100,   weight: 50  },
+            { label: '500 ☃️',  type: 'snowman', amount: 500,   weight: 12  },
+            { label: '750 ☃️',  type: 'snowman', amount: 750,   weight: 6   },
+            { label: '1000 ❄️', type: 'snow',    amount: 1000,  weight: 3   },
+            { label: '500 ❄️',  type: 'snow',    amount: 500,   weight: 3   },
+            { label: '1000 ☃️', type: 'snowman', amount: 1000,  weight: 2   },
+            { label: '0.2 TON', type: 'ton',     amount: 0.2,   weight: 0.0001 }
+        ]
+    },
+    ton: {
+        prizes: [
+            { label: '250 ❄️',  type: 'snow',    amount: 250,   weight: 100 },
+            { label: '500 ❄️',  type: 'snow',    amount: 500,   weight: 100 },
+            { label: '1000 ❄️', type: 'snow',    amount: 1000,  weight: 100 },
+            { label: '2000 ❄️', type: 'snow',    amount: 2000,  weight: 100 },
+            { label: '250 ☃️',  type: 'snowman', amount: 250,   weight: 100 },
+            { label: '500 ☃️',  type: 'snowman', amount: 500,   weight: 100 },
+            { label: '1000 ☃️', type: 'snowman', amount: 1000,  weight: 100 },
+            { label: '1500 ☃️', type: 'snowman', amount: 1500,  weight: 100 },
+            { label: '2000 ☃️', type: 'snowman', amount: 2000,  weight: 100 },
+            { label: '0.5 TON', type: 'ton',     amount: 0.5,   weight: 0.5 },
+            { label: '1 TON',   type: 'ton',     amount: 1,     weight: 0.4 },
+            { label: '3 TON',   type: 'ton',     amount: 3,     weight: 0.0001 }
+        ]
+    }
 };
 
 function buildLootboxTrack(prizes) {
@@ -6335,6 +6339,7 @@ function buildLootboxTrack(prizes) {
         </div>
     `).join('');
 
+    track.style.transition = 'none';
     track.style.transform = 'translateX(0px)';
     track.classList.remove('previewing');
 }
@@ -6351,6 +6356,9 @@ function openLootboxOverlay(boxType) {
         openBtn.disabled = false;
         openBtn.textContent = 'Open 🎁';
     }
+
+    const preview = LOOTBOX_BOXES[boxType]?.prizes || [];
+    buildLootboxTrack(preview);
 
     const track = document.getElementById('lootboxTrack');
     if (track) {
