@@ -992,9 +992,17 @@ if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_re
               chat_id: chatId,
               text: "Welcome to SnowManBot Empire ☃️",
               reply_markup: {
-                inline_keyboard: [[
-                  { text: "Open", web_app: { url: WEB_APP_URL } }
-                ]]
+                inline_keyboard: [
+  [
+    { text: "Open", web_app: { url: WEB_APP_URL } }
+  ],
+  [
+    { text: "Join the Channel", url: "https://t.me/SnowManNew" }
+  ],
+  [
+    { text: "Chat", url: "https://t.me/Snow0ManChat" }
+  ]
+]
               }
             })
           });
