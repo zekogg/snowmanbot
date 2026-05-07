@@ -3248,6 +3248,16 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     will-change: transform;
 }
 
+
+   .lootbox-slot-track.previewing {
+    animation: lootboxPreviewScroll 1.2s linear infinite;
+}
+
+@keyframes lootboxPreviewScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-132px); }
+}     
+        
 .lootbox-slot-item {
     min-width: 120px;
     height: 140px;
@@ -6326,6 +6336,7 @@ function buildLootboxTrack(prizes) {
     `).join('');
 
     track.style.transform = 'translateX(0px)';
+    track.classList.remove('previewing');
 }
 
 function openLootboxOverlay(boxType) {
@@ -6335,17 +6346,20 @@ function openLootboxOverlay(boxType) {
     const nameEl = document.getElementById('lootboxBoxName');
     if (nameEl) nameEl.textContent = boxType === 'snow' ? 'SNOW BOX' : 'TON BOX';
 
-    buildLootboxTrack(lootboxTrackContents[boxType] || []);
-
     const openBtn = document.getElementById('lootboxOpenBtn');
     if (openBtn) {
         openBtn.disabled = false;
         openBtn.textContent = 'Open 🎁';
     }
 
+    const track = document.getElementById('lootboxTrack');
+    if (track) {
+        track.classList.add('previewing');
+    }
+
     document.getElementById('lootboxOverlay')?.classList.add('show');
 }
-
+        
 document.getElementById('closeLootboxBtn')?.addEventListener('click', () => {
     if (lootboxSpinning) return;
     document.getElementById('lootboxOverlay')?.classList.remove('show');
@@ -6353,8 +6367,11 @@ document.getElementById('closeLootboxBtn')?.addEventListener('click', () => {
 
 document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () => {
     if (lootboxSpinning) return;
+
     const tgUser = getTgUser();
     const openBtn = document.getElementById('lootboxOpenBtn');
+    const track = document.getElementById('lootboxTrack');
+
     if (openBtn) {
         openBtn.disabled = true;
         openBtn.textContent = '...';
@@ -6382,19 +6399,28 @@ document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () =>
 
         const prize = data.prize;
         const prizes = data.prizes || [];
+
+        if (track) {
+            track.classList.remove('previewing');
+        }
+
         buildLootboxTrack(prizes);
 
         const winnerIdx = prizes.findIndex(
             p => p.type === prize.type && Number(p.amount) === Number(prize.amount)
         );
 
-        const track = document.getElementById('lootboxTrack');
-        const firstItem = track?.querySelector('.lootbox-slot-item');
-        const itemWidth = firstItem?.getBoundingClientRect().width || 132;
-        const wrapWidth = track?.parentElement?.getBoundingClientRect().width || 180;
-        const centerOffset = (wrapWidth / 2) - (itemWidth / 2);
+        const items = track?.querySelectorAll('.lootbox-slot-item') || [];
         const targetIdx = 30 + (winnerIdx >= 0 ? winnerIdx : 0);
-        const targetX = -(targetIdx * itemWidth) + centerOffset;
+        const winnerItem = items[targetIdx];
+
+        if (!winnerItem || !track || !track.parentElement) {
+            throw new Error('Lootbox target item not found');
+        }
+
+        const wrapWidth = track.parentElement.getBoundingClientRect().width;
+        const itemCenter = winnerItem.offsetLeft + (winnerItem.offsetWidth / 2);
+        const targetX = (wrapWidth / 2) - itemCenter;
 
         track.style.transition = 'none';
         track.style.transform = 'translateX(0px)';
@@ -6403,8 +6429,7 @@ document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () =>
         track.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)';
         track.style.transform = `translateX(${targetX}px)`;
 
-        setTimeout(() => {
-            const items = track.querySelectorAll('.lootbox-slot-item');
+        track.addEventListener('transitionend', () => {
             if (items[targetIdx]) items[targetIdx].classList.add('winner');
 
             const resultOverlay = document.getElementById('lootboxResultOverlay');
@@ -6425,7 +6450,7 @@ document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () =>
                 }
                 loadMiningState();
             }, 5000);
-        }, 5200);
+        }, { once: true });
 
     } catch (e) {
         alert('Failed to open box');
