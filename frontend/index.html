@@ -6379,7 +6379,13 @@ document.getElementById('closeLootboxBtn')?.addEventListener('click', () => {
     if (lootboxSpinning) return;
     document.getElementById('lootboxOverlay')?.classList.remove('show');
 });
-
+document.getElementById('lootboxOverlay')?.addEventListener('click', (e) => {
+    if (lootboxSpinning) return;
+    if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('show');
+    }
+});
+        
 document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () => {
     if (lootboxSpinning) return;
 
@@ -6466,7 +6472,7 @@ const targetIdx = (prizes.length * 2) + (prizeIndex >= 0 ? prizeIndex : 0);
                     openBtn.textContent = 'Open 🎁';
                 }
                 loadMiningState();
-            }, 5000);
+            }, 3000);
         }, { once: true });
 
     } catch (e) {
