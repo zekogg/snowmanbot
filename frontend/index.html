@@ -2981,6 +2981,87 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     letter-spacing: 0.5px;
     margin: 0 auto;
 }
+
+.lootbox-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.lootbox-modal-content {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(10, 24, 40, 0.98), rgba(4, 12, 22, 0.98));
+    border: 2px solid rgba(60, 199, 255, 0.5);
+    border-radius: 32px;
+    padding: 24px 20px 20px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.lootbox-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.lootbox-modal-title {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    font-weight: 900;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.lootbox-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.loot-item {
+    background: rgba(60, 199, 255, 0.12);
+    border: 1.5px solid rgba(60, 199, 255, 0.3);
+    border-radius: 16px;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 700;
+    color: #E0F7FA;
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.loot-item-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.loot-item-text {
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: 100%;
+}
         
 .mint-buy-btn {
     padding: 4px 10px;
