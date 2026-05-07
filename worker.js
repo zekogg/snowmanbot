@@ -1422,49 +1422,80 @@ if (url.pathname === "/api/lootbox/open" && request.method === "POST") {
     if (!box) return json({ error: "Invalid box type" }, 400);
 
     const user = await getUser(env, userId);
-    if (!user) return json({ error: "User not found" }, 404);
+if (!user) return json({ error: "User not found" }, 404);
 
-    const now = Date.now();
+const now = Date.now();
 
-    if (box.costType === 'snow') {
-      const deduct = await env.DB.prepare(
-        `UPDATE users SET snow_balance = snow_balance - ?, updated_at = ? WHERE user_id = ? AND snow_balance >= ?`
-      ).bind(box.cost, now, userId, box.cost).run();
-      if (deduct.meta.changes === 0) return json({ error: "Not enough Snow" }, 400);
-    } else {
-      const deduct = await env.DB.prepare(
-        `UPDATE users SET ton_balance = ton_balance - ?, updated_at = ? WHERE user_id = ? AND ton_balance >= ?`
-      ).bind(box.cost, now, userId, box.cost).run();
-      if (deduct.meta.changes === 0) return json({ error: "Not enough TON" }, 400);
-    }
+const totalWeight = box.prizes.reduce((s, p) => s + p.weight, 0);
+let rand = Math.random() * totalWeight;
+let prize = box.prizes[box.prizes.length - 1];
+for (const p of box.prizes) {
+  rand -= p.weight;
+  if (rand <= 0) {
+    prize = p;
+    break;
+  }
+}
 
-    const totalWeight = box.prizes.reduce((s, p) => s + p.weight, 0);
-    let rand = Math.random() * totalWeight;
-    let prize = box.prizes[box.prizes.length - 1];
-    for (const p of box.prizes) {
-      rand -= p.weight;
-      if (rand <= 0) { prize = p; break; }
-    }
+const statements = [];
 
-    if (prize.type === 'snow') {
-      await env.DB.prepare(
-        `UPDATE users SET snow_balance = snow_balance + ?, updated_at = ? WHERE user_id = ?`
-      ).bind(prize.amount, now, userId).run();
-    } else if (prize.type === 'snowman') {
-      await env.DB.prepare(
-        `UPDATE users SET snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ? WHERE user_id = ?`
-      ).bind(prize.amount, now, now, userId).run();
-    } else if (prize.type === 'ton') {
-      await env.DB.prepare(
-        `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
-      ).bind(prize.amount, now, userId).run();
-    }
+if (box.costType === 'snow') {
+  statements.push(
+    env.DB.prepare(
+      `UPDATE users
+       SET snow_balance = snow_balance - ?, updated_at = ?
+       WHERE user_id = ? AND snow_balance >= ?`
+    ).bind(box.cost, now, userId, box.cost)
+  );
+} else {
+  statements.push(
+    env.DB.prepare(
+      `UPDATE users
+       SET ton_balance = ton_balance - ?, updated_at = ?
+       WHERE user_id = ? AND ton_balance >= ?`
+    ).bind(box.cost, now, userId, box.cost)
+  );
+}
 
-    await env.DB.prepare(
-      `INSERT INTO lootbox_history (user_id, box_type, reward_type, reward_amount, created_at) VALUES (?,?,?,?,?)`
-    ).bind(userId, boxType, prize.type, prize.amount, now).run();
+if (prize.type === 'snow') {
+  statements.push(
+    env.DB.prepare(
+      `UPDATE users
+       SET snow_balance = snow_balance + ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(prize.amount, now, userId)
+  );
+} else if (prize.type === 'snowman') {
+  statements.push(
+    env.DB.prepare(
+      `UPDATE users
+       SET snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(prize.amount, now, now, userId)
+  );
+} else if (prize.type === 'ton') {
+  statements.push(
+    env.DB.prepare(
+      `UPDATE users
+       SET ton_balance = ton_balance + ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(prize.amount, now, userId)
+  );
+}
 
-    return json({ ok: true, prize });
+statements.push(
+  env.DB.prepare(
+    `INSERT INTO lootbox_history (user_id, box_type, reward_type, reward_amount, created_at)
+     VALUES (?,?,?,?,?)`
+  ).bind(userId, boxType, prize.type, prize.amount, now)
+);
+
+const results = await env.DB.batch(statements);
+if (results[0].meta.changes === 0) {
+  return json({ error: box.costType === 'snow' ? "Not enough Snow" : "Not enough TON" }, 400);
+}
+
+return json({ ok: true, prize, prizes: box.prizes });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
