@@ -3203,6 +3203,136 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     display: block;
     margin-top: 2px;
 }
+
+.lootbox-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(0,0,0,0.92);
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.lootbox-overlay.show { display: flex; }
+
+.lootbox-box-name {
+    font-size: 22px;
+    font-weight: 900;
+    color: #FFD166;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.lootbox-slot-wrap {
+    width: 90%;
+    max-width: 360px;
+    height: 180px;
+    background: rgba(10,25,40,0.95);
+    border: 2px solid #3CC7FF;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.lootbox-slot-pointer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    background: #FFD166;
+    z-index: 10;
+}
+
+.lootbox-slot-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 12px;
+    padding: 0 12px;
+    will-change: transform;
+}
+
+.lootbox-slot-item {
+    min-width: 120px;
+    height: 140px;
+    background: rgba(60,199,255,0.08);
+    border: 1.5px solid rgba(60,199,255,0.25);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.lootbox-slot-item span:first-child { font-size: 36px; }
+.lootbox-slot-item span:last-child {
+    font-size: 14px;
+    font-weight: 800;
+    color: white;
+}
+
+.lootbox-slot-item.winner {
+    border-color: #FFD166;
+    background: rgba(255,209,102,0.15);
+}
+
+.lootbox-open-btn {
+    margin-top: 20px;
+    padding: 16px 48px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #FFD166, #FF9F1C);
+    color: #1a1a2e;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.lootbox-open-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.lootbox-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.lootbox-result-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 3100;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+.lootbox-result-overlay.show { display: flex; }
+.lootbox-result-card {
+    background: rgba(10,25,40,0.97);
+    border: 2px solid #FFD166;
+    border-radius: 24px;
+    padding: 32px 28px;
+    text-align: center;
+    min-width: 250px;
+    animation: mintPop 0.4s ease;
+}
         
 </style>
 </head>
@@ -3910,11 +4040,21 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     </div>
 </div>
 
-<div id="lootboxModal" class="lootbox-modal">
-    <div class="lootbox-modal-content">
-        <button class="lootbox-modal-close" id="closeLootboxModalBtn">×</button>
-        <h2 class="lootbox-modal-title" id="lootboxModalTitle">Snow Box</h2>
-        <div class="lootbox-grid" id="lootboxGrid"></div>
+<div id="lootboxOverlay" class="lootbox-overlay">
+    <button class="lootbox-close-btn" id="closeLootboxBtn">×</button>
+    <div class="lootbox-box-name" id="lootboxBoxName">SNOW BOX</div>
+    <div class="lootbox-slot-wrap">
+        <div class="lootbox-slot-pointer"></div>
+        <div class="lootbox-slot-track" id="lootboxTrack"></div>
+    </div>
+    <button class="lootbox-open-btn" id="lootboxOpenBtn">Open 🎁</button>
+</div>
+
+<div id="lootboxResultOverlay" class="lootbox-result-overlay">
+    <div class="lootbox-result-card">
+        <div style="font-size:50px; margin-bottom:10px;" id="lootboxResultIcon">🎁</div>
+        <div style="font-size:20px; font-weight:900; color:#FFD166; margin-bottom:8px;">You Won!</div>
+        <div style="font-size:28px; font-weight:900; color:white;" id="lootboxResultText"></div>
     </div>
 </div>
 
@@ -6225,6 +6365,144 @@ document.getElementById('backToMarketBtn')?.addEventListener('click', () => {
     loadMarketListings();
 });
 
+const LOOTBOX_PRIZES = {
+    snow: [
+        { label: '25 ❄️', icon: '❄️' },
+        { label: '50 ❄️', icon: '❄️' },
+        { label: '100 ❄️', icon: '❄️' },
+        { label: '25 ☃️', icon: '☃️' },
+        { label: '50 ☃️', icon: '☃️' },
+        { label: '100 ☃️', icon: '☃️' },
+        { label: '500 ☃️', icon: '☃️' },
+        { label: '750 ☃️', icon: '☃️' },
+        { label: '1000 ❄️', icon: '❄️' },
+        { label: '500 ❄️', icon: '❄️' },
+        { label: '1000 ☃️', icon: '☃️' },
+        { label: '0.2 TON', icon: '💎' },
+    ],
+    ton: [
+        { label: '250 ❄️', icon: '❄️' },
+        { label: '500 ❄️', icon: '❄️' },
+        { label: '1000 ❄️', icon: '❄️' },
+        { label: '2000 ❄️', icon: '❄️' },
+        { label: '250 ☃️', icon: '☃️' },
+        { label: '500 ☃️', icon: '☃️' },
+        { label: '1000 ☃️', icon: '☃️' },
+        { label: '1500 ☃️', icon: '☃️' },
+        { label: '2000 ☃️', icon: '☃️' },
+        { label: '0.5 TON', icon: '💎' },
+        { label: '1 TON', icon: '💎' },
+        { label: '3 TON', icon: '💎' },
+    ]
+};
+
+let currentBoxType = 'snow';
+let lootboxSpinning = false;
+
+function buildLootboxTrack(boxType, winnerLabel = null) {
+    const track = document.getElementById('lootboxTrack');
+    if (!track) return;
+    const prizes = LOOTBOX_PRIZES[boxType];
+    const items = [];
+    for (let i = 0; i < 40; i++) {
+        items.push(prizes[i % prizes.length]);
+    }
+    track.innerHTML = items.map((p, idx) => `
+        <div class="lootbox-slot-item" data-idx="${idx}">
+            <span>${p.icon}</span>
+            <span>${p.label}</span>
+        </div>
+    `).join('');
+    track.style.transform = 'translateX(0px)';
+}
+
+function openLootboxOverlay(boxType) {
+    currentBoxType = boxType;
+    lootboxSpinning = false;
+    const nameEl = document.getElementById('lootboxBoxName');
+    if (nameEl) nameEl.textContent = boxType === 'snow' ? 'SNOW BOX' : 'TON BOX';
+    buildLootboxTrack(boxType);
+    const openBtn = document.getElementById('lootboxOpenBtn');
+    if (openBtn) { openBtn.disabled = false; openBtn.textContent = 'Open 🎁'; }
+    document.getElementById('lootboxOverlay')?.classList.add('show');
+}
+
+document.getElementById('closeLootboxBtn')?.addEventListener('click', () => {
+    if (lootboxSpinning) return;
+    document.getElementById('lootboxOverlay')?.classList.remove('show');
+});
+
+document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () => {
+    if (lootboxSpinning) return;
+    const tgUser = getTgUser();
+    const openBtn = document.getElementById('lootboxOpenBtn');
+    if (openBtn) { openBtn.disabled = true; openBtn.textContent = '...'; }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/lootbox/open`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: tgUser.id, box_type: currentBoxType })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || 'Failed');
+            if (openBtn) { openBtn.disabled = false; openBtn.textContent = 'Open 🎁'; }
+            return;
+        }
+
+        lootboxSpinning = true;
+        const prize = data.prize;
+        const prizes = LOOTBOX_PRIZES[currentBoxType];
+        const winnerIdx = prizes.findIndex(p => p.label === prize.label);
+
+        const track = document.getElementById('lootboxTrack');
+        const itemWidth = 132;
+        const centerOffset = 180 / 2 - itemWidth / 2;
+        const targetIdx = 30 + (winnerIdx >= 0 ? winnerIdx : 0);
+        const targetX = -(targetIdx * itemWidth) + centerOffset;
+
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0px)';
+        void track.offsetWidth;
+
+        track.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)';
+        track.style.transform = `translateX(${targetX}px)`;
+
+        setTimeout(() => {
+            const items = track.querySelectorAll('.lootbox-slot-item');
+            if (items[targetIdx]) items[targetIdx].classList.add('winner');
+
+            const resultOverlay = document.getElementById('lootboxResultOverlay');
+            const resultText = document.getElementById('lootboxResultText');
+            const resultIcon = document.getElementById('lootboxResultIcon');
+            if (resultText) resultText.textContent = prize.label;
+            if (resultIcon) resultIcon.textContent = prize.type === 'ton' ? '💎' : prize.type === 'snowman' ? '☃️' : '❄️';
+            resultOverlay?.classList.add('show');
+
+            setTimeout(() => {
+                resultOverlay?.classList.remove('show');
+                lootboxSpinning = false;
+                if (openBtn) { openBtn.disabled = false; openBtn.textContent = 'Open 🎁'; }
+                loadMiningState();
+            }, 5000);
+        }, 5200);
+
+    } catch (e) {
+        alert('Failed to open box');
+        lootboxSpinning = false;
+        if (openBtn) { openBtn.disabled = false; openBtn.textContent = 'Open 🎁'; }
+    }
+});
+
+document.querySelectorAll('.loot-buy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const boxType = btn.dataset.box;
+        openLootboxOverlay(boxType);
+    });
+});
+        
 applyLang();
         
 initTonConnect();
