@@ -2061,6 +2061,17 @@ if (url.pathname === "/api/me" && request.method === "GET") {
   }
 }
 
+if (url.pathname === "/api/stats/total-snowmen" && request.method === "GET") {
+    try {
+        const result = await env.DB.prepare(
+            `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
+        ).first();
+        return json({ total: Number(result?.total || 0) });
+    } catch (e) {
+        return json({ error: e.message }, 500);
+    }
+} 
+    
 return env.ASSETS.fetch(request);
   }
 };
