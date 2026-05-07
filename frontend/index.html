@@ -2981,97 +2981,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     letter-spacing: 0.5px;
     margin: 0 auto;
 }
-
-.loot-preview {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 20px;
-    margin: 10px 0 8px;
-}
-
-.lootbox-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1300;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.lootbox-modal-content {
-    width: 100%;
-    max-width: 420px;
-    background: linear-gradient(180deg, rgba(10, 24, 40, 0.98), rgba(4, 12, 22, 0.98));
-    border: 2px solid rgba(60, 199, 255, 0.5);
-    border-radius: 32px;
-    padding: 24px 20px 20px;
-    position: relative;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-.lootbox-modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.lootbox-modal-title {
-    margin: 0 0 20px 0;
-    font-size: 28px;
-    font-weight: 900;
-    text-align: center;
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.lootbox-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
-
-.loot-item {
-    background: rgba(60, 199, 255, 0.12);
-    border: 1.5px solid rgba(60, 199, 255, 0.3);
-    border-radius: 16px;
-    padding: 8px 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-weight: 700;
-    color: #E0F7FA;
-    aspect-ratio: 1 / 1;
-    min-width: 0;
-    word-break: break-word;
-}
-
-.loot-item-icon {
-    font-size: 24px;
-    margin-bottom: 4px;
-}
-
-.loot-item-text {
-    font-size: 12px;
-    line-height: 1.2;
-    max-width: 100%;
-}
-
+        
 .mint-buy-btn {
     padding: 4px 10px;
     border: none;
@@ -3766,7 +3676,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
                 <span>☃️</span>
             </div>
             <div class="market-pill market-price-pill"><span>❄️ 200</span></div>
-            <button class="market-buy-btn loot-preview-btn" data-box="snow">Preview</button>
             <button class="market-buy-btn loot-buy-btn" data-box="snow" style="margin-top: 8px;">Buy</button>
         </div>
         <div class="market-card loot-card">
@@ -3778,7 +3687,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
                 <span>💎</span>
             </div>
             <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>1.00</span></div>
-            <button class="market-buy-btn loot-preview-btn" data-box="ton">Preview</button>
             <button class="market-buy-btn loot-buy-btn" data-box="ton" style="margin-top: 8px;">Buy</button>
         </div>
     </div>
@@ -4791,92 +4699,7 @@ profileNavBtn?.addEventListener('click', () => {
         openCreateOrderBtn?.addEventListener('click', () => showMarketScreen('create'));
         backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
         marketRefreshBtn?.addEventListener('click', () => setMarketMode(currentMarketView));
-        let currentLootboxData = null;
-const lootboxModal = document.getElementById('lootboxModal');
-const lootboxGrid = document.getElementById('lootboxGrid');
-const lootboxModalTitle = document.getElementById('lootboxModalTitle');
-const closeLootboxModalBtn = document.getElementById('closeLootboxModalBtn');
 
-const snowBoxContents = [
-    { icon: '❄️', text: '25' },
-    { icon: '❄️', text: '50' },
-    { icon: '❄️', text: '100' },
-    { icon: '❄️', text: '500' },
-    { icon: '❄️', text: '1000' },
-    { icon: '☃️', text: '25' },
-    { icon: '☃️', text: '50' },
-    { icon: '☃️', text: '100' },
-    { icon: '☃️', text: '500' },
-    { icon: '☃️', text: '750' },
-    { icon: '☃️', text: '1000' },
-    { icon: '<span class="ton-icon"></span>', text: '0.2 Ton' },
-];
-
-const tonBoxContents = [
-    { icon: '☃️', text: '250' },
-    { icon: '☃️', text: '500' },
-    { icon: '☃️', text: '1000' },
-    { icon: '☃️', text: '1500' },
-    { icon: '☃️', text: '2000' },
-    { icon: '<span class="ton-icon"></span>', text: '0.5 Ton' },
-    { icon: '<span class="ton-icon"></span>', text: '1 Ton' },
-    { icon: '<span class="ton-icon"></span>', text: '3 Ton' },
-    { icon: '❄️', text: '250' },
-    { icon: '❄️', text: '500' },
-    { icon: '❄️', text: '1000' },
-    { icon: '❄️', text: '2000' },
-];
-
-function renderLootboxGrid(contents) {
-    if (!lootboxGrid) return;
-    lootboxGrid.innerHTML = '';
-    contents.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'loot-item';
-        div.innerHTML = `<div class="loot-item-icon">${item.icon}</div><div class="loot-item-text">${item.text}</div>`;
-        lootboxGrid.appendChild(div);
-    });
-}
-
-function showLootboxModal(boxType) {
-    if (!lootboxModal) return;
-    if (boxType === 'snow') {
-        if (lootboxModalTitle) lootboxModalTitle.textContent = 'Snow Box';
-        renderLootboxGrid(snowBoxContents);
-    } else if (boxType === 'ton') {
-        if (lootboxModalTitle) lootboxModalTitle.textContent = 'Ton Box';
-        renderLootboxGrid(tonBoxContents);
-    }
-    lootboxModal.style.display = 'flex';
-}
-
-function hideLootboxModal() {
-    if (lootboxModal) lootboxModal.style.display = 'none';
-}
-
-if (marketFilterBtn) {
-    marketFilterBtn.addEventListener('click', () => {
-        
-        setMarketMode('lootbox');
-    });
-}
-
-document.querySelectorAll('.loot-preview-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const boxType = btn.getAttribute('data-box');
-        showLootboxModal(boxType);
-    });
-});
-
-if (closeLootboxModalBtn) {
-    closeLootboxModalBtn.addEventListener('click', hideLootboxModal);
-}
-if (lootboxModal) {
-    lootboxModal.addEventListener('click', (e) => {
-        if (e.target === lootboxModal) hideLootboxModal();
-    });
-}
         marketSortBtn?.addEventListener('click', () => {});
         
         floatingAddTaskBtn?.addEventListener('click', () => {
