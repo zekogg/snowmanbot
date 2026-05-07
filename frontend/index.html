@@ -3250,12 +3250,12 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 
 .lootbox-slot-track.previewing {
-    animation: lootboxPreviewScroll 1.2s linear infinite;
+    animation: lootboxPreviewScroll 12s linear infinite;
 }
 
 @keyframes lootboxPreviewScroll {
     from { transform: translateX(0); }
-    to { transform: translateX(-132px); }
+    to { transform: translateX(calc(-1 * var(--lootbox-cycle-width, 0px))); }
 }
         
 .lootbox-slot-item {
@@ -6322,14 +6322,20 @@ const LOOTBOX_BOXES = {
     }
 };
 
-function buildLootboxTrack(prizes) {
+const LOOTBOX_ITEM_WIDTH = 120;
+const LOOTBOX_ITEM_GAP = 12;
+const LOOTBOX_STEP = LOOTBOX_ITEM_WIDTH + LOOTBOX_ITEM_GAP;
+const LOOTBOX_PREVIEW_COPIES = 2;
+const LOOTBOX_SPIN_COPIES = 4;
+
+function buildLootboxTrack(prizes, repeatCount = LOOTBOX_SPIN_COPIES) {
     const track = document.getElementById('lootboxTrack');
     if (!track) return;
     if (!Array.isArray(prizes) || prizes.length === 0) return;
 
     const items = [];
-    for (let i = 0; i < 40; i++) {
-        items.push(prizes[i % prizes.length]);
+    for (let i = 0; i < repeatCount; i++) {
+        items.push(...prizes);
     }
 
     track.innerHTML = items.map((p, idx) => `
@@ -6341,6 +6347,7 @@ function buildLootboxTrack(prizes) {
 
     track.style.transition = 'none';
     track.style.transform = 'translateX(0px)';
+    track.style.setProperty('--lootbox-cycle-width', `${prizes.length * LOOTBOX_STEP}px`);
     track.classList.remove('previewing');
 }
 
@@ -6358,7 +6365,7 @@ function openLootboxOverlay(boxType) {
     }
 
     const preview = LOOTBOX_BOXES[boxType]?.prizes || [];
-    buildLootboxTrack(preview);
+    buildLootboxTrack(preview, LOOTBOX_PREVIEW_COPIES);
 
     const track = document.getElementById('lootboxTrack');
     if (track) {
@@ -6412,14 +6419,16 @@ document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () =>
             track.classList.remove('previewing');
         }
 
-        buildLootboxTrack(prizes);
+        buildLootboxTrack(prizes, LOOTBOX_SPIN_COPIES);
 
-        const winnerIdx = prizes.findIndex(
-            p => p.type === prize.type && Number(p.amount) === Number(prize.amount)
-        );
+const prizeIndex = Number.isInteger(data.prize_index) && data.prize_index >= 0
+    ? data.prize_index
+    : prizes.findIndex(
+        p => p.type === prize.type && Number(p.amount) === Number(prize.amount)
+    );
 
-        const items = track?.querySelectorAll('.lootbox-slot-item') || [];
-        const targetIdx = 30 + (winnerIdx >= 0 ? winnerIdx : 0);
+const items = track?.querySelectorAll('.lootbox-slot-item') || [];
+const targetIdx = (prizes.length * 2) + (prizeIndex >= 0 ? prizeIndex : 0);
         const winnerItem = items[targetIdx];
 
         if (!winnerItem || !track || !track.parentElement) {
