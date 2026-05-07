@@ -6454,14 +6454,18 @@ document.getElementById('lootboxOpenBtn')?.addEventListener('click', async () =>
 
         lootboxSpinning = true;
         const prize = data.prize;
-        const prizes = LOOTBOX_PRIZES[currentBoxType];
-        const winnerIdx = prizes.findIndex(p => p.label === prize.label);
+const prizes = data.prizes || [];
+const winnerIdx = prizes.findIndex(
+    p => p.type === prize.type && Number(p.amount) === Number(prize.amount)
+);
 
-        const track = document.getElementById('lootboxTrack');
-        const itemWidth = 132;
-        const centerOffset = 180 / 2 - itemWidth / 2;
-        const targetIdx = 30 + (winnerIdx >= 0 ? winnerIdx : 0);
-        const targetX = -(targetIdx * itemWidth) + centerOffset;
+const track = document.getElementById('lootboxTrack');
+const firstItem = track?.querySelector('.lootbox-slot-item');
+const itemWidth = firstItem?.getBoundingClientRect().width || 132;
+const wrapWidth = track?.parentElement?.getBoundingClientRect().width || 180;
+const centerOffset = (wrapWidth / 2) - (itemWidth / 2);
+const targetIdx = 30 + (winnerIdx >= 0 ? winnerIdx : 0);
+const targetX = -(targetIdx * itemWidth) + centerOffset;
 
         track.style.transition = 'none';
         track.style.transform = 'translateX(0px)';
