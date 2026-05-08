@@ -6,6 +6,9 @@
     <title>SnowMan Empire Mini App</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script>
+        window.onerror = function(msg, src, line, col) {
+    alert(`Error: ${msg}\nLine: ${line}\nCol: ${col}`);
+};
     if (window.TelegramWebviewProxy || navigator.userAgent.includes('Telegram')) {
         document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
     }
