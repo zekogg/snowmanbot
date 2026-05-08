@@ -2055,22 +2055,13 @@ if (url.pathname === "/api/me" && request.method === "GET") {
 
   try {
     const result = await settleUserMining(env, userId, username, displayName);
-    return json(result);
+const totalRow = await env.DB.prepare(`SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`).first();
+result.total_snowmen = Number(totalRow?.total || 0);
+return json(result);
   } catch (error) {
     return json({ error: error.message }, 500);
   }
 }
-
-if (url.pathname === "/api/stats/total-snowmen" && request.method === "GET") {
-    try {
-        const result = await env.DB.prepare(
-            `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
-        ).first();
-        return json({ total: Number(result?.total || 0) });
-    } catch (e) {
-        return json({ error: e.message }, 500);
-    }
-} 
     
 return env.ASSETS.fetch(request);
   }
