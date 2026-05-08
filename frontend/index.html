@@ -5050,14 +5050,10 @@ async function submitHatch() {
         return;
     }
     
-    miningState.snowBalance = data.user?.snow_balance || 0;
-    miningState.snowmanCount = data.user?.snowman_count || 0;
-    
-    renderMiningUI();
-    updateHatchUI();
-    
     alert(`Hatched successfully: ${baseAmount} snowflakes`);
-    if (hatchModal) hatchModal.style.display = 'none';
+if (hatchModal) hatchModal.style.display = 'none';
+await loadMiningState();
+updateHatchUI();
 }
 
 function renderTaskFeed(tasks, completedIds = []) {
