@@ -5807,6 +5807,7 @@ async function loadMiningState() {
         }
     }
     localStorage.setItem('lastMeCall', now);
+    localStorage.removeItem('miningStateCache');
     
     let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     
