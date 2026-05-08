@@ -4749,6 +4749,10 @@ function showPvpScreen() {
 
 function hidePvpScreen() {
     pvpScreen?.classList.remove('show');
+    if (pvpPollTimer) {
+        clearInterval(pvpPollTimer);
+        pvpPollTimer = null;
+    }
 }
 
         tasksNavBtn?.addEventListener('click', () => {
@@ -5250,7 +5254,7 @@ pvpBtn?.addEventListener('click', () => {
     showPvpScreen();
     if (!pvpPollTimer) {
         pvpPoll();
-        pvpPollTimer = setInterval(pvpPoll, 1000);
+        pvpPollTimer = setInterval(pvpPoll, 3000);
     }
 });
 
@@ -5781,7 +5785,6 @@ setInterval(() => {
 }, 1000);
 
 loadTaskFeed();
-loadTaskHistory();
 
 function formatMintCount(n) {
     if (n >= 1000000) {
