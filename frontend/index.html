@@ -4075,15 +4075,13 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 // ========== تتبع جميع طلبات fetch مع عداد الإحصائيات ==========
 (function() {
     const originalFetch = window.fetch;
-    const requestCounts = {}; // عداد الطلبات لكل قسم
+    window.requestCounts = {}; // الآن متغير عام يمكن الوصول إليه من أي مكان
 
     window.fetch = function(...args) {
         const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || 'Unknown');
-        // استخراج اسم القسم من الرابط (مثل me, hatch, friends...)
         const label = url.includes('/api/') ? url.split('/api/')[1]?.split('?')[0] : 'Other';
         
-        // زيادة العداد
-        requestCounts[label] = (requestCounts[label] || 0) + 1;
+        window.requestCounts[label] = (window.requestCounts[label] || 0) + 1;
         
         const start = performance.now();
         console.log(`🚀 بدء: ${label} ← ${url}`);
@@ -4092,12 +4090,12 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             .then(response => {
                 const duration = (performance.now() - start).toFixed(2);
                 console.log(`✅ اكتمل: ${label} (${duration}ms)`);
-                console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(requestCounts, null, 2));
+                console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(window.requestCounts, null, 2));
                 return response;
             })
             .catch(error => {
                 console.error(`❌ فشل: ${label}`, error);
-                console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(requestCounts, null, 2));
+                console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(window.requestCounts, null, 2));
                 throw error;
             });
     };
