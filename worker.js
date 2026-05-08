@@ -1549,6 +1549,7 @@ if (url.pathname === "/api/leaderboard" && request.method === "GET") {
         LEFT JOIN users r ON r.referred_by = u.user_id
         GROUP BY u.user_id
         ORDER BY ref_count DESC
+        LIMIT 1000
       `).all();
       const refList = refAll.results || [];
       const refIdx = refList.findIndex(r => Number(r.user_id) === userId);
@@ -1559,6 +1560,7 @@ if (url.pathname === "/api/leaderboard" && request.method === "GET") {
         SELECT user_id, snowman_count
         FROM users
         ORDER BY snowman_count DESC
+        LIMIT 1000
       `).all();
       const snowList = snowAll.results || [];
       const snowIdx = snowList.findIndex(r => Number(r.user_id) === userId);
