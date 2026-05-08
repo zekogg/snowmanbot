@@ -4698,7 +4698,9 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
 });
 
         let currentMarketView = 'all';
-
+        let marketSortAsc = true;
+        let allMarketListings = [];
+        
         function setActiveNav(activeBtn) {
             [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn].forEach(btn => btn?.classList.remove('active'));
             activeBtn?.classList.add('active');
@@ -4809,7 +4811,11 @@ profileNavBtn?.addEventListener('click', () => {
         backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
         marketRefreshBtn?.addEventListener('click', () => setMarketMode(currentMarketView));
 
-        marketSortBtn?.addEventListener('click', () => {});
+        marketSortBtn?.addEventListener('click', () => {
+    marketSortAsc = !marketSortAsc;
+    marketSortBtn.textContent = marketSortAsc ? '▲' : '▼';
+    renderMarketListings();
+});
         
         floatingAddTaskBtn?.addEventListener('click', () => {
     if (addTaskModal) addTaskModal.style.display = 'flex';
@@ -6160,6 +6166,31 @@ window.cancelMarketOrder = async function(listingId) {
         await loadMiningState();
     } catch (e) { alert('Cancel failed'); }
 };
+
+function renderMarketListings() {
+    const allEl = document.getElementById('marketAllList');
+    if (!allEl) return;
+
+    const sorted = [...allMarketListings].sort((a, b) =>
+        marketSortAsc
+            ? Number(a.total_price) - Number(b.total_price)
+            : Number(b.total_price) - Number(a.total_price)
+    );
+
+    if (sorted.length === 0) {
+        allEl.innerHTML = `<div style="text-align:center; color:#9EC8E0; padding:30px;">No orders available yet</div>`;
+        return;
+    }
+
+    allEl.innerHTML = `<div class="market-grid">${sorted.map(l => `
+        <div class="market-card">
+            <div class="market-badge">SNOW</div>
+            <div class="market-pill market-snow-pill">❄️ ${Number(l.snow_amount).toLocaleString()}</div>
+            <div class="market-pill market-price-pill"><span class="ton-icon"></span><span>${Number(l.total_price).toFixed(4)}</span></div>
+            <button class="market-buy-btn" type="button" onclick="window.buyMarketOrder(${l.id})">Buy</button>
+        </div>
+    `).join('')}</div>`;
+}
         
 async function loadMarketListings() {
     const tgUser = getTgUser();
@@ -6170,13 +6201,10 @@ async function loadMarketListings() {
         const res = await fetch(`${API_BASE}/api/market/listings?user_id=${tgUser.id}`);
         const data = await res.json();
 
-        const allListings = data.all || [];
-        const yourListings = data.yours || [];
+        allMarketListings = data.all || [];
+       renderMarketListings();
+       const yourListings = data.yours || [];
 
-        if (allListings.length === 0) {
-            allEl.innerHTML = `<div style="text-align:center; color:#9EC8E0; padding:30px;">No orders available yet</div>`;
-        } else {
-            allEl.innerHTML = `<div class="market-grid">${allListings.map(l => `
     <div class="market-card">
         <div class="market-badge">SNOW</div>
         <div class="market-pill market-snow-pill">❄️ ${Number(l.snow_amount).toLocaleString()}</div>
