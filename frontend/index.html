@@ -5762,6 +5762,10 @@ async function loadMiningState() {
     
     renderMiningUI();
     tickMiningTimer();
+    const bar = document.querySelector('.minting-bar');
+if (bar && data.total_snowmen !== undefined) {
+    bar.textContent = `${formatMintCount(data.total_snowmen)} / 25M`;
+}
 }
 
 loadMiningState().then(() => {
@@ -5779,6 +5783,17 @@ setInterval(() => {
 loadTaskFeed();
 loadTaskHistory();
 
+function formatMintCount(n) {
+    if (n >= 1000000) {
+        const val = Math.floor(n / 100000) / 10;
+        return (val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)) + 'M';
+    }
+    if (n >= 1000) {
+        return Math.floor(n / 1000) + 'k';
+    }
+    return String(Math.floor(n));
+}
+        
 async function loadFriends() {
     const userId = miningState.userId || getTgUser().id;
     const tgUser = { id: userId };
