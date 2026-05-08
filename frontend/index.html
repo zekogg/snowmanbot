@@ -1013,6 +1013,15 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
+@keyframes spinOnce {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.market-refresh.spinning {
+    animation: spinOnce 0.6s ease;
+}
+        
 .market-toolbar {
     display: flex;
     gap: 10px;
@@ -6278,8 +6287,14 @@ document.querySelector('[data-market-mode="all"]')?.classList.add('active');
     if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
 });
 
-document.getElementById('marketRefreshBtn')?.addEventListener('click', loadMarketListings);
-
+document.getElementById('marketRefreshBtn')?.addEventListener('click', () => {
+    const btn = document.getElementById('marketRefreshBtn');
+    btn?.classList.remove('spinning');
+    void btn?.offsetWidth;
+    btn?.classList.add('spinning');
+    btn?.addEventListener('animationend', () => btn.classList.remove('spinning'), { once: true });
+    loadMarketListings();
+});  
 document.querySelectorAll('[data-market-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('[data-market-mode]').forEach(b => b.classList.remove('active'));
@@ -6287,7 +6302,6 @@ document.querySelectorAll('[data-market-mode]').forEach(btn => {
         const mode = btn.dataset.marketMode;
         document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
         document.getElementById(`market-${mode}`)?.classList.add('active');
-        if (mode === 'all' || mode === 'yours') loadMarketListings();
     });
 });
 
