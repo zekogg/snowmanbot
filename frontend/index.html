@@ -4701,6 +4701,7 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
 });
 
         let currentMarketView = 'all';
+        let _isInitialLoad = true;
         let marketSortAsc = true;
         let allMarketListings = [];
         
@@ -5743,6 +5744,30 @@ function tickMiningTimer() {
 }
 
 async function loadMiningState() {
+    const now = Date.now();
+    if (_isInitialLoad) {
+        _isInitialLoad = false;
+        const lastHourBoundary = now - (now % HOUR_MS);
+        const lastCall = Number(localStorage.getItem('lastMeCall') || 0);
+        if (lastCall > lastHourBoundary) {
+            const cached = localStorage.getItem('miningStateCache');
+            if (cached) {
+                const data = JSON.parse(cached);
+                miningState.snowmanCount = data.snowmanCount;
+                miningState.snowBalance = data.snowBalance;
+                miningState.tonBalance = data.tonBalance;
+                miningState.speedPerHour = data.speedPerHour;
+                miningState.displayName = data.displayName;
+                miningState.username = data.username;
+                miningState.userId = data.userId;
+                renderMiningUI();
+                tickMiningTimer();
+            }
+            return;
+        }
+    }
+    localStorage.setItem('lastMeCall', now);
+    
     let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     
     if (!tgUser) {
