@@ -5731,6 +5731,16 @@ function renderMiningUI() {
     const userEl = document.getElementById('profileUsername');
     if (nameEl && miningState.displayName) nameEl.textContent = miningState.displayName;
     if (userEl && miningState.username) userEl.textContent = '@' + miningState.username;
+
+    localStorage.setItem('miningStateCache', JSON.stringify({
+    snowmanCount: miningState.snowmanCount,
+    snowBalance: miningState.snowBalance,
+    tonBalance: miningState.tonBalance,
+    speedPerHour: miningState.speedPerHour,
+    displayName: miningState.displayName,
+    username: miningState.username,
+    userId: miningState.userId
+}));
 }
 
 function tickMiningTimer() {
@@ -5809,16 +5819,6 @@ async function loadMiningState() {
     
     renderMiningUI();
     tickMiningTimer();
-    
-    localStorage.setItem('miningStateCache', JSON.stringify({
-    snowmanCount: miningState.snowmanCount,
-    snowBalance: miningState.snowBalance,
-    tonBalance: miningState.tonBalance,
-    speedPerHour: miningState.speedPerHour,
-    displayName: miningState.displayName,
-    username: miningState.username,
-    userId: miningState.userId
-}));
     
     const bar = document.querySelector('.minting-bar');
 if (bar && data.total_snowmen !== undefined) {
