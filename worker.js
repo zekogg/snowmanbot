@@ -2032,6 +2032,147 @@ if (result.meta.changes === 0) {
       }
     }
   
+
+if (url.pathname === "/api/bootstrap" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+
+  try {
+    await ensureSchema(env);
+
+    const sessionUserId = await getUserIdFromRequest(request);
+    const userIdParam = url.searchParams.get("user_id");
+    const userId = Number(userIdParam);
+
+    if (!userIdParam || Number.isNaN(userId) || userId <= 0) {
+      return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
+    }
+
+    if (!sessionUserId || sessionUserId !== userId) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+
+    if (!await checkRateLimit(env, userId, "bootstrap", 5)) {
+      return json({ error: "Too many requests" }, 429);
+    }
+
+    const username = url.searchParams.get("username");
+    const displayName = url.searchParams.get("display_name");
+
+    const settled = await settleUserMining(env, userId, username, displayName);
+    const now = Date.now();
+
+    const tasks = await getOnlineTasks(env);
+    const completions = await env.DB.prepare(
+      `SELECT task_id FROM task_completions WHERE user_id = ?`
+    ).bind(userId).all();
+
+    const history = await getTasksByCreator(env, userId);
+
+    const friends = await env.DB.prepare(
+      `SELECT user_id, username, display_name
+       FROM users
+       WHERE referred_by = ?
+       ORDER BY updated_at DESC`
+    ).bind(userId).all();
+
+    const rewardRow = await env.DB.prepare(
+      `SELECT referral_ton_earned FROM users WHERE user_id = ?`
+    ).bind(userId).first();
+
+    const marketRows = await env.DB.prepare(
+      `SELECT m.*, u.display_name, u.username
+       FROM market_listings m
+       LEFT JOIN users u ON u.user_id = m.seller_id
+       WHERE m.status = 'active'
+       ORDER BY m.created_at DESC
+       LIMIT 50`
+    ).all();
+
+    const marketAll = marketRows.results || [];
+    const marketYours = marketAll.filter(l => Number(l.seller_id) === userId);
+    const marketOther = marketAll.filter(l => Number(l.seller_id) !== userId);
+
+    const refTop = await env.DB.prepare(`
+      SELECT u.user_id, u.username, u.display_name,
+             COUNT(r.user_id) as ref_count
+      FROM users u
+      LEFT JOIN users r ON r.referred_by = u.user_id
+      GROUP BY u.user_id
+      ORDER BY ref_count DESC
+      LIMIT 20
+    `).all();
+
+    const snowTop = await env.DB.prepare(`
+      SELECT user_id, username, display_name, snowman_count
+      FROM users
+      ORDER BY snowman_count DESC
+      LIMIT 20
+    `).all();
+
+    let refRank = 0, refValue = 0;
+    let snowRank = 0, snowValue = 0;
+
+    const refAll = await env.DB.prepare(`
+      SELECT u.user_id, COUNT(r.user_id) as ref_count
+      FROM users u
+      LEFT JOIN users r ON r.referred_by = u.user_id
+      GROUP BY u.user_id
+      ORDER BY ref_count DESC
+      LIMIT 1000
+    `).all();
+
+    const refList = refAll.results || [];
+    const refIdx = refList.findIndex(r => Number(r.user_id) === userId);
+    refRank = refIdx >= 0 ? refIdx + 1 : 0;
+    refValue = refIdx >= 0 ? Number(refList[refIdx].ref_count) : 0;
+
+    const snowAll = await env.DB.prepare(`
+      SELECT user_id, snowman_count
+      FROM users
+      ORDER BY snowman_count DESC
+      LIMIT 1000
+    `).all();
+
+    const snowList = snowAll.results || [];
+    const snowIdx = snowList.findIndex(r => Number(r.user_id) === userId);
+    snowRank = snowIdx >= 0 ? snowIdx + 1 : 0;
+    snowValue = snowIdx >= 0 ? Number(snowList[snowIdx].snowman_count) : 0;
+
+    const totalRow = await env.DB.prepare(
+      `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
+    ).first();
+
+    return json({
+      server_time: now,
+      total_snowmen: Number(totalRow?.total || 0),
+      user: settled.user,
+      tasks: {
+        tasks: tasks.results || [],
+        completed_ids: (completions.results || []).map(r => r.task_id)
+      },
+      task_history: {
+        tasks: history.results || []
+      },
+      friends: {
+        friends: friends.results || [],
+        count: (friends.results || []).length,
+        ton_earned: Number(rewardRow?.referral_ton_earned || 0)
+      },
+      market: {
+        all: marketOther,
+        yours: marketYours
+      },
+      leaderboard: {
+        referrals: { top: refTop.results || [], user_rank: refRank, user_value: refValue },
+        snowmen: { top: snowTop.results || [], user_rank: snowRank, user_value: snowValue }
+      }
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
 if (url.pathname === "/api/me" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
   if (!isValid) return json({ error: "Unauthorized" }, 401);
