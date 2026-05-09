@@ -4904,6 +4904,16 @@ function applyBootstrapData(data) {
     loadFriends();
     loadMarketListings();
     loadLeaderboard();
+
+    appBootstrap.wallet = data.wallet || {};
+lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
+walletConnected = !!appBootstrap.wallet.wallet_connected;
+
+updateWalletBtn(
+    walletConnected
+        ? { account: { address: appBootstrap.wallet.wallet_address } }
+        : null
+);
 }
 
 async function bootstrapApp(force = false) {
@@ -6002,6 +6012,8 @@ taskHistoryModal?.addEventListener('click', (event) => {
 
 const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
 let tonConnectUI = null;
+let tonConnectInitPromise = null;
+let lastSavedWalletAddress = null;
 let tonConnectScriptPromise = null;
 let walletConnected = false;
 
@@ -6024,40 +6036,53 @@ async function loadTonConnectScript() {
     return tonConnectScriptPromise;
 }
 
-async function initTonConnect() {
-    try {
-        await loadTonConnectScript();
-        if (tonConnectUI) return tonConnectUI;
-        tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: `${API_BASE}/tonconnect-manifest.json`
-        });
-        
-        tonConnectUI.onStatusChange((wallet) => {
-            walletConnected = !!wallet;
-            updateWalletBtn(wallet);
-            if (wallet) {
-                const address = wallet.account.address;
-                const tgUser = getTgUser();
-                const saveKey = `snowman_wallet_saved_${tgUser.id}`;
-                const lastSaved = localStorage.getItem(saveKey) || '';
-                if (address && lastSaved !== address) {
-                    fetch(`${API_BASE}/api/wallet/save`, {
-                        method: 'POST',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify({ user_id: tgUser.id, wallet_address: address })
-                    }).then((res) => {
-                        if (res.ok) localStorage.setItem(saveKey, address);
-                    }).catch(() => {});
-                }
-            }
-        });
-        return tonConnectUI;
-    } catch (e) {
-        console.error('TonConnect init failed', e);
-        return null;
-    }
-}
+async function ensureTonConnectInitialized() {
+  if (tonConnectUI) return tonConnectUI;
+  if (tonConnectInitPromise) return tonConnectInitPromise;
 
+  tonConnectInitPromise = (async () => {
+    tonConnectUI = new TonConnectUI({
+      manifestUrl: MANIFEST_URL,
+      buttonRootId: 'tonconnect-button'
+    });
+
+    tonConnectUI.onStatusChange((wallet) => {
+      const address = wallet?.account?.address || '';
+      walletConnected = !!address;
+
+      updateWalletBtn(wallet);
+
+      if (address && address !== lastSavedWalletAddress) {
+        lastSavedWalletAddress = address;
+
+        fetch(`${API_BASE}/api/wallet/save`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            user_id: getTgUser().id,
+            wallet_address: address
+          })
+        });
+
+        appBootstrap.wallet = {
+          wallet_address: address,
+          wallet_connected: true
+        };
+        writeBootstrap(appBootstrap);
+      }
+
+      if (!wallet) {
+        walletConnected = false;
+        updateWalletBtn(null);
+      }
+    });
+
+    return tonConnectUI;
+  })();
+
+  return tonConnectInitPromise;
+}
+        
 function updateWalletBtn(wallet) {
     const btn = document.getElementById("connectWalletBtn");
     if (!btn) return;
@@ -6073,8 +6098,8 @@ function updateWalletBtn(wallet) {
 }
 
 document.getElementById("connectWalletBtn")?.addEventListener("click", async () => {
-    if (!tonConnectUI) await initTonConnect();
-    if (!tonConnectUI) return;
+    await ensureTonConnectInitialized();
+
     if (walletConnected) {
         const confirmed = confirm("Are you sure you want to disconnect your wallet?");
         if (confirmed) await tonConnectUI.disconnect();
