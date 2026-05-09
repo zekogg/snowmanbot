@@ -4836,6 +4836,8 @@ function formatTonValue(value) {
     return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
+let _friendsBtnsInit = false;
+        
 function renderFriendsPanel(data) {
     const linkCard = document.getElementById('friendsLinkCard');
     const friendsCountEl = document.getElementById('friendsCount');
@@ -5987,8 +5989,6 @@ function formatMintCount(n) {
     return String(Math.floor(n));
 }
         
-let _friendsBtnsInit = false;
-
 async function loadFriends(force = false) {
     renderFriendsPanel(appBootstrap?.friends);
 }
