@@ -4762,7 +4762,7 @@ function readBootstrap() {
         if (!parsed || !parsed.data) return null;
         const now = Date.now();
         const lastHourBoundary = now - (now % HOUR_MS);
-        if (parsed.ts < lastHourBoundary) return null;
+        if (Date.now() - parsed.ts > HOUR_MS) return null;
         appBootstrap = parsed.data;
         return appBootstrap;
     } catch {
@@ -4824,55 +4824,85 @@ function renderLeaderboard(data) {
     }
 }
 
+
+function getReferralLink() {
+    const userId = miningState.userId || getTgUser().id;
+    return `https://t.me/Snow0ManBot?start=${userId}`;
+}
+
+function formatTonValue(value) {
+    const n = Number(value || 0);
+    if (!Number.isFinite(n)) return '0';
+    return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function renderFriendsPanel(data) {
+    const linkCard = document.getElementById('friendsLinkCard');
+    const friendsCountEl = document.getElementById('friendsCount');
+    const friendsTonEarnedEl = document.getElementById('friendsTonEarned');
+    const friendsList = document.getElementById('friendsList');
+    const refLink = getReferralLink();
+
+    if (linkCard) linkCard.textContent = refLink;
+    if (friendsCountEl) friendsCountEl.textContent = String(data?.count ?? (data?.friends?.length || 0));
+    if (friendsTonEarnedEl) {
+        friendsTonEarnedEl.innerHTML = `<span class="ton-icon" style="width: 35px; height: 35px;"></span> ${formatTonValue(data?.ton_earned || 0)}`;
+    }
+
+    if (!_friendsBtnsInit) {
+        _friendsBtnsInit = true;
+        document.getElementById('friendsCopyBtn')?.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(getReferralLink());
+                const btn = document.getElementById('friendsCopyBtn');
+                if (btn) {
+                    btn.textContent = '✅ Copied';
+                    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+                }
+            } catch {
+            }
+        });
+        document.getElementById('friendsShareBtn')?.addEventListener('click', () => {
+            const text = `Join SnowMan Empire and start mining! ☃️`;
+            window.Telegram?.WebApp?.openTelegramLink(
+                `https://t.me/share/url?url=${encodeURIComponent(getReferralLink())}&text=${encodeURIComponent(text)}`
+            );
+        });
+    }
+
+    const friends = Array.isArray(data?.friends) ? data.friends : [];
+    if (!friendsList) return;
+
+    if (!friends.length) {
+        friendsList.innerHTML = `<div class="friends-empty">No friends yet <span class="friends-empty-emoji">🧱</span></div>`;
+        return;
+    }
+
+    friendsList.innerHTML = friends.map((friend, index) => {
+        const name = friend.username ? `@${friend.username}` : (friend.display_name || 'Player');
+        const subtitle = friend.user_id ? `ID ${friend.user_id}` : `Friend #${index + 1}`;
+        return `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; margin-top:10px; border-radius:16px; background:rgba(60,199,255,0.08); border:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:0;">
+                    <div style="font-size:14px; font-weight:900; color:#E9F9FF; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</div>
+                    <div style="font-size:11px; color:#9EC8E0;">${subtitle}</div>
+                </div>
+                <div style="font-size:12px; font-weight:800; color:#7ee6ff; white-space:nowrap;">☃️ Friend</div>
+            </div>
+        `;
+    }).join('');
+}
+
 function applyBootstrapData(data) {
     if (!data) return;
+    appBootstrap = data;
 
-    const user = data.user || {};
-    const tgUser = getTgUser();
-
-    miningState.serverTimeOffsetMs = Number(data.server_time || Date.now()) - Date.now();
-    miningState.userId = user.user_id || tgUser.id;
-    miningState.snowmanCount = user.snowman_count || 0;
-    miningState.displayName = user.display_name || tgUser.first_name || 'Player';
-    miningState.username = user.username || tgUser.username || '';
-    miningState.snowBalance = user.snow_balance || 0;
-    miningState.speedPerHour = user.speed_per_hour || 0;
-    miningState.lastMinedAt = user.last_mined_at || Date.now();
-    miningState.nextRewardInMs = user.next_reward_in_ms || 0;
-    miningState.tonBalance = user.ton_balance || 0;
-
-    renderMiningUI();
-    tickMiningTimer();
-    updateHatchUI();
-
-    const bar = document.querySelector('.minting-bar');
-    if (bar && data.total_snowmen !== undefined) {
-        bar.textContent = `${formatMintCount(data.total_snowmen)} / 25M`;
-    }
-
-    if (data.tasks) {
-        renderTaskFeed(data.tasks.tasks || [], data.tasks.completed_ids || []);
-    }
-
-    if (data.task_history) {
-        renderTaskHistory(data.task_history.tasks || []);
-    }
-
-    if (data.friends) {
-    _setCache('friends', data.friends);
-    _renderFriends(data.friends.friends || [], data.friends.count || 0, data.friends.ton_earned || 0);
-}
-
-    if (data.market) {
-    _setCache('market', { all: data.market.all || [], yours: data.market.yours || [] });
-    allMarketListings = data.market.all || [];
-    renderMarketListings();
-    _renderYourListings(data.market.yours || [], document.getElementById('marketYoursList'));
-}
-
-    if (data.leaderboard) {
-        renderLeaderboard(data.leaderboard);
-    }
+    loadMiningState();
+    loadTaskFeed();
+    loadTaskHistory();
+    loadFriends();
+    loadMarketListings();
+    loadLeaderboard();
 }
 
 async function bootstrapApp(force = false) {
@@ -4935,12 +4965,15 @@ async function bootstrapApp(force = false) {
             hideOverlays();
             tasksScreen?.classList.add('show');
             setActiveNav(tasksNavBtn);
+            loadTaskFeed();
+            loadTaskHistory();
         }
 
         function showFriendsScreen() {
             hideOverlays();
             friendsScreen?.classList.add('show');
             setActiveNav(friendsNavBtn);
+            loadFriends();
         }
 
         function setMarketMode(mode) {
@@ -4966,6 +4999,7 @@ async function bootstrapApp(force = false) {
             marketScreen?.classList.add('show');
             setActiveNav(marketNavBtn);
             setMarketMode(mode);
+            loadMarketListings();
         }
 
 function showPvpScreen() {
@@ -5024,7 +5058,7 @@ profileNavBtn?.addEventListener('click', () => {
         marketCreateBtn?.addEventListener('click', () => showMarketScreen('create'));
         openCreateOrderBtn?.addEventListener('click', () => showMarketScreen('create'));
         backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
-        marketRefreshBtn?.addEventListener('click', () => setMarketMode(currentMarketView));
+        marketRefreshBtn?.addEventListener('click', () => { loadMarketListings(); setMarketMode(currentMarketView); });
 
         marketSortBtn?.addEventListener('click', () => {
     marketSortAsc = !marketSortAsc;
@@ -5256,42 +5290,13 @@ function renderTaskFeed(tasks, completedIds = []) {
 }
 
 async function loadTaskFeed(force = false) {
-    if (!force && appBootstrap?.tasks) {
-        renderTaskFeed(appBootstrap.tasks.tasks || [], appBootstrap.tasks.completed_ids || []);
-        return;
-    }
-
-    try {
-        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-        const userId = tgUser?.id || 12345;
-
-        const response = await fetch(`${API_BASE}/api/tasks/list?user_id=${userId}`, {
-            headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-        });
-        const data = await response.json();
-        renderTaskFeed(data.tasks || [], data.completed_ids || []);
-    } catch (error) {
-        console.error(error);
-    }
+    if (!appBootstrap?.tasks) return;
+    renderTaskFeed(appBootstrap.tasks.tasks || [], appBootstrap.tasks.completed_ids || []);
 }
 
 async function loadTaskHistory(force = false) {
-    if (!force && appBootstrap?.task_history) {
-        renderTaskHistory(appBootstrap.task_history.tasks || []);
-        return;
-    }
-
-    try {
-        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-        const userId = tgUser?.id || 12345;
-        const response = await fetch(`${API_BASE}/api/tasks/history?user_id=${userId}`, {
-            headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-        });
-        const data = await response.json();
-        renderTaskHistory(data.tasks || []);
-    } catch (error) {
-        console.error(error);
-    }
+    if (!appBootstrap?.task_history) return;
+    renderTaskHistory(appBootstrap.task_history.tasks || []);
 }
 
 function renderTaskHistory(tasks) {
@@ -5731,25 +5736,15 @@ function showLeagueScreen() {
     if (leagueScreen) leagueScreen.classList.add('show');
     document.querySelectorAll('.screen-overlay').forEach(s => s.classList.remove('show'));
     if (pvpScreen) pvpScreen.classList.remove('show');
+    loadLeaderboard();
 }
 function hideLeagueScreen() {
     if (leagueScreen) leagueScreen.classList.remove('show');
 }
 
 async function loadLeaderboard(force = false) {
-    if (!force && appBootstrap?.leaderboard) {
-        renderLeaderboard(appBootstrap.leaderboard);
-        return;
-    }
-
-    const tgUser = getTgUser();
-    try {
-        const res = await fetch(`${API_BASE}/api/leaderboard?user_id=${tgUser.id}`);
-        const data = await res.json();
-        renderLeaderboard(data);
-    } catch (e) {
-        console.error('loadLeaderboard error', e);
-    }
+    if (!appBootstrap?.leaderboard) return;
+    renderLeaderboard(appBootstrap.leaderboard);
 }
 
 if (leagueBtn) {
@@ -5945,40 +5940,12 @@ function tickMiningTimer() {
 }
 
 async function loadMiningState(force = false) {
-    if (!force && appBootstrap?.user) {
-        applyBootstrapData(appBootstrap);
-        return;
-    }
+    if (!appBootstrap?.user) return;
 
-    let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const user = appBootstrap.user || {};
+    const tgUser = getTgUser();
 
-    if (!tgUser) {
-        tgUser = {
-            id: 12345,
-            username: "browser_user",
-            first_name: "Browser",
-            last_name: "User"
-        };
-    }
-
-    const params = new URLSearchParams({
-        user_id: String(tgUser.id),
-        username: tgUser.username || '',
-        display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
-    });
-
-    const response = await fetch(`${API_BASE}/api/me?${params.toString()}`, {
-        headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-    });
-
-    if (!response.ok) {
-        throw new Error(`Mining state request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    miningState.serverTimeOffsetMs = Number(data.server_time || Date.now()) - Date.now();
-
-    const user = data.user || {};
+    miningState.serverTimeOffsetMs = Number(appBootstrap.server_time || Date.now()) - Date.now();
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
     miningState.displayName = user.display_name || tgUser.first_name || 'Player';
@@ -5994,8 +5961,8 @@ async function loadMiningState(force = false) {
     updateHatchUI();
 
     const bar = document.querySelector('.minting-bar');
-    if (bar && data.total_snowmen !== undefined) {
-        bar.textContent = `${formatMintCount(data.total_snowmen)} / 25M`;
+    if (bar && appBootstrap.total_snowmen !== undefined) {
+        bar.textContent = `${formatMintCount(appBootstrap.total_snowmen)} / 25M`;
     }
 }
 
@@ -6023,42 +5990,7 @@ function formatMintCount(n) {
 let _friendsBtnsInit = false;
 
 async function loadFriends(force = false) {
-    const userId = miningState.userId || getTgUser().id;
-    const refLink = `https://t.me/Snow0ManBot?start=${userId}`;
-
-    const linkCard = document.getElementById('friendsLinkCard');
-    if (linkCard) linkCard.textContent = refLink;
-
-    if (!_friendsBtnsInit) {
-        _friendsBtnsInit = true;
-        document.getElementById('friendsCopyBtn')?.addEventListener('click', () => {
-            navigator.clipboard.writeText(refLink).then(() => {
-                const btn = document.getElementById('friendsCopyBtn');
-                if (btn) { btn.textContent = '✅ Copied'; setTimeout(() => btn.textContent = '📋 Copy', 2000); }
-            });
-        });
-        document.getElementById('friendsShareBtn')?.addEventListener('click', () => {
-            const text = `Join SnowMan Empire and start mining! ☃️`;
-            window.Telegram?.WebApp?.openTelegramLink(
-                `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`
-            );
-        });
-    }
-
-    if (!force && appBootstrap?.friends) {
-        _renderFriends(appBootstrap.friends.friends || [], appBootstrap.friends.count || 0, appBootstrap.friends.ton_earned || 0);
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}/api/friends?user_id=${userId}`, {
-            headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-        });
-        const data = await res.json();
-        _renderFriends(data.friends || [], data.count || 0, data.ton_earned || 0);
-    } catch (e) {
-        console.error('loadFriends error', e);
-    }
+    renderFriendsPanel(appBootstrap?.friends);
 }
 
 taskHistoryBtn?.addEventListener('click', () => {
@@ -6410,27 +6342,10 @@ function _renderYourListings(yourListings, yoursEl) {
 }
 
 async function loadMarketListings(force = false) {
-    const tgUser = getTgUser();
-    const allEl = document.getElementById('marketAllList');
-    const yoursEl = document.getElementById('marketYoursList');
-
-    if (!force && appBootstrap?.market) {
-        allMarketListings = appBootstrap.market.all || [];
-        renderMarketListings();
-        _renderYourListings(appBootstrap.market.yours || [], yoursEl);
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}/api/market/listings?user_id=${tgUser.id}`);
-        const data = await res.json();
-
-        allMarketListings = data.all || [];
-        renderMarketListings();
-        _renderYourListings(data.yours || [], yoursEl);
-    } catch (e) {
-        if (allEl) allEl.innerHTML = `<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load</div>`;
-    }
+    if (!appBootstrap?.market) return;
+    allMarketListings = appBootstrap.market.all || [];
+    renderMarketListings();
+    _renderYourListings(appBootstrap.market.yours || [], document.getElementById('marketYoursList'));
 }
 
 document.getElementById('marketSnowInput')?.addEventListener('input', () => {
