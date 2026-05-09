@@ -2173,9 +2173,10 @@ const wallet = {
 };
     
     return json({
-      server_time: now,
-      total_snowmen: Number(totalRow?.total || 0),
-      user: settled.user,
+  server_time: now,
+  total_snowmen: Number(totalRow?.total || 0),
+  user: settled.user,
+  wallet,
       tasks: {
         tasks: tasks.results || [],
         completed_ids: (completions.results || []).map(r => r.task_id)
