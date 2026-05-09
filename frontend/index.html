@@ -6011,6 +6011,7 @@ taskHistoryModal?.addEventListener('click', (event) => {
 });
 
 const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
+const MANIFEST_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/tonconnect-manifest.json";
 let tonConnectUI = null;
 let tonConnectInitPromise = null;
 let lastSavedWalletAddress = null;
@@ -6027,8 +6028,12 @@ async function loadTonConnectScript() {
     if (!tonConnectScriptPromise) {
         tonConnectScriptPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js';
-            script.onload = () => resolve();
+            script.src = 'https://unpkg.com/@tonconnect/ui@2.0.6/dist/tonconnect-ui.min.js';
+            script.crossOrigin = 'anonymous';
+            script.onload = () => {
+                if (window.TON_CONNECT_UI) resolve();
+                else reject(new Error('TonConnect UI loaded but not available'));
+            };
             script.onerror = () => reject(new Error('Failed to load TonConnect UI'));
             document.head.appendChild(script);
         });
@@ -6041,7 +6046,8 @@ async function ensureTonConnectInitialized() {
   if (tonConnectInitPromise) return tonConnectInitPromise;
 
   tonConnectInitPromise = (async () => {
-    tonConnectUI = new TonConnectUI({
+    await loadTonConnectScript();
+    tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
       manifestUrl: MANIFEST_URL,
       buttonRootId: 'tonconnect-button'
     });
