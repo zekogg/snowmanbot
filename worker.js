@@ -2093,6 +2093,26 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
     const marketYours = marketAll.filter(l => Number(l.seller_id) === userId);
     const marketOther = marketAll.filter(l => Number(l.seller_id) !== userId);
 
+    const mintPurchases = await env.DB.prepare(
+      `SELECT pack FROM mint_purchases WHERE user_id = ?`
+    ).bind(userId).all();
+
+    const pvpRounds = await env.DB.prepare(
+      `SELECT r.*, u.username, u.display_name
+       FROM pvp_rounds r
+       LEFT JOIN users u ON u.user_id = r.winner_id
+       WHERE r.status = 'finished'
+       ORDER BY r.id DESC LIMIT 20`
+    ).all();
+
+    const withdrawals = await env.DB.prepare(
+      `SELECT * FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
+    ).bind(userId).all();
+
+    const deposits = await env.DB.prepare(
+      `SELECT * FROM ton_deposits WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
+    ).bind(userId).all();
+
     const refTop = await env.DB.prepare(`
       SELECT u.user_id, u.username, u.display_name,
              COUNT(r.user_id) as ref_count
@@ -2166,6 +2186,16 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
       leaderboard: {
         referrals: { top: refTop.results || [], user_rank: refRank, user_value: refValue },
         snowmen: { top: snowTop.results || [], user_rank: snowRank, user_value: snowValue }
+      },
+      mint: {
+        bought: (mintPurchases.results || []).map(r => r.pack)
+      },
+      pvp_history: {
+        rounds: pvpRounds.results || []
+      },
+      withdraw_history: {
+        withdrawals: withdrawals.results || [],
+        deposits: deposits.results || []
       }
     });
   } catch (e) {
