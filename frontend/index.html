@@ -4741,23 +4741,176 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
 });
 
         let currentMarketView = 'all';
-        let _isInitialLoad = true;
         let marketSortAsc = true;
         let allMarketListings = [];
+        let appBootstrap = null;
+        let bootstrapPromise = null;
 
-const _cache = {};
-const CACHE_TTL = 3 * 60 * 1000;
+const BOOTSTRAP_KEY = 'snowman_bootstrap_v1';
 
-function _isCacheValid(key) {
-    return _cache[key] && (Date.now() - _cache[key].ts < CACHE_TTL);
+function getBootstrapKey() {
+    const user = getTgUser();
+    return `${BOOTSTRAP_KEY}_${user.id}`;
 }
-function _setCache(key, data) {
-    _cache[key] = { data, ts: Date.now() };
+
+function readBootstrap() {
+    if (appBootstrap) return appBootstrap;
+
+    try {
+        const raw = sessionStorage.getItem(getBootstrapKey());
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.data) return null;
+
+        appBootstrap = parsed.data;
+        return appBootstrap;
+    } catch {
+        return null;
+    }
 }
-function _clearCache(...keys) {
-    keys.forEach(k => delete _cache[k]);
+
+function writeBootstrap(data) {
+    appBootstrap = data;
+    try {
+        sessionStorage.setItem(getBootstrapKey(), JSON.stringify({
+            ts: Date.now(),
+            data
+        }));
+    } catch {}
 }
-        
+
+function renderLeaderboard(data) {
+    const refList = document.getElementById('refLeaderboardList');
+    const snowList = document.getElementById('snowLeaderboardList');
+    const refRankEl = document.getElementById('refUserRank');
+    const refValEl = document.getElementById('refUserValue');
+    const snowRankEl = document.getElementById('snowUserRank');
+    const snowValEl = document.getElementById('snowUserValue');
+
+    if (!data) return;
+
+    if (refRankEl) refRankEl.textContent = `#${data.referrals?.user_rank || 0}`;
+    if (refValEl) refValEl.textContent = data.referrals?.user_value || 0;
+    if (snowRankEl) snowRankEl.textContent = `#${data.snowmen?.user_rank || 0}`;
+    if (snowValEl) snowValEl.textContent = data.snowmen?.user_value || 0;
+
+    const medals = ['🥇','🥈','🥉'];
+    if (refList) {
+        refList.innerHTML = (data.referrals?.top || []).map((u, i) => {
+            const name = u.username ? `@${u.username}` : (u.display_name || 'Player');
+            const medal = medals[i] || `#${i + 1}`;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(60,199,255,0.07);border-radius:14px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:16px;min-width:24px;">${medal}</span>
+                    <span style="font-size:14px;font-weight:700;">${name}</span>
+                </div>
+                <span style="font-size:13px;color:#7ee6ff;font-weight:800;">${u.ref_count} 👥</span>
+            </div>`;
+        }).join('');
+    }
+    if (snowList) {
+        snowList.innerHTML = (data.snowmen?.top || []).map((u, i) => {
+            const name = u.username ? `@${u.username}` : (u.display_name || 'Player');
+            const medal = medals[i] || `#${i + 1}`;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(60,199,255,0.07);border-radius:14px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:16px;min-width:24px;">${medal}</span>
+                    <span style="font-size:14px;font-weight:700;">${name}</span>
+                </div>
+                <span style="font-size:13px;color:#7ee6ff;font-weight:800;">${u.snowman_count} ☃️</span>
+            </div>`;
+        }).join('');
+    }
+}
+
+function applyBootstrapData(data) {
+    if (!data) return;
+
+    const user = data.user || {};
+    const tgUser = getTgUser();
+
+    miningState.serverTimeOffsetMs = Number(data.server_time || Date.now()) - Date.now();
+    miningState.userId = user.user_id || tgUser.id;
+    miningState.snowmanCount = user.snowman_count || 0;
+    miningState.displayName = user.display_name || tgUser.first_name || 'Player';
+    miningState.username = user.username || tgUser.username || '';
+    miningState.snowBalance = user.snow_balance || 0;
+    miningState.speedPerHour = user.speed_per_hour || 0;
+    miningState.lastMinedAt = user.last_mined_at || Date.now();
+    miningState.nextRewardInMs = user.next_reward_in_ms || 0;
+    miningState.tonBalance = user.ton_balance || 0;
+
+    renderMiningUI();
+    tickMiningTimer();
+    updateHatchUI();
+
+    const bar = document.querySelector('.minting-bar');
+    if (bar && data.total_snowmen !== undefined) {
+        bar.textContent = `${formatMintCount(data.total_snowmen)} / 25M`;
+    }
+
+    if (data.tasks) {
+        renderTaskFeed(data.tasks.tasks || [], data.tasks.completed_ids || []);
+    }
+
+    if (data.task_history) {
+        renderTaskHistory(data.task_history.tasks || []);
+    }
+
+    if (data.friends) {
+        _renderFriends(data.friends.friends || [], data.friends.count || 0, data.friends.ton_earned || 0);
+    }
+
+    if (data.market) {
+        allMarketListings = data.market.all || [];
+        renderMarketListings();
+        _renderYourListings(data.market.yours || [], document.getElementById('marketYoursList'));
+    }
+
+    if (data.leaderboard) {
+        renderLeaderboard(data.leaderboard);
+    }
+}
+
+async function bootstrapApp(force = false) {
+    if (!force) {
+        const cached = readBootstrap();
+        if (cached) {
+            applyBootstrapData(cached);
+            return cached;
+        }
+    }
+
+    if (bootstrapPromise) return bootstrapPromise;
+
+    bootstrapPromise = (async () => {
+        const tgUser = getTgUser();
+        const params = new URLSearchParams({
+            user_id: String(tgUser.id),
+            username: tgUser.username || '',
+            display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
+        });
+
+        const response = await fetch(`${API_BASE}/api/bootstrap?${params.toString()}`, {
+            headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Bootstrap failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        writeBootstrap(data);
+        applyBootstrapData(data);
+        return data;
+    })().finally(() => {
+        bootstrapPromise = null;
+    });
+
+    return bootstrapPromise;
+}
+
         function setActiveNav(activeBtn) {
             [tasksNavBtn, homeNavBtn, marketNavBtn, friendsNavBtn, profileNavBtn].forEach(btn => btn?.classList.remove('active'));
             activeBtn?.classList.add('active');
@@ -4941,8 +5094,7 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         if (taskTelegramLink) taskTelegramLink.value = '';
         if (taskTargetUsers) taskTargetUsers.value = '100';
         updateTaskTotal();
-        loadTaskFeed();
-        loadTaskHistory();
+        await bootstrapApp(true);
     } catch (error) {
         console.error(error);
         alert('Failed to create task');
@@ -4980,8 +5132,7 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         
         alert('Under review');
         channelLinkInput.value = '';
-        loadTaskFeed();
-        loadTaskHistory();
+        await bootstrapApp(true);
     } catch (error) {
         console.error(error);
         alert('Failed to submit channel');
@@ -5065,7 +5216,7 @@ async function submitHatch() {
     
     alert(`Hatched successfully: ${baseAmount} snowflakes`);
 if (hatchModal) hatchModal.style.display = 'none';
-await loadMiningState();
+await bootstrapApp(true);
 updateHatchUI();
 }
 
@@ -5099,14 +5250,19 @@ function renderTaskFeed(tasks, completedIds = []) {
     });
 }
 
-async function loadTaskFeed() {
+async function loadTaskFeed(force = false) {
+    if (!force && appBootstrap?.tasks) {
+        renderTaskFeed(appBootstrap.tasks.tasks || [], appBootstrap.tasks.completed_ids || []);
+        return;
+    }
+
     try {
         const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
         const userId = tgUser?.id || 12345;
-        
+
         const response = await fetch(`${API_BASE}/api/tasks/list?user_id=${userId}`, {
-    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-});
+            headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+        });
         const data = await response.json();
         renderTaskFeed(data.tasks || [], data.completed_ids || []);
     } catch (error) {
@@ -5114,44 +5270,52 @@ async function loadTaskFeed() {
     }
 }
 
-async function loadTaskHistory() {
+async function loadTaskHistory(force = false) {
+    if (!force && appBootstrap?.task_history) {
+        renderTaskHistory(appBootstrap.task_history.tasks || []);
+        return;
+    }
+
     try {
         const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
         const userId = tgUser?.id || 12345;
         const response = await fetch(`${API_BASE}/api/tasks/history?user_id=${userId}`, {
-    headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
-});
-        const data = await response.json();
-        
-        if (!taskHistoryList) return;
-        taskHistoryList.innerHTML = '';
-        
-        (data.tasks || []).forEach((task) => {
-            const total = Number(task.target_users || 1);
-            const status = task.status || 'under_review';
-            const done = status === 'online' ? Math.min(total, Number(task.completions || 0)) : 0;
-            const percent = total > 0 ? Math.min(100, (done / total) * 100) : 0;
-            
-            const item = document.createElement('div');
-            item.className = 'task-history-item';
-            item.innerHTML = `
-                <div class="task-history-row">
-                    <div>${task.title}</div>
-                    <div class="task-history-status" style="font-size:11px;">${status.replace('_', ' ')}</div>
-${status === 'online' ? `<span style="font-size:9px; background:rgba(60,199,255,0.2); padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle;">
-    ${task.completion_limit - (task.completion_count || 0)} left
-  </span>` : ''}
-</div>
-                </div>
-                <div class="task-history-bar">
-                    <div class="task-history-bar-fill" style="width:${percent}%"></div>
-                </div>
-            `;
-            taskHistoryList.appendChild(item);
+            headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
         });
+        const data = await response.json();
+        renderTaskHistory(data.tasks || []);
     } catch (error) {
         console.error(error);
     }
+}
+
+function renderTaskHistory(tasks) {
+    if (!taskHistoryList) return;
+
+    taskHistoryList.innerHTML = '';
+
+    (tasks || []).forEach((task) => {
+        const total = Number(task.target_users || 1);
+        const status = task.status || 'under_review';
+        const done = status === 'online' ? Math.min(total, Number(task.completions || 0)) : 0;
+        const percent = total > 0 ? Math.min(100, (done / total) * 100) : 0;
+
+        const item = document.createElement('div');
+        item.className = 'task-history-item';
+        item.innerHTML = `
+            <div class="task-history-row">
+                <div>${task.title}</div>
+                <div class="task-history-status" style="font-size:11px;">${status.replace('_', ' ')}</div>
+                ${status === 'online' ? `<span style="font-size:9px; background:rgba(60,199,255,0.2); padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle;">
+                    ${task.completion_limit - (task.completion_count || 0)} left
+                </span>` : ''}
+            </div>
+            <div class="task-history-bar">
+                <div class="task-history-bar-fill" style="width:${percent}%"></div>
+            </div>
+        `;
+        taskHistoryList.appendChild(item);
+    });
 }
 
 function startTaskJoin(task, button) {
@@ -5196,7 +5360,7 @@ function startTaskJoin(task, button) {
             button.style.opacity = '0.5';
             button.disabled = true;
             
-            await loadMiningState();
+            await bootstrapApp(true);
         } catch (error) {
             console.error(error);
             button.dataset.running = '0';
@@ -5271,7 +5435,7 @@ document.querySelectorAll('.mint-buy-btn').forEach(btn => {
             const overlay = document.getElementById('mintSuccessOverlay');
             overlay.style.display = 'flex';
 
-            await loadMiningState();
+            await bootstrapApp(true);
         } catch(e) {
             alert('Purchase failed');
             btn.disabled = false;
@@ -5322,7 +5486,7 @@ pvpBtn?.addEventListener('click', () => {
     showPvpScreen();
     if (!pvpPollTimer) {
         pvpPoll();
-        pvpPollTimer = setInterval(pvpPoll, 3000);
+        pvpPollTimer = setInterval(pvpPoll, 10000);
     }
 });
 
@@ -5437,13 +5601,13 @@ void wheel.offsetWidth;
             pvpState.currentRotation = 0;
             wheel.style.transition = 'none';
             wheel.style.transform = 'rotate(0deg)';
-            loadMiningState();
+            bootstrapApp(true).catch(() => {});
         }, 3000);
     }, 6200);
 }
 
 async function pvpPoll() {
-    if (pvpState.spinning || pvpState.showingResult) return;
+    if (document.hidden || pvpState.spinning || pvpState.showingResult) return;
     try {
         const res = await fetch(`${API_BASE}/api/pvp/current`);
         const data = await res.json();
@@ -5475,6 +5639,21 @@ async function pvpPoll() {
     } catch(e) { console.error('pvp poll', e); }
 }
 
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        if (pvpPollTimer) {
+            clearInterval(pvpPollTimer);
+            pvpPollTimer = null;
+        }
+        return;
+    }
+
+    if (pvpScreen?.classList.contains('show') && !pvpPollTimer) {
+        pvpPoll();
+        pvpPollTimer = setInterval(pvpPoll, 10000);
+    }
+});
+
 pvpSetBtn?.addEventListener('click', async () => {
     const tgUser = getTgUser();
     let amount = parseInt(pvpAmountInput?.value.trim(), 10);
@@ -5489,7 +5668,7 @@ pvpSetBtn?.addEventListener('click', async () => {
         });
         const data = await res.json();
         if (!res.ok) alert(data.error || 'Failed');
-        else { await loadMiningState(); await pvpPoll(); }
+        else { await bootstrapApp(true); await pvpPoll(); }
     } catch(e) { alert('Failed to place bet'); }
     pvpSetBtn.disabled = false; pvpSetBtn.textContent = 'Set';
 });
@@ -5552,48 +5731,17 @@ function hideLeagueScreen() {
     if (leagueScreen) leagueScreen.classList.remove('show');
 }
 
-async function loadLeaderboard() {
+async function loadLeaderboard(force = false) {
+    if (!force && appBootstrap?.leaderboard) {
+        renderLeaderboard(appBootstrap.leaderboard);
+        return;
+    }
+
     const tgUser = getTgUser();
-    const refList = document.getElementById('refLeaderboardList');
-    const snowList = document.getElementById('snowLeaderboardList');
     try {
         const res = await fetch(`${API_BASE}/api/leaderboard?user_id=${tgUser.id}`);
         const data = await res.json();
-        const refRankEl = document.getElementById('refUserRank');
-        const refValEl = document.getElementById('refUserValue');
-        const snowRankEl = document.getElementById('snowUserRank');
-        const snowValEl = document.getElementById('snowUserValue');
-        if (refRankEl) refRankEl.textContent = `#${data.referrals.user_rank || 0}`;
-        if (refValEl) refValEl.textContent = data.referrals.user_value || 0;
-        if (snowRankEl) snowRankEl.textContent = `#${data.snowmen.user_rank || 0}`;
-        if (snowValEl) snowValEl.textContent = data.snowmen.user_value || 0;
-        const medals = ['🥇','🥈','🥉'];
-        if (refList) {
-            refList.innerHTML = (data.referrals.top || []).map((u, i) => {
-                const name = u.username ? `@${u.username}` : (u.display_name || 'Player');
-                const medal = medals[i] || `#${i + 1}`;
-                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(60,199,255,0.07);border-radius:14px;margin-bottom:8px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:16px;min-width:24px;">${medal}</span>
-                        <span style="font-size:14px;font-weight:700;">${name}</span>
-                    </div>
-                    <span style="font-size:13px;color:#7ee6ff;font-weight:800;">${u.ref_count} 👥</span>
-                </div>`;
-            }).join('');
-        }
-        if (snowList) {
-            snowList.innerHTML = (data.snowmen.top || []).map((u, i) => {
-                const name = u.username ? `@${u.username}` : (u.display_name || 'Player');
-                const medal = medals[i] || `#${i + 1}`;
-                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(60,199,255,0.07);border-radius:14px;margin-bottom:8px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:16px;min-width:24px;">${medal}</span>
-                        <span style="font-size:14px;font-weight:700;">${name}</span>
-                    </div>
-                    <span style="font-size:13px;color:#7ee6ff;font-weight:800;">${u.snowman_count} ☃️</span>
-                </div>`;
-            }).join('');
-        }
+        renderLeaderboard(data);
     } catch (e) {
         console.error('loadLeaderboard error', e);
     }
@@ -5717,7 +5865,7 @@ if (applyPromoBtn) {
             document.body.appendChild(overlay);
             setTimeout(() => overlay.remove(), 5000);
 
-            await loadMiningState();
+            await bootstrapApp(true);
         } catch (e) {
             alert('Failed to redeem code');
         }
@@ -5792,34 +5940,14 @@ function tickMiningTimer() {
     miningUI.timer.textContent = formatClock(remaining);
 }
 
-async function loadMiningState() {
-    const now = Date.now();
-    if (_isInitialLoad) {
-        _isInitialLoad = false;
-        const lastHourBoundary = now - (now % HOUR_MS);
-        const lastCall = Number(localStorage.getItem('lastMeCall') || 0);
-        if (lastCall > lastHourBoundary) {
-            const cached = localStorage.getItem('miningStateCache');
-            if (cached) {
-                const data = JSON.parse(cached);
-                miningState.snowmanCount = data.snowmanCount;
-                miningState.snowBalance = data.snowBalance;
-                miningState.tonBalance = data.tonBalance;
-                miningState.speedPerHour = data.speedPerHour;
-                miningState.displayName = data.displayName;
-                miningState.username = data.username;
-                miningState.userId = data.userId;
-                renderMiningUI();
-                tickMiningTimer();
-            }
-            return;
-        }
+async function loadMiningState(force = false) {
+    if (!force && appBootstrap?.user) {
+        applyBootstrapData(appBootstrap);
+        return;
     }
-    localStorage.setItem('lastMeCall', now);
-    localStorage.removeItem('miningStateCache');
-    
+
     let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    
+
     if (!tgUser) {
         tgUser = {
             id: 12345,
@@ -5828,13 +5956,13 @@ async function loadMiningState() {
             last_name: "User"
         };
     }
-    
+
     const params = new URLSearchParams({
         user_id: String(tgUser.id),
         username: tgUser.username || '',
         display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
     });
-    
+
     const response = await fetch(`${API_BASE}/api/me?${params.toString()}`, {
         headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
     });
@@ -5842,10 +5970,10 @@ async function loadMiningState() {
     if (!response.ok) {
         throw new Error(`Mining state request failed: ${response.status}`);
     }
-    
+
     const data = await response.json();
     miningState.serverTimeOffsetMs = Number(data.server_time || Date.now()) - Date.now();
-    
+
     const user = data.user || {};
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
@@ -5856,35 +5984,26 @@ async function loadMiningState() {
     miningState.lastMinedAt = user.last_mined_at || Date.now();
     miningState.nextRewardInMs = user.next_reward_in_ms || 0;
     miningState.tonBalance = user.ton_balance || 0;
-    
+
     renderMiningUI();
     tickMiningTimer();
-    localStorage.setItem('miningStateCache', JSON.stringify({
-    snowmanCount: miningState.snowmanCount,
-    snowBalance: miningState.snowBalance,
-    tonBalance: miningState.tonBalance,
-    speedPerHour: miningState.speedPerHour,
-    displayName: miningState.displayName,
-    username: miningState.username,
-    userId: miningState.userId
-}));
+    updateHatchUI();
+
     const bar = document.querySelector('.minting-bar');
-if (bar && data.total_snowmen !== undefined) {
-    bar.textContent = `${formatMintCount(data.total_snowmen)} / 25M`;
-}
+    if (bar && data.total_snowmen !== undefined) {
+        bar.textContent = `${formatMintCount(data.total_snowmen)} / 25M`;
+    }
 }
 
-loadMiningState().catch((error) => {
+bootstrapApp().catch((error) => {
     renderMiningUI();
     updateHatchUI();
     tickMiningTimer();
 });
-        
+
 setInterval(() => {
     tickMiningTimer();
 }, 1000);
-
-loadTaskFeed();
 
 function formatMintCount(n) {
     if (n >= 1000000) {
@@ -5922,9 +6041,8 @@ async function loadFriends(force = false) {
         });
     }
 
-    if (!force && _isCacheValid('friends')) {
-        const d = _cache['friends'].data;
-        _renderFriends(d.friends, d.count, d.ton_earned);
+    if (!force && appBootstrap?.friends) {
+        _renderFriends(appBootstrap.friends.friends || [], appBootstrap.friends.count || 0, appBootstrap.friends.ton_earned || 0);
         return;
     }
 
@@ -5933,39 +6051,12 @@ async function loadFriends(force = false) {
             headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
         });
         const data = await res.json();
-        _setCache('friends', data);
-        _renderFriends(data.friends, data.count, data.ton_earned);
+        _renderFriends(data.friends || [], data.count || 0, data.ton_earned || 0);
     } catch (e) {
         console.error('loadFriends error', e);
     }
 }
 
-function _renderFriends(friends, count, ton_earned) {
-    const countEl = document.getElementById('friendsCount');
-    const tonEl = document.getElementById('friendsTonEarned');
-    if (countEl) countEl.textContent = count || 0;
-    if (tonEl) {
-        const tonValue = Number(ton_earned || 0).toFixed(2);
-        tonEl.innerHTML = `<span class="ton-icon" style="width:35px; height:35px;"></span> ${tonValue}`;
-    }
-    const listEl = document.getElementById('friendsList');
-    if (!listEl) return;
-    if (!friends || friends.length === 0) {
-        listEl.innerHTML = `<div class="friends-empty">No friends yet <span class="friends-empty-emoji">🧱</span></div>`;
-        return;
-    }
-    listEl.innerHTML = friends.map(f => `
-        <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(10,25,40,0.6); border:1px solid rgba(60,199,255,0.15); border-radius:14px; margin-bottom:8px;">
-            <div style="width:38px; height:38px; border-radius:50%; background:rgba(60,199,255,0.2); display:flex; align-items:center; justify-content:center; font-size:20px;">👤</div>
-            <div>
-                <div style="font-weight:800; font-size:14px;">${f.display_name || f.username || 'User'}</div>
-                <div style="font-size:12px; color:#9EC8E0;">@${f.username || '—'}</div>
-            </div>
-        </div>
-    `).join('');
-}
-
-        
 taskHistoryBtn?.addEventListener('click', () => {
     if (taskHistoryModal) taskHistoryModal.style.display = 'flex';
     loadTaskHistory();
@@ -6054,7 +6145,7 @@ function startDepositPolling(userId, amount, statusMsg) {
             if (data.found) {
                 clearInterval(interval);
                 if (statusMsg) statusMsg.textContent = `${amount} TON deposited successfully!`;
-                await loadMiningState();
+                await bootstrapApp(true);
                 return;
             }
         } catch (e) {}
@@ -6160,7 +6251,7 @@ document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
 
         if (statusMsg) statusMsg.textContent = '';
         document.getElementById('withdrawSuccessOverlay').style.display = 'flex';
-        await loadMiningState();
+        await bootstrapApp(true);
     } catch (e) {
         if (statusMsg) statusMsg.textContent = 'Request failed. Try again.';
     }
@@ -6243,10 +6334,7 @@ window.buyMarketOrder = async function(listingId) {
         });
         const data = await res.json();
         if (!res.ok) { alert(data.error || 'Purchase failed'); return; }
-        await loadMarketListings();
-        _clearCache('market');
-        await loadMarketListings(true);
-        await loadMiningState();
+        await bootstrapApp(true);
     } catch (e) { alert('Purchase failed'); }
 };
 
@@ -6261,10 +6349,7 @@ window.cancelMarketOrder = async function(listingId) {
         });
         const data = await res.json();
         if (!res.ok) { alert(data.error || 'Cancel failed'); return; }
-        await loadMarketListings();
-        _clearCache('market');
-        await loadMarketListings(true);
-        await loadMiningState();
+        await bootstrapApp(true);
     } catch (e) { alert('Cancel failed'); }
 };
 
@@ -6292,56 +6377,8 @@ function renderMarketListings() {
         </div>
     `).join('')}</div>`;
 }
-        
-async function loadMarketListings(force = false) {
-    const tgUser = getTgUser();
-    const allEl = document.getElementById('marketAllList');
-    const yoursEl = document.getElementById('marketYoursList');
 
-    if (!force && _isCacheValid('market')) {
-        const d = _cache['market'].data;
-        allMarketListings = d.all || [];
-        renderMarketListings();
-        _renderYourListings(d.yours || [], yoursEl);
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}/api/market/listings?user_id=${tgUser.id}`);
-        const data = await res.json();
-
-        _setCache('market', data);
-        allMarketListings = data.all || [];
-        renderMarketListings();
-        const yourListings = data.yours || [];
-
-        if (yourListings.length === 0) {
-            yoursEl.innerHTML = `
-                <div class="market-empty">
-                    <div class="market-empty-icon">☃️</div>
-                    <div class="market-empty-title">No active orders yet.</div>
-                    <p class="market-empty-text">Create a Snow order to start trading.</p>
-                </div>`;
-        } else {
-            yoursEl.innerHTML = yourListings.map(l => `
-                <div class="market-order-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-size:15px; font-weight:900; color:#7ee6ff;">❄️ ${Number(l.snow_amount).toLocaleString()} Snow</div>
-                            <div style="font-size:12px; color:#9EC8E0; margin-top:4px;">${Number(l.total_price).toFixed(4)} TON</div>
-                        </div>
-                        <button class="market-cancel-btn" onclick="window.cancelMarketOrder(${l.id})">
-                            Cancel
-                            <span class="market-cancel-fee">-20 ❄️</span>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-    } catch (e) {
-        if (allEl) allEl.innerHTML = `<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load</div>`;
-    }
-    function _renderYourListings(yourListings, yoursEl) {
+function _renderYourListings(yourListings, yoursEl) {
     if (!yoursEl) return;
     if (yourListings.length === 0) {
         yoursEl.innerHTML = `
@@ -6367,6 +6404,29 @@ async function loadMarketListings(force = false) {
         `).join('');
     }
 }
+
+async function loadMarketListings(force = false) {
+    const tgUser = getTgUser();
+    const allEl = document.getElementById('marketAllList');
+    const yoursEl = document.getElementById('marketYoursList');
+
+    if (!force && appBootstrap?.market) {
+        allMarketListings = appBootstrap.market.all || [];
+        renderMarketListings();
+        _renderYourListings(appBootstrap.market.yours || [], yoursEl);
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/market/listings?user_id=${tgUser.id}`);
+        const data = await res.json();
+
+        allMarketListings = data.all || [];
+        renderMarketListings();
+        _renderYourListings(data.yours || [], yoursEl);
+    } catch (e) {
+        if (allEl) allEl.innerHTML = `<div style="text-align:center; color:#FF6B6B; padding:20px;">Failed to load</div>`;
+    }
 }
 
 document.getElementById('marketSnowInput')?.addEventListener('input', () => {
@@ -6428,8 +6488,7 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
             </div>`;
         document.body.appendChild(successOverlay);
 
-        await loadMarketListings();
-await loadMiningState();
+        await bootstrapApp(true);
 document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
 document.getElementById('market-all')?.classList.add('active');
 document.querySelectorAll('[data-market-mode]').forEach(b => b.classList.remove('active'));
@@ -6448,8 +6507,7 @@ document.getElementById('marketRefreshBtn')?.addEventListener('click', () => {
     void btn?.offsetWidth;
     btn?.classList.add('spinning');
     btn?.addEventListener('animationend', () => btn.classList.remove('spinning'), { once: true });
-    _clearCache('market');
-loadMarketListings(true);
+    bootstrapApp(true).catch(() => {});
 });  
 document.querySelectorAll('[data-market-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -6659,7 +6717,7 @@ const targetIdx = (prizes.length * 2) + (prizeIndex >= 0 ? prizeIndex : 0);
                     openBtn.disabled = false;
                     openBtn.textContent = 'Open 🎁';
                 }
-                loadMiningState();
+                bootstrapApp(true).catch(() => {});
             }, 3000);
         }, { once: true });
 
