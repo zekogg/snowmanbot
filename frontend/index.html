@@ -6048,8 +6048,7 @@ async function ensureTonConnectInitialized() {
   tonConnectInitPromise = (async () => {
     await loadTonConnectScript();
     tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
-      manifestUrl: MANIFEST_URL,
-      buttonRootId: 'tonconnect-button'
+      manifestUrl: MANIFEST_URL
     });
 
     tonConnectUI.onStatusChange((wallet) => {
