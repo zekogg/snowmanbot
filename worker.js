@@ -2163,6 +2163,15 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
       `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
     ).first();
 
+const walletRow = await env.DB.prepare(
+  `SELECT wallet_address FROM users WHERE user_id = ?`
+).bind(userId).first();
+
+const wallet = {
+  wallet_address: walletRow?.wallet_address || '',
+  wallet_connected: !!walletRow?.wallet_address
+};
+    
     return json({
       server_time: now,
       total_snowmen: Number(totalRow?.total || 0),
