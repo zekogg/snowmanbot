@@ -1050,7 +1050,7 @@ if (url.pathname === "/api/wallet/save" && request.method === "POST") {
     const userId = auth.userId;
     const walletAddress = String(body.wallet_address || "").trim();
 
-    if (!userId || !walletAddress) {
+    if (!userId) {
       return json({ error: "Missing params" }, 400);
     }
 
@@ -1059,8 +1059,10 @@ if (url.pathname === "/api/wallet/save" && request.method === "POST") {
     }
 
     await env.DB.prepare(
-      `UPDATE users SET wallet_address = ?, updated_at = ? WHERE user_id = ?`
-    ).bind(walletAddress, Date.now(), userId).run();
+      `UPDATE users
+       SET wallet_address = ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(walletAddress || null, Date.now(), userId).run();
 
     return json({ ok: true });
   } catch (e) {
