@@ -4918,8 +4918,9 @@ function applyBootstrapData(data) {
         wallet_address: walletAddress,
         wallet_connected: connected
     };
-    walletConnected = connected;
+    
     lastSavedWalletAddress = walletAddress || null;
+    updateWalletBtn(connected ? { account: { address: walletAddress } } : null);
 }
 
 async function bootstrapApp(force = false) {
