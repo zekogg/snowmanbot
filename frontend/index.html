@@ -6131,6 +6131,18 @@ async function ensureTonConnectInitialized() {
         };
         writeBootstrap(appBootstrap);
     }
+        if (!wallet) {
+        walletConnected = false;
+        lastSavedWalletAddress = null;
+        writeWalletCache('');
+        appBootstrap.wallet = {
+            wallet_address: '',
+            wallet_connected: false
+        };
+        writeBootstrap(appBootstrap);
+        updateWalletBtn(null);
+        return;
+    }
 });
 
     return tonConnectUI;
