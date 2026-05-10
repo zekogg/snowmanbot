@@ -3532,9 +3532,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <div id="depositStatusMsg" style="text-align:center; font-size:13px; color:#7ee6ff; min-height:18px; margin:6px 0;"></div>
 
     <div class="transfer-section">
-        <div class="transfer-section-title">Payment Method</div>
-        <button class="transfer-wallet-btn" id="connectWalletBtn" type="button">Connect Wallet</button>
-
         <div class="transfer-copy-box">
             <div class="transfer-copy-label">or (Manual) Deposit Address</div>
             <div class="transfer-copy-row">
@@ -6102,49 +6099,12 @@ async function ensureTonConnectInitialized() {
 }
         
 function updateWalletBtn(wallet) {
-    const btn = document.getElementById("connectWalletBtn");
-    if (!btn) return;
-
     const connected = wallet
         ? !!(wallet.account && wallet.account.address)
         : walletConnected;
-
     walletConnected = connected;
-    btn.textContent = connected ? "Disconnect" : "Connect Wallet";
-    btn.style.background = connected
-        ? "linear-gradient(135deg, #e53935, #b71c1c)"
-        : "";
-    btn.style.color = connected ? "white" : "";
 }
 
-document.getElementById("connectWalletBtn")?.addEventListener("click", async () => {
-
-    if (walletConnected) {
-        const confirmed = confirm("Are you sure you want to disconnect your wallet?");
-
-        if (!confirmed) return;
-
-        await ensureTonConnectInitialized();
-        await tonConnectUI.disconnect();
-        
-walletConnected = false;
-lastSavedWalletAddress = null;
-
-if (appBootstrap) {
-    appBootstrap.wallet = {
-        wallet_address: '',
-        wallet_connected: false
-    };
-    writeBootstrap(appBootstrap);
-}
-
-updateWalletBtn(null);
-        
-    } else {
-        await ensureTonConnectInitialized();
-        await tonConnectUI.openModal();
-    }
-});
 
 function startDepositPolling(userId, amount, statusMsg) {
     let attempts = 0;
