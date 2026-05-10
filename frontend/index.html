@@ -4919,6 +4919,7 @@ function applyBootstrapData(data) {
         wallet_connected: connected
     };
     
+    walletConnected = connected;
     lastSavedWalletAddress = walletAddress || null;
     updateWalletBtn(connected ? { account: { address: walletAddress } } : null);
 }
@@ -6120,25 +6121,29 @@ document.getElementById("connectWalletBtn")?.addEventListener("click", async () 
 
     if (walletConnected) {
         const confirmed = confirm("Are you sure you want to disconnect your wallet?");
-
         if (!confirmed) return;
 
-        await ensureTonConnectInitialized();
-        await tonConnectUI.disconnect();
-        
-walletConnected = false;
-lastSavedWalletAddress = null;
+        try {
+            const tc = await ensureTonConnectInitialized();
+            if (tc.connected) await tc.disconnect();
+        } catch(e) {}
 
-if (appBootstrap) {
-    appBootstrap.wallet = {
-        wallet_address: '',
-        wallet_connected: false
-    };
-    writeBootstrap(appBootstrap);
-}
+        walletConnected = false;
+        lastSavedWalletAddress = null;
 
-updateWalletBtn(null);
-        
+        if (appBootstrap) {
+            appBootstrap.wallet = { wallet_address: '', wallet_connected: false };
+            writeBootstrap(appBootstrap);
+        }
+
+        updateWalletBtn(null);
+
+        fetch(`${API_BASE}/api/wallet/save`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: getTgUser().id, wallet_address: '' })
+        }).catch(() => {});
+
     } else {
         await ensureTonConnectInitialized();
         await tonConnectUI.openModal();
