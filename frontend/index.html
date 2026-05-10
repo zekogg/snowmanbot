@@ -4907,17 +4907,6 @@ function applyBootstrapData(data) {
 
     appBootstrap.wallet = data.wallet || {};
     lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
-    walletConnected = !!appBootstrap.wallet.wallet_connected;
-
-    updateWalletBtn(
-        walletConnected
-            ? { account: { address: appBootstrap.wallet.wallet_address } }
-            : null
-    );
-
-    if (walletConnected) {
-        ensureTonConnectInitialized().catch(() => {});
-    }
 }
 
 async function bootstrapApp(force = false) {
@@ -6082,6 +6071,7 @@ async function ensureTonConnectInitialized() {
 
       if (!wallet) {
         walletConnected = false;
+        lastSavedWalletAddress = null;
         updateWalletBtn(null);
       }
     });
