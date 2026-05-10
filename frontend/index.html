@@ -4757,11 +4757,15 @@ function readBootstrap() {
     try {
         const raw = localStorage.getItem(getBootstrapKey());
         if (!raw) return null;
+
         const parsed = JSON.parse(raw);
         if (!parsed || !parsed.data) return null;
-        const now = Date.now();
-        const lastHourBoundary = now - (now % HOUR_MS);
-        if (Date.now() - parsed.ts > HOUR_MS) return null;
+
+        if (Date.now() - Number(parsed.ts || 0) > HOUR_MS) {
+            localStorage.removeItem(getBootstrapKey());
+            return null;
+        }
+
         appBootstrap = parsed.data;
         return appBootstrap;
     } catch {
@@ -4916,8 +4920,9 @@ function applyBootstrapData(data) {
         wallet_connected: connected
     };
 
+    walletConnected = connected;
     lastSavedWalletAddress = walletAddress || null;
-    updateWalletBtn(null);
+    updateWalletBtn(connected ? { account: { address: walletAddress } } : null);
 }
 
 async function bootstrapApp(force = false) {
@@ -4932,8 +4937,7 @@ async function bootstrapApp(force = false) {
     if (bootstrapPromise) return bootstrapPromise;
     if (force) {
     appBootstrap = null;
-    localStorage.removeItem(getBootstrapKey());
-    }
+}
     
     bootstrapPromise = (async () => {
         const tgUser = getTgUser();
@@ -5985,6 +5989,8 @@ if (cachedBootstrap) {
     renderMiningUI();
     updateHatchUI();
     tickMiningTimer();
+
+    bootstrapApp().catch(() => {});
 }
 
 ensureTonConnectInitialized().catch(() => {});
@@ -6100,8 +6106,11 @@ function updateWalletBtn(wallet) {
     const btn = document.getElementById("connectWalletBtn");
     if (!btn) return;
 
-    const connected = !!(wallet && wallet.account && wallet.account.address);
+    const connected = wallet
+        ? !!(wallet.account && wallet.account.address)
+        : walletConnected;
 
+    walletConnected = connected;
     btn.textContent = connected ? "Disconnect" : "Connect Wallet";
     btn.style.background = connected
         ? "linear-gradient(135deg, #e53935, #b71c1c)"
@@ -6118,7 +6127,20 @@ document.getElementById("connectWalletBtn")?.addEventListener("click", async () 
 
         await ensureTonConnectInitialized();
         await tonConnectUI.disconnect();
+        
+walletConnected = false;
+lastSavedWalletAddress = null;
 
+if (appBootstrap) {
+    appBootstrap.wallet = {
+        wallet_address: '',
+        wallet_connected: false
+    };
+    writeBootstrap(appBootstrap);
+}
+
+updateWalletBtn(null);
+        
     } else {
         await ensureTonConnectInitialized();
         await tonConnectUI.openModal();
