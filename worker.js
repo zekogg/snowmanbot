@@ -2054,10 +2054,6 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
       return json({ error: "Unauthorized" }, 401);
     }
 
-    if (!await checkRateLimit(env, userId, "bootstrap", 5)) {
-      return json({ error: "Too many requests" }, 429);
-    }
-
     const username = url.searchParams.get("username");
     const displayName = url.searchParams.get("display_name");
 
