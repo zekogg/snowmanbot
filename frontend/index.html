@@ -4745,7 +4745,7 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
         let appBootstrap = null;
         let bootstrapPromise = null;
 
-const BOOTSTRAP_KEY = 'snowman_bootstrap_v1';
+const BOOTSTRAP_KEY = 'snowman_bootstrap_v2';
 
 function getBootstrapKey() {
     const user = getTgUser();
@@ -4906,7 +4906,14 @@ function applyBootstrapData(data) {
     loadLeaderboard();
 
     appBootstrap.wallet = data.wallet || {};
-    lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
+lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
+walletConnected = !!appBootstrap.wallet.wallet_connected;
+
+updateWalletBtn(
+    walletConnected
+        ? { account: { address: appBootstrap.wallet.wallet_address } }
+        : null
+);
 }
 
 async function bootstrapApp(force = false) {
@@ -6070,10 +6077,16 @@ async function ensureTonConnectInitialized() {
       }
 
       if (!wallet) {
-        walletConnected = false;
-        lastSavedWalletAddress = null;
-        updateWalletBtn(null);
-      }
+  walletConnected = false;
+  lastSavedWalletAddress = null;
+  appBootstrap.wallet = {
+    wallet_address: '',
+    wallet_connected: false
+  };
+  writeBootstrap(appBootstrap);
+  updateWalletBtn(null);
+  return;
+}
     });
 
     return tonConnectUI;
