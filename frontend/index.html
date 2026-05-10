@@ -4921,6 +4921,9 @@ function renderFriendsPanel(data) {
     }).join('');
 }
 
+let lastSavedWalletAddress = null;
+let walletConnected = false;
+        
 function applyBootstrapData(data) {
     if (!data) return;
     appBootstrap = data;
@@ -6064,9 +6067,7 @@ const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
 const MANIFEST_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/tonconnect-manifest.json";
 let tonConnectUI = null;
 let tonConnectInitPromise = null;
-let lastSavedWalletAddress = null;
 let tonConnectScriptPromise = null;
-let walletConnected = false;
 
 function getTgUser() {
     const u = window.Telegram?.WebApp?.initDataUnsafe?.user;
