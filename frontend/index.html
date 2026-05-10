@@ -4949,11 +4949,15 @@ function applyBootstrapData(data) {
     walletConnected = connected;
     writeWalletCache(walletAddress);
 
-    updateWalletBtn(
-        connected
-            ? { account: { address: walletAddress } }
-            : null
-    );
+    if (connected) {
+    updateWalletBtn({
+        account: {
+            address: walletAddress
+        }
+    });
+} else {
+    updateWalletBtn(null);
+}
 }
 
 async function bootstrapApp(force = false) {
