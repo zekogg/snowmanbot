@@ -4747,6 +4747,33 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
 
 const BOOTSTRAP_KEY = 'snowman_bootstrap_v2';
 
+const WALLET_CACHE_KEY = 'snowman_wallet_state_v1';
+
+function readWalletCache() {
+    try {
+        const raw = localStorage.getItem(WALLET_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed.address !== 'string') return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function writeWalletCache(address) {
+    try {
+        if (!address) {
+            localStorage.removeItem(WALLET_CACHE_KEY);
+            return;
+        }
+        localStorage.setItem(WALLET_CACHE_KEY, JSON.stringify({
+            address,
+            ts: Date.now()
+        }));
+    } catch {}
+}
+        
 function getBootstrapKey() {
     const user = getTgUser();
     return `${BOOTSTRAP_KEY}_${user.id}`;
@@ -4905,15 +4932,25 @@ function applyBootstrapData(data) {
     loadMarketListings();
     loadLeaderboard();
 
-    appBootstrap.wallet = data.wallet || {};
-lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
-walletConnected = !!appBootstrap.wallet.wallet_connected;
+    const cachedWallet = readWalletCache();
+    const bootstrapAddress = data.wallet?.wallet_address || '';
+    const walletAddress = bootstrapAddress || cachedWallet?.address || '';
+    const connected = !!walletAddress;
 
-updateWalletBtn(
-    walletConnected
-        ? { account: { address: appBootstrap.wallet.wallet_address } }
-        : null
-);
+    appBootstrap.wallet = {
+        wallet_address: walletAddress,
+        wallet_connected: connected
+    };
+
+    lastSavedWalletAddress = walletAddress || null;
+    walletConnected = connected;
+    writeWalletCache(walletAddress);
+
+    updateWalletBtn(
+        connected
+            ? { account: { address: walletAddress } }
+            : null
+    );
 }
 
 async function bootstrapApp(force = false) {
@@ -5970,11 +6007,24 @@ async function loadMiningState(force = false) {
     }
 }
 
-bootstrapApp().catch((error) => {
+const cachedBootstrap = readBootstrap();
+
+if (cachedBootstrap) {
+    applyBootstrapData(cachedBootstrap);
+} else {
+    const cachedWallet = readWalletCache();
+    if (cachedWallet?.address) {
+        walletConnected = true;
+        lastSavedWalletAddress = cachedWallet.address;
+        updateWalletBtn({ account: { address: cachedWallet.address } });
+    } else {
+        updateWalletBtn(null);
+    }
+
     renderMiningUI();
     updateHatchUI();
     tickMiningTimer();
-});
+}
 
 setInterval(() => {
     tickMiningTimer();
@@ -6052,42 +6102,44 @@ async function ensureTonConnectInitialized() {
     });
 
     tonConnectUI.onStatusChange((wallet) => {
-      const address = wallet?.account?.address || '';
-      walletConnected = !!address;
+    const address = wallet?.account?.address || '';
+    walletConnected = !!address;
 
-      updateWalletBtn(wallet);
+    updateWalletBtn(wallet);
 
-      if (address && address !== lastSavedWalletAddress) {
+    if (address && address !== lastSavedWalletAddress) {
         lastSavedWalletAddress = address;
+        writeWalletCache(address);
 
         fetch(`${API_BASE}/api/wallet/save`, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            user_id: getTgUser().id,
-            wallet_address: address
-          })
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                user_id: getTgUser().id,
+                wallet_address: address
+            })
         });
 
         appBootstrap.wallet = {
-          wallet_address: address,
-          wallet_connected: true
+            wallet_address: address,
+            wallet_connected: true
         };
         writeBootstrap(appBootstrap);
-      }
+    }
 
-      if (!wallet) {
-  walletConnected = false;
-  lastSavedWalletAddress = null;
-  appBootstrap.wallet = {
-    wallet_address: '',
-    wallet_connected: false
-  };
-  writeBootstrap(appBootstrap);
-  updateWalletBtn(null);
-  return;
-}
-    });
+    if (!wallet) {
+        walletConnected = false;
+        lastSavedWalletAddress = null;
+        writeWalletCache('');
+        appBootstrap.wallet = {
+            wallet_address: '',
+            wallet_connected: false
+        };
+        writeBootstrap(appBootstrap);
+        updateWalletBtn(null);
+        return;
+    }
+});
 
     return tonConnectUI;
   })();
