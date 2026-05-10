@@ -4470,7 +4470,6 @@ function applyLang() {
     q('#withdrawTabBtn', 'withdrawTab');
     q('#depositActionBtn', 'deposit');
     q('#manualCheckBtn', 'sentManually');
-    q('#connectWalletBtn', 'connectWallet');
     q('#withdrawBtn', 'withdraw');
     q('#withdrawHistoryBtn', 'history');
     const transferTitle = document.querySelector('#depositPanel .transfer-title');
@@ -4920,9 +4919,7 @@ function applyBootstrapData(data) {
         wallet_connected: connected
     };
 
-    walletConnected = connected;
     lastSavedWalletAddress = walletAddress || null;
-    updateWalletBtn(connected ? { account: { address: walletAddress } } : null);
 }
 
 async function bootstrapApp(force = false) {
