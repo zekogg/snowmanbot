@@ -4906,14 +4906,18 @@ function applyBootstrapData(data) {
     loadLeaderboard();
 
     appBootstrap.wallet = data.wallet || {};
-lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
-walletConnected = !!appBootstrap.wallet.wallet_connected;
+    lastSavedWalletAddress = appBootstrap.wallet.wallet_address || null;
+    walletConnected = !!appBootstrap.wallet.wallet_connected;
 
-updateWalletBtn(
-    walletConnected
-        ? { account: { address: appBootstrap.wallet.wallet_address } }
-        : null
-);
+    updateWalletBtn(
+        walletConnected
+            ? { account: { address: appBootstrap.wallet.wallet_address } }
+            : null
+    );
+
+    if (walletConnected) {
+        ensureTonConnectInitialized().catch(() => {});
+    }
 }
 
 async function bootstrapApp(force = false) {
