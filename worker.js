@@ -2169,7 +2169,7 @@ const walletRow = await env.DB.prepare(
 
 const wallet = {
   wallet_address: walletRow?.wallet_address || '',
-  wallet_connected: !!walletRow?.wallet_address
+  wallet_connected: false
 };
     
     return json({
