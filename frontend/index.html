@@ -6019,15 +6019,7 @@ const cachedBootstrap = readBootstrap();
 if (cachedBootstrap) {
     applyBootstrapData(cachedBootstrap);
 } else {
-    const cachedWallet = readWalletCache();
-    if (cachedWallet?.address) {
-        walletConnected = true;
-        lastSavedWalletAddress = cachedWallet.address;
-        updateWalletBtn({ account: { address: cachedWallet.address } });
-    } else {
-        updateWalletBtn(null);
-    }
-
+    // لا نستدعي updateWalletBtn هنا - ستُستدعى من applyBootstrapData أو TonConnect لاحقاً
     renderMiningUI();
     updateHatchUI();
     tickMiningTimer();
