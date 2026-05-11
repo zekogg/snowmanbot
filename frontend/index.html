@@ -1623,7 +1623,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     gap: 2px;
     position: relative;
     overflow: hidden;
-    animation: exchangeFloat 3.2s ease-in-out infinite;
+    transform: translateY(-60%);
 }
 
 .exchange-icon-circle::before {
@@ -1635,7 +1635,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     height: 100%;
     background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.35), transparent);
     transform: skewX(-25deg);
-    animation: exchangeShine 4.5s infinite;
 }
 
 .exchange-row {
@@ -2834,12 +2833,12 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     gap: 2px;
     position: relative;
     overflow: hidden;
-    animation: promoFloat 3.5s ease-in-out infinite;
 }
 
 .promo-emoji {
     font-size: 27px;
     filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+    animation: spinOnce 4s linear infinite;
 }
 
 .promo-text {
