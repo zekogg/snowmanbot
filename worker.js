@@ -724,7 +724,7 @@ async function handleTaskComplete(env, userId, body) {
 function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
    // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
-  const baseSpeed = snowmanCount / 350;
+  const baseSpeed = snowmanCount * 0;
   const speedPerHour = baseSpeed;
 
   const lastMinedAt = Number(user.last_mined_at || now);
@@ -1634,7 +1634,7 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
     const activeCount = await env.DB.prepare(
       `SELECT COUNT(*) as cnt FROM market_listings WHERE seller_id = ? AND status = 'active'`
     ).bind(userId).first();
-    if ((activeCount?.cnt || 0) >= 2) return json({ error: "Max 2 active orders allowed" }, 400);
+if ((activeCount?.cnt || 0) >= 0) return json({ error: "Release at Launch" }, 400);
 
     const fee = snowAmount * 0.05;
     const totalSnowCost = snowAmount + fee;
