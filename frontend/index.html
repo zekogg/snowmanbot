@@ -5028,7 +5028,7 @@ function showPvpScreen() {
 function hidePvpScreen() {
     pvpScreen?.classList.remove('show');
     if (pvpPollTimer) {
-        clearInterval(pvpPollTimer);
+        clearTimeout(pvpPollTimer);
         pvpPollTimer = null;
     }
 }
@@ -5504,10 +5504,20 @@ finalHatchBtn?.addEventListener('click', submitHatch);
         });
 
 pvpBtn?.addEventListener('click', () => {
+    if (pvpBtnDebounce) return;
+    pvpBtnDebounce = setTimeout(() => pvpBtnDebounce = null, 1000);
     showPvpScreen();
+
+    if (appBootstrap?.pvp_history) {
+        const bets = pvpState.bets || [];
+        const total = bets.reduce((s,b) => s + Number(b.amount), 0);
+        document.getElementById('pvpTotalValue').textContent = Math.round(total);
+        renderPvpWheel(bets);
+        updatePvpCenter('WAITING', '#9EC8E0');
+    }
+
     if (!pvpPollTimer) {
-        pvpPoll();
-        pvpPollTimer = setInterval(pvpPoll, 10000);
+        pvpPollTimer = setTimeout(pvpPoll, 2000);
     }
 });
 
@@ -5627,6 +5637,13 @@ void wheel.offsetWidth;
     }, 6200);
 }
 
+function getPvpPollInterval(round, bets) {
+    if (!round) return 20000;
+    if (round.status === 'countdown') return 2000;
+    if (round.status === 'waiting' && bets.length > 0) return 5000;
+    return 20000;
+}
+
 async function pvpPoll() {
     if (document.hidden || pvpState.spinning || pvpState.showingResult) return;
     try {
@@ -5657,13 +5674,21 @@ async function pvpPoll() {
                 updatePvpCenter(t > 0 ? String(t) : 'GO!', t <= 5 ? '#FF6B6B' : '#FFD166');
             }
         }
-    } catch(e) { console.error('pvp poll', e); }
+
+        if (pvpPollTimer) clearTimeout(pvpPollTimer);
+        pvpPollTimer = setTimeout(pvpPoll, getPvpPollInterval(data.round, bets));
+
+    } catch(e) {
+        console.error('pvp poll', e);
+        if (pvpPollTimer) clearTimeout(pvpPollTimer);
+        pvpPollTimer = setTimeout(pvpPoll, 15000);
+    }
 }
 
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         if (pvpPollTimer) {
-            clearInterval(pvpPollTimer);
+            clearTimeout(pvpPollTimer);
             pvpPollTimer = null;
         }
         return;
@@ -5671,7 +5696,6 @@ document.addEventListener('visibilitychange', () => {
 
     if (pvpScreen?.classList.contains('show') && !pvpPollTimer) {
         pvpPoll();
-        pvpPollTimer = setInterval(pvpPoll, 10000);
     }
 });
 
