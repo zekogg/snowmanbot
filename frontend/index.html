@@ -5031,6 +5031,10 @@ function hidePvpScreen() {
         clearTimeout(pvpPollTimer);
         pvpPollTimer = null;
     }
+    if (pvpAbortController) {
+        pvpAbortController.abort();
+        pvpAbortController = null;
+    }
 }
 
         tasksNavBtn?.addEventListener('click', () => {
@@ -5503,6 +5507,8 @@ finalHatchBtn?.addEventListener('click', submitHatch);
             if (event.target === pvpScreen) pvpScreen.classList.remove('show');
         });
 
+let pvpBtnDebounce = null;
+        
 pvpBtn?.addEventListener('click', () => {
     if (pvpBtnDebounce) return;
     pvpBtnDebounce = setTimeout(() => pvpBtnDebounce = null, 1000);
@@ -5644,10 +5650,19 @@ function getPvpPollInterval(round, bets) {
     return 20000;
 }
 
+let pvpAbortController = null;
+
 async function pvpPoll() {
     if (document.hidden || pvpState.spinning || pvpState.showingResult) return;
+    
+    if (pvpAbortController) pvpAbortController.abort();
+    pvpAbortController = new AbortController();
+    
     try {
-        const res = await fetch(`${API_BASE}/api/pvp/current`);
+        const res = await fetch(`${API_BASE}/api/pvp/current`, {
+            signal: pvpAbortController.signal
+        });
+        pvpAbortController = null;
         const data = await res.json();
 
         if (pvpState.spinning || pvpState.showingResult) return;
@@ -5678,7 +5693,8 @@ async function pvpPoll() {
         if (pvpPollTimer) clearTimeout(pvpPollTimer);
         pvpPollTimer = setTimeout(pvpPoll, getPvpPollInterval(data.round, bets));
 
-    } catch(e) {
+   } catch(e) {
+        if (e.name === 'AbortError') return;
         console.error('pvp poll', e);
         if (pvpPollTimer) clearTimeout(pvpPollTimer);
         pvpPollTimer = setTimeout(pvpPoll, 15000);
