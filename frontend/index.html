@@ -5,21 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SnowMan Empire Mini App</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <script>
-        window.onerror = function(msg, src, line, col) {
-    alert(`Error: ${msg}\nLine: ${line}\nCol: ${col}`);
-};
-    if (window.TelegramWebviewProxy || navigator.userAgent.includes('Telegram')) {
-        document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
-    }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>
-        if (window.eruda) {
-            eruda.init();
-        }
-    </script>
-
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
 :root {
     --bg1: #F0F9FF;
@@ -3375,6 +3361,9 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     </div>
 </div>
 
+   <div style="position:relative;z-index:10;width:82%;max-width:360px;margin:10px auto 0;background:linear-gradient(135deg,rgba(60,199,255,0.15),rgba(183,124,255,0.15));border:1px solid rgba(60,199,255,0.4);border-radius:16px;padding:12px 18px;text-align:center;backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(60,199,255,0.2);">
+    <span style="font-size:15px;font-weight:900;color:#ffffff;letter-spacing:0.5px;text-shadow:0 0 10px rgba(60,199,255,0.6);">⏳ Mint Now ! Snow & Market Start in 3 Days</span>
+</div> 
 <div class="minting-section" id="mainMintSection">
     <div class="limited-text">LIMITED</div>
     <div class="minting-container">
@@ -4081,37 +4070,7 @@ if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495
 }
 // ===============================================       
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
-// ========== تتبع جميع طلبات fetch مع عداد الإحصائيات ==========
-(function() {
-    const originalFetch = window.fetch;
-    window.requestCounts = {}; // الآن متغير عام يمكن الوصول إليه من أي مكان
-
-    window.fetch = function(...args) {
-        const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || 'Unknown');
-        const label = url.includes('/api/') ? url.split('/api/')[1]?.split('?')[0] : 'Other';
-        
-        window.requestCounts[label] = (window.requestCounts[label] || 0) + 1;
-        
-        const start = performance.now();
-        console.log(`🚀 بدء: ${label} ← ${url}`);
-        
-        return originalFetch.apply(this, args)
-            .then(response => {
-                const duration = (performance.now() - start).toFixed(2);
-                console.log(`✅ اكتمل: ${label} (${duration}ms)`);
-                console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(window.requestCounts, null, 2));
-                return response;
-            })
-            .catch(error => {
-            if (error.name === 'AbortError') throw error;
-            console.error(`❌ فشل: ${label}`, error);
-           console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(window.requestCounts, null, 2));
-      throw error;
-});
-    };
-})();
-// =============================================================
-    
+// =============================================================  
   const LANGUAGES = [
     { code: 'en', flag: '🇬🇧', name: 'English' },
     { code: 'id', flag: '🇮🇩', name: 'Bahasa Indonesia' },
