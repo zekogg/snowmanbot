@@ -4470,6 +4470,7 @@ function applyLang() {
     q('#withdrawTabBtn', 'withdrawTab');
     q('#depositActionBtn', 'deposit');
     q('#manualCheckBtn', 'sentManually');
+    q('#connectWalletBtn', 'connectWallet');
     q('#withdrawBtn', 'withdraw');
     q('#withdrawHistoryBtn', 'history');
     const transferTitle = document.querySelector('#depositPanel .transfer-title');
@@ -4918,10 +4919,8 @@ function applyBootstrapData(data) {
         wallet_address: walletAddress,
         wallet_connected: connected
     };
-    
-    walletConnected = connected;
+
     lastSavedWalletAddress = walletAddress || null;
-    updateWalletBtn(connected ? { account: { address: walletAddress } } : null);
 }
 
 async function bootstrapApp(force = false) {
@@ -6121,35 +6120,31 @@ document.getElementById("connectWalletBtn")?.addEventListener("click", async () 
 
     if (walletConnected) {
         const confirmed = confirm("Are you sure you want to disconnect your wallet?");
+
         if (!confirmed) return;
 
-        try {
-            const tc = await ensureTonConnectInitialized();
-            if (tc.connected) await tc.disconnect();
-        } catch(e) {}
+        await ensureTonConnectInitialized();
+        await tonConnectUI.disconnect();
+        
+walletConnected = false;
+lastSavedWalletAddress = null;
 
-        walletConnected = false;
-        lastSavedWalletAddress = null;
+if (appBootstrap) {
+    appBootstrap.wallet = {
+        wallet_address: '',
+        wallet_connected: false
+    };
+    writeBootstrap(appBootstrap);
+}
 
-        if (appBootstrap) {
-            appBootstrap.wallet = { wallet_address: '', wallet_connected: false };
-            writeBootstrap(appBootstrap);
-        }
-
-        updateWalletBtn(null);
-
-        fetch(`${API_BASE}/api/wallet/save`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ user_id: getTgUser().id, wallet_address: '' })
-        }).catch(() => {});
-
+updateWalletBtn(null);
+        
     } else {
         await ensureTonConnectInitialized();
         await tonConnectUI.openModal();
     }
 });
-        
+
 function startDepositPolling(userId, amount, statusMsg) {
     let attempts = 0;
     const maxAttempts = 12;
