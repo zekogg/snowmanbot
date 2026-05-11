@@ -4103,10 +4103,11 @@ if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495
                 return response;
             })
             .catch(error => {
-                console.error(`❌ فشل: ${label}`, error);
-                console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(window.requestCounts, null, 2));
-                throw error;
-            });
+            if (error.name === 'AbortError') throw error;
+            console.error(`❌ فشل: ${label}`, error);
+           console.log(`📊 إحصائيات حتى الآن:`, JSON.stringify(window.requestCounts, null, 2));
+      throw error;
+});
     };
 })();
 // =============================================================
@@ -5035,6 +5036,10 @@ function hidePvpScreen() {
         pvpAbortController.abort();
         pvpAbortController = null;
     }
+    if (pvpLocalCountdown) {
+        clearInterval(pvpLocalCountdown);
+        pvpLocalCountdown = null;
+    }
 }
 
         tasksNavBtn?.addEventListener('click', () => {
@@ -5523,7 +5528,7 @@ pvpBtn?.addEventListener('click', () => {
     }
 
     if (!pvpPollTimer) {
-        pvpPollTimer = setTimeout(pvpPoll, 2000);
+        pvpPollTimer = setTimeout(pvpPoll, 3000);
     }
 });
 
@@ -5642,7 +5647,7 @@ void wheel.offsetWidth;
         }, 3000);
     }, 6200);
 }
-
+                
 function getPvpPollInterval(round, bets) {
     if (!round) return 20000;
     if (round.status === 'countdown') return 2000;
@@ -5652,6 +5657,27 @@ function getPvpPollInterval(round, bets) {
 
 let pvpAbortController = null;
 
+let pvpLocalCountdown = null;
+let pvpLocalTimeLeft = 0;
+
+function startLocalCountdown(timeLeft) {
+    if (pvpLocalCountdown) clearInterval(pvpLocalCountdown);
+    pvpLocalTimeLeft = timeLeft;
+
+    pvpLocalCountdown = setInterval(() => {
+        pvpLocalTimeLeft -= 1;
+        if (pvpLocalTimeLeft <= 0) {
+            clearInterval(pvpLocalCountdown);
+            pvpLocalCountdown = null;
+            return;
+        }
+        updatePvpCenter(
+            String(pvpLocalTimeLeft),
+            pvpLocalTimeLeft <= 5 ? '#FF6B6B' : '#FFD166'
+        );
+    }, 1000);
+}
+        
 async function pvpPoll() {
     if (document.hidden || pvpState.spinning || pvpState.showingResult) return;
     
@@ -5685,9 +5711,9 @@ async function pvpPoll() {
             if (data.round.status === 'waiting') {
                 updatePvpCenter('WAITING', '#9EC8E0');
             } else if (data.round.status === 'countdown') {
-                const t = data.time_left;
-                updatePvpCenter(t > 0 ? String(t) : 'GO!', t <= 5 ? '#FF6B6B' : '#FFD166');
-            }
+    const t = data.time_left;
+    startLocalCountdown(t);
+}
         }
 
         if (pvpPollTimer) clearTimeout(pvpPollTimer);
