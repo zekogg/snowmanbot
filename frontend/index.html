@@ -4129,6 +4129,13 @@ if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495
 // ===============================================       
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
 // =============================================================  
+const _fetch = window.fetch;
+window.fetch = (...args) => {
+  console.log("Worker request:", args[0]);
+  console.trace("Called from:");
+  return _fetch(...args);
+};
+    
   const LANGUAGES = [
     { code: 'en', flag: '🇬🇧', name: 'English' },
     { code: 'id', flag: '🇮🇩', name: 'Bahasa Indonesia' },
@@ -6079,7 +6086,7 @@ const cachedBootstrap = readBootstrap();
 if (cachedBootstrap) {
     setLoadingProgress(100, 'Welcome back!');
     applyBootstrapData(cachedBootstrap);
-    setTimeout(() => hideLoadingScreen(), 500);
+    setTimeout(() => hideLoadingScreen(), 4000);
 } else {
     setLoadingProgress(20, 'Connecting...');
     
