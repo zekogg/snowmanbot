@@ -6,6 +6,12 @@
     <title>SnowMan Empire Mini App</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+        if (window.eruda) {
+            eruda.init();
+        }
+    </script>
     <style>
 :root {
     --bg1: #F0F9FF;
@@ -3330,11 +3336,70 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     min-width: 250px;
     animation: mintPop 0.4s ease;
 }
-        
+
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 15, 25, 0.97);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+#loadingScreen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.loading-snowman {
+    font-size: 64px;
+    animation: loadingBounce 1s ease-in-out infinite;
+}
+
+.loading-bar-wrap {
+    width: 200px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.loading-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3CC7FF, #129FDF);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.loading-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 1px;
+}
+
+@keyframes loadingBounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+}
+    
 </style>
 </head>
 <body>
 
+<div id="loadingScreen">
+    <div class="loading-snowman">☃️</div>
+    <div class="loading-bar-wrap">
+        <div class="loading-bar-fill" id="loadingBarFill"></div>
+    </div>
+    <div class="loading-text" id="loadingText">Loading...</div>
+</div>
+    
 <div class="top-bar" id="mainContent">
     <div class="first-col">
         <div class="status-card">
@@ -5994,19 +6059,42 @@ async function loadMiningState(force = false) {
     }
 }
 
+function hideLoadingScreen() {
+    const screen = document.getElementById('loadingScreen');
+    if (screen) {
+        screen.classList.add('hidden');
+        setTimeout(() => screen.remove(), 400);
+    }
+}
+
+function setLoadingProgress(percent, text) {
+    const bar = document.getElementById('loadingBarFill');
+    const txt = document.getElementById('loadingText');
+    if (bar) bar.style.width = percent + '%';
+    if (txt) txt.textContent = text;
+}
+
 const cachedBootstrap = readBootstrap();
 
 if (cachedBootstrap) {
+    setLoadingProgress(100, 'Welcome back!');
     applyBootstrapData(cachedBootstrap);
+    setTimeout(() => hideLoadingScreen(), 500);
 } else {
-    walletConnected = false;
-    lastSavedWalletAddress = null;
-    updateWalletBtn(null);
-    renderMiningUI();
-    updateHatchUI();
-    tickMiningTimer();
+    setLoadingProgress(20, 'Connecting...');
+    
+    bootstrapApp()
+        .then(() => {
+            setLoadingProgress(100, 'Ready!');
+            setTimeout(() => hideLoadingScreen(), 300);
+        })
+        .catch(() => {
+            setLoadingProgress(100, 'Ready!');
+            setTimeout(() => hideLoadingScreen(), 300);
+        });
 
-    bootstrapApp().catch(() => {});
+    setTimeout(() => setLoadingProgress(50, 'Loading data...'), 500);
+    setTimeout(() => setLoadingProgress(75, 'Almost done...'), 1500);
 }
 
 ensureTonConnectInitialized().catch(() => {});
