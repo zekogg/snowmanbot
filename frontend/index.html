@@ -5539,6 +5539,7 @@ finalHatchBtn?.addEventListener('click', submitHatch);
 let pvpBtnDebounce = null;
         
 pvpBtn?.addEventListener('click', () => {
+    return alert('Coming Soon 🔜');
     if (pvpBtnDebounce) return;
     pvpBtnDebounce = setTimeout(() => pvpBtnDebounce = null, 1000);
     showPvpScreen();
