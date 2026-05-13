@@ -1078,59 +1078,69 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
 if (!sessionUserId) return json({ error: "Unauthorized" }, 401);
 const userId = sessionUserId;
     const amount = Number(url.searchParams.get("amount"));
-    if (!userId || !amount) return json({ error: "Missing params" }, 400);
+if (!Number.isFinite(amount) || amount <= 0) {
+  return json({ error: "Invalid amount" }, 400);
+}
 
-    const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
-    const res = await fetch(
-      `https://toncenter.com/api/v2/getTransactions?address=${DEPOSIT_WALLET}&limit=20`
-    );
-    const data = await res.json();
-    const transactions = data.result || [];
-    const expectedNano = Math.round(amount * 1e9);
-    const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
+if (!await checkRateLimit(env, userId, "ton_check", 3)) {
+  return json({ error: "Too many requests" }, 429);
+}
 
-    const user = await getUser(env, userId);
+const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
+const res = await fetch(
+  `https://toncenter.com/api/v2/getTransactions?address=${DEPOSIT_WALLET}&limit=20`
+);
+const data = await res.json();
+const transactions = data.result || [];
+const expectedNano = Math.round(amount * 1e9);
+const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
+
+const user = await getUser(env, userId);
 const rawAddress = user?.wallet_address || "";
-const walletAddress = rawAddress.includes(":") 
-  ? rawToFriendly(rawAddress) 
+const walletAddress = rawAddress.includes(":")
+  ? rawToFriendly(rawAddress)
   : rawAddress;
-    
+
 const match = transactions.find(tx => {
-    const inMsg = tx.in_msg;
-    if (!inMsg) return false;
-    const sender = inMsg.source || "";
-    const comment = inMsg.message || "";
-    const value = Number(inMsg.value || 0);
-    const time = Number(tx.utime || 0);
-    const validTime = time >= fiveMinAgo;
-    const validAmount = value >= expectedNano * 0.98;
+  const inMsg = tx.in_msg;
+  if (!inMsg) return false;
 
-    const byWallet = walletAddress && sender === walletAddress;
-    const byComment = comment === String(userId);
+  const sender = inMsg.source || "";
+  const comment = inMsg.message || "";
+  const value = Number(inMsg.value || 0);
+  const time = Number(tx.utime || 0);
 
-    return validTime && validAmount && (byWallet || byComment);
+  const validTime = time >= fiveMinAgo;
+  const validAmount = value >= expectedNano * 0.98;
+
+  const byWallet = walletAddress && sender === walletAddress;
+  const byComment = comment === String(userId);
+
+  return validTime && validAmount && (byWallet || byComment);
 });
 
-    if (!match) return json({ found: false });
+if (!match) return json({ found: false });
 
 const txHash = match.transaction_id?.hash || "";
+if (!txHash) {
+  return json({ error: "Invalid transaction" }, 400);
+}
 
-if (txHash) {
-  const already = await env.DB.prepare(
-    `SELECT tx_hash FROM ton_deposits WHERE tx_hash = ?`
-  ).bind(txHash).first();
-  
-  if (already) return json({ found: true, already_credited: true });
-  
-  await env.DB.prepare(
-    `INSERT INTO ton_deposits (tx_hash, user_id, amount, created_at) VALUES (?, ?, ?, ?)`
-  ).bind(txHash, userId, amount, Date.now()).run();
+const insertResult = await env.DB.prepare(
+  `INSERT OR IGNORE INTO ton_deposits (tx_hash, user_id, amount, created_at)
+   VALUES (?, ?, ?, ?)`
+)
+  .bind(txHash, userId, amount, Date.now())
+  .run();
+
+if (insertResult.meta.changes === 0) {
+  return json({ found: true, already_credited: true });
 }
 
 await env.DB.prepare(
   `UPDATE users SET ton_balance = ton_balance + ?, updated_at = ? WHERE user_id = ?`
 ).bind(amount, Date.now(), userId).run();
-
+    
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
