@@ -6,12 +6,7 @@
     <title>SnowMan Empire Mini App</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>
-        if (window.eruda) {
-            eruda.init();
-        }
-    </script>
+    
     <style>
 :root {
     --bg1: #F0F9FF;
@@ -4117,7 +4112,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <script>
     // ======== وضع الصيانة (Maintenance Mode) ========
-const MAINTENANCE = true; // false للتعطيل
+const MAINTENANCE = false; // false للتعطيل
 if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495986) {
     // إخفاء أيقونة eruda إن وجدت
     if (window.eruda) {
@@ -4128,14 +4123,7 @@ if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495
 }
 // ===============================================       
     const API_BASE = "https://snowmanbot-api.zekobusiness0.workers.dev";
-// =============================================================  
-const _fetch = window.fetch;
-window.fetch = (...args) => {
-  console.log("Worker request:", args[0]);
-  console.trace("Called from:");
-  return _fetch(...args);
-};
-    
+// =============================================================     
   const LANGUAGES = [
     { code: 'en', flag: '🇬🇧', name: 'English' },
     { code: 'id', flag: '🇮🇩', name: 'Bahasa Indonesia' },
