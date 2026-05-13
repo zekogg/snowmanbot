@@ -1461,63 +1461,44 @@ for (let i = 0; i < box.prizes.length; i++) {
   }
 }
 
-const statements = [];
-
-if (box.costType === 'snow') {
-  statements.push(
-    env.DB.prepare(
-      `UPDATE users
+const deductResult = await env.DB.prepare(
+  box.costType === 'snow'
+    ? `UPDATE users
        SET snow_balance = snow_balance - ?, updated_at = ?
        WHERE user_id = ? AND snow_balance >= ?`
-    ).bind(box.cost, now, userId, box.cost)
-  );
-} else {
-  statements.push(
-    env.DB.prepare(
-      `UPDATE users
+    : `UPDATE users
        SET ton_balance = ton_balance - ?, updated_at = ?
        WHERE user_id = ? AND ton_balance >= ?`
-    ).bind(box.cost, now, userId, box.cost)
-  );
+).bind(box.cost, now, userId, box.cost).run();
+
+if (deductResult.meta.changes === 0) {
+  return json({ error: box.costType === 'snow' ? "Not enough Snow" : "Not enough TON" }, 400);
 }
 
 if (prize.type === 'snow') {
-  statements.push(
-    env.DB.prepare(
-      `UPDATE users
-       SET snow_balance = snow_balance + ?, updated_at = ?
-       WHERE user_id = ?`
-    ).bind(prize.amount, now, userId)
-  );
+  await env.DB.prepare(
+    `UPDATE users
+     SET snow_balance = snow_balance + ?, updated_at = ?
+     WHERE user_id = ?`
+  ).bind(prize.amount, now, userId).run();
 } else if (prize.type === 'snowman') {
-  statements.push(
-    env.DB.prepare(
-      `UPDATE users
-       SET snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ?
-       WHERE user_id = ?`
-    ).bind(prize.amount, now, now, userId)
-  );
+  await env.DB.prepare(
+    `UPDATE users
+     SET snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ?
+     WHERE user_id = ?`
+  ).bind(prize.amount, now, now, userId).run();
 } else if (prize.type === 'ton') {
-  statements.push(
-    env.DB.prepare(
-      `UPDATE users
-       SET ton_balance = ton_balance + ?, updated_at = ?
-       WHERE user_id = ?`
-    ).bind(prize.amount, now, userId)
-  );
+  await env.DB.prepare(
+    `UPDATE users
+     SET ton_balance = ton_balance + ?, updated_at = ?
+     WHERE user_id = ?`
+  ).bind(prize.amount, now, userId).run();
 }
 
-statements.push(
-  env.DB.prepare(
-    `INSERT INTO lootbox_history (user_id, box_type, reward_type, reward_amount, created_at)
-     VALUES (?,?,?,?,?)`
-  ).bind(userId, boxType, prize.type, prize.amount, now)
-);
-
-const results = await env.DB.batch(statements);
-if (results[0].meta.changes === 0) {
-  return json({ error: box.costType === 'snow' ? "Not enough Snow" : "Not enough TON" }, 400);
-}
+await env.DB.prepare(
+  `INSERT INTO lootbox_history (user_id, box_type, reward_type, reward_amount, created_at)
+   VALUES (?, ?, ?, ?, ?)`
+).bind(userId, boxType, prize.type, prize.amount, now).run();
 
 return json({
   ok: true,
