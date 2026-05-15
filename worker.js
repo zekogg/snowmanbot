@@ -1102,9 +1102,7 @@ const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
 
 const user = await getUser(env, userId);
 const rawAddress = user?.wallet_address || "";
-const walletAddress = rawAddress.includes(":")
-  ? rawToFriendly(rawAddress)
-  : rawAddress;
+const walletAddress = rawToFriendly(rawAddress);
 
 const match = transactions.find(tx => {
   const inMsg = tx.in_msg;
@@ -1118,7 +1116,7 @@ const match = transactions.find(tx => {
   const validTime = time >= fiveMinAgo;
   const validAmount = value >= expectedNano * 0.98;
 
-  const byWallet = walletAddress && sender === walletAddress;
+  const byWallet = walletAddress && rawToFriendly(sender) === walletAddress;
   const byComment = comment === String(userId);
 
   return validTime && validAmount && (byWallet || byComment);
