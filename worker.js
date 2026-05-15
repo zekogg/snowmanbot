@@ -1109,17 +1109,18 @@ const match = transactions.find(tx => {
   if (!inMsg) return false;
 
   const sender = inMsg.source || "";
-  const comment = inMsg.message || "";
-  const value = Number(inMsg.value || 0);
-  const time = Number(tx.utime || 0);
+const comment = inMsg.message || "";
+const value = Number(inMsg.value || 0);
+const time = Number(tx.utime || 0);
 
-  const validTime = time >= fiveMinAgo;
-  const validAmount = value >= expectedNano * 0.98;
+const validTime = time >= fiveMinAgo;
+const validAmount = value >= expectedNano * 0.98;
 
-  const byWallet = walletAddress && rawToFriendly(sender) === walletAddress;
-  const byComment = comment === String(userId);
+const senderFriendly = sender.includes(":") ? rawToFriendly(sender) : sender;
+const byWallet = walletAddress && senderFriendly === walletAddress;
+const byComment = comment === String(userId);
 
-  return validTime && validAmount && (byWallet || byComment);
+return validTime && validAmount && (byWallet || byComment);
 });
 
 if (!match) return json({ found: false });
