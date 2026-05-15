@@ -1048,10 +1048,15 @@ if (url.pathname === "/api/wallet/save" && request.method === "POST") {
     if (!auth.ok) return json({ error: auth.error }, 401);
 
     const userId = auth.userId;
-    const walletAddress = String(body.wallet_address || "").trim();
+    let walletAddress = String(body.wallet_address || "").trim();
 
     if (!userId) {
       return json({ error: "Missing params" }, 400);
+    }
+
+    // تحويل العنوان من Raw إلى Friendly قبل الحفظ
+    if (walletAddress && walletAddress.includes(":")) {
+      walletAddress = rawToFriendly(walletAddress);
     }
 
     if (!await checkRateLimit(env, userId, "wallet_save", 5)) {
