@@ -996,6 +996,79 @@ if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_re
 
   return new Response("ok");
 }
+
+if (text && text.startsWith("/broadcast") && chatId) {
+  const ADMIN_ID = 1018495986;
+  
+  if (chatId !== ADMIN_ID) {
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: "❌ غير مصرح لك" })
+    });
+    return new Response("ok");
+  }
+
+  const parts = text.replace("/broadcast", "").trim().split("|");
+  const message = parts[0].trim();
+  const offset = Number(parts[1] || 0); // رقم الدفعة
+  const BATCH_SIZE = 250; // 200 مستخدم في كل مرة
+
+  if (!message) {
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: "📝 مثال:\n/broadcast رسالتك هنا"
+      })
+    });
+    return new Response("ok");
+  }
+
+  const users = await env.DB.prepare(
+    `SELECT user_id FROM users LIMIT ? OFFSET ?`
+  ).bind(BATCH_SIZE, offset).all();
+
+  const allUsers = users.results || [];
+  let sent = 0, failed = 0;
+
+  for (const user of allUsers) {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: user.user_id,
+          text: message,
+          parse_mode: "HTML"
+        })
+      });
+      const data = await res.json();
+      if (data.ok) sent++;
+      else failed++;
+    } catch {
+      failed++;
+    }
+    await new Promise(r => setTimeout(r, 35));
+  }
+
+  const nextOffset = offset + BATCH_SIZE;
+  const hasMore = allUsers.length === BATCH_SIZE;
+
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: hasMore
+        ? `✅ دفعة ${offset}-${nextOffset}\n✔️ نجح: ${sent} | ❌ فشل: ${failed}\n\n⏭️ للدفعة التالية أرسل:\n/broadcast ${message}|${nextOffset}`
+        : `🎉 اكتمل الإرسال!\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
+    })
+  });
+
+  return new Response("ok");
+}
         
       if (text && text.startsWith("/start") && chatId) {
   const parts = text.split(" ");
