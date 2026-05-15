@@ -999,20 +999,22 @@ if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_re
 
 if (text && text.startsWith("/broadcast") && chatId) {
   const ADMIN_ID = 1018495986;
-  
-  if (chatId !== ADMIN_ID) {
+
+  if (Number(chatId) !== Number(ADMIN_ID)) {
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: "❌ غير مصرح لك" })
+      body: JSON.stringify({ chat_id: chatId, text: "❌ Not authorized" })
     });
     return new Response("ok");
   }
 
-  const parts = text.replace("/broadcast", "").replace(/^\s+/, " ").trim().split("|");
-  const message = parts[0].trim();
-  const offset = Number(parts[1] || 0); // رقم الدفعة
-  const BATCH_SIZE = 250; // 250 مستخدم في كل مرة
+  const payload = text.slice("/broadcast".length).trim();
+  const lastPipe = payload.lastIndexOf("|");
+
+  const message = lastPipe >= 0 ? payload.slice(0, lastPipe).trim() : payload;
+  const offset = lastPipe >= 0 ? Number(payload.slice(lastPipe + 1).trim()) || 0 : 0;
+  const BATCH_SIZE = 250;
 
   if (!message) {
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
@@ -1020,7 +1022,7 @@ if (text && text.startsWith("/broadcast") && chatId) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        text: "📝 مثال:\n/broadcast رسالتك هنا"
+        text: "Usage:\n/broadcast your message"
       })
     });
     return new Response("ok");
@@ -1040,16 +1042,17 @@ if (text && text.startsWith("/broadcast") && chatId) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: user.user_id,
-          text: message,
-          parse_mode: "HTML"
+          text: message
         })
       });
+
       const data = await res.json();
       if (data.ok) sent++;
       else failed++;
     } catch {
       failed++;
     }
+
     await new Promise(r => setTimeout(r, 35));
   }
 
@@ -1062,8 +1065,8 @@ if (text && text.startsWith("/broadcast") && chatId) {
     body: JSON.stringify({
       chat_id: chatId,
       text: hasMore
-        ? `✅ دفعة ${offset}-${nextOffset}\n✔️ نجح: ${sent} | ❌ فشل: ${failed}\n\n⏭️ للدفعة التالية أرسل:\n/broadcast ${message}|${nextOffset}`
-        : `🎉 اكتمل الإرسال!\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
+        ? `Done batch ${offset}-${nextOffset}\nSuccess: ${sent}\nFailed: ${failed}\n\nNext:\n/broadcast ${message}|${nextOffset}`
+        : `Broadcast finished\nSuccess: ${sent}\nFailed: ${failed}`
     })
   });
 
