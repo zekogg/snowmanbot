@@ -40,6 +40,36 @@ function rawToFriendly(raw) {
   }
 }
 
+function normalizeTonAddress(addr) {
+  try {
+    if (!addr) return "";
+
+    addr = String(addr).trim();
+
+    // already raw
+    if (addr.includes(":")) {
+      return addr.toLowerCase();
+    }
+
+    // friendly -> raw
+    const s = addr.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = s + '='.repeat((4 - (s.length % 4)) % 4);
+
+    const bytes = Uint8Array.from(atob(padded), c => c.charCodeAt(0));
+
+    const wc = bytes[1] === 0xff ? -1 : bytes[1];
+
+    const hash = Array.from(bytes.slice(2, 34))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    return `${wc}:${hash}`.toLowerCase();
+
+  } catch {
+    return "";
+  }
+}
+
 async function getUserIdFromRequest(request) {
     const initData = request.headers.get('X-Telegram-Init-Data');
     if (!initData) return null;
@@ -1101,14 +1131,15 @@ const expectedNano = Math.round(amount * 1e9);
 const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
 
 const user = await getUser(env, userId);
-const rawAddress = user?.wallet_address || "";
-const walletAddress = rawToFriendly(rawAddress);
-
+const walletAddress = normalizeTonAddress(
+  user?.wallet_address || ""
+);
 const match = transactions.find(tx => {
   const inMsg = tx.in_msg;
   if (!inMsg) return false;
 
   const sender = inMsg.source || "";
+  const senderRaw = normalizeTonAddress(sender);
 const comment = inMsg.message || "";
 const value = Number(inMsg.value || 0);
 const time = Number(tx.utime || 0);
@@ -1117,7 +1148,9 @@ const validTime = time >= fiveMinAgo;
 const validAmount = value >= expectedNano * 0.98;
 
 const senderFriendly = sender.includes(":") ? rawToFriendly(sender) : sender;
-const byWallet = walletAddress && senderFriendly === walletAddress;
+const byWallet =
+  walletAddress &&
+  senderRaw === walletAddress;
 const byComment = comment === String(userId);
 
 return validTime && validAmount && (byWallet || byComment);
