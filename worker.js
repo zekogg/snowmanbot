@@ -21,7 +21,7 @@ function rawToFriendly(raw) {
     const wc = parseInt(workchain);
     const addr = Uint8Array.from(hexAddr.match(/.{2}/g).map(b => parseInt(b, 16)));
     const pkg = new Uint8Array(36);
-    pkg[0] = 0x11;
+    pkg[0] = 0x51;
     pkg[1] = wc < 0 ? 0xff : 0x00;
     pkg.set(addr, 2);
     let crc = 0;
