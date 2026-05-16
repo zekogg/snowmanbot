@@ -861,9 +861,19 @@ if (text && text.startsWith("/broadcast") && chatId) {
     return new Response("ok");
   }
 
-  const parts = text.replace("/broadcast", "").replace(/^\s+/, " ").trim().split("|");
-  const message = parts[0].trim();
-  const offset = Number(parts[1] || 0); // رقم الدفعة
+  const payload = text.slice("/broadcast".length).trim();
+
+const lastPipe = payload.lastIndexOf("|");
+
+const message =
+  lastPipe >= 0
+    ? payload.slice(0, lastPipe).trim()
+    : payload;
+
+const offset =
+  lastPipe >= 0
+    ? Number(payload.slice(lastPipe + 1).trim()) || 0
+    : 0;
   const BATCH_SIZE = 250; // 250 مستخدم في كل مرة
 
   if (!message) {
