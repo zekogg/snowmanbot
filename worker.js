@@ -865,9 +865,6 @@ if (text && text.startsWith("/broadcast") && chatId) {
   const message = parts[0].trim();
   const offset = Number(parts[1] || 0);
   const BATCH_SIZE = 100;
-// ✅ وضع التجربة - غيّر إلى false عند الإرسال الحقيقي
-const TEST_MODE = true;
-const TEST_IDS = [1018495986]; // ضع ID حسابك فقط
   
   if (!message) {
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
@@ -881,11 +878,9 @@ const TEST_IDS = [1018495986]; // ضع ID حسابك فقط
     return new Response("ok");
   }
 
-  const users = TEST_MODE
-  ? { results: TEST_IDS.map(id => ({ user_id: id })) }
-  : await env.DB.prepare(
-      `SELECT user_id FROM users LIMIT ? OFFSET ?`
-    ).bind(BATCH_SIZE, offset).all();
+  const users = await env.DB.prepare(
+  `SELECT user_id FROM users LIMIT ? OFFSET ?`
+).bind(BATCH_SIZE, offset).all();
   
   const allUsers = users.results || [];
   let sent = 0, failed = 0;
