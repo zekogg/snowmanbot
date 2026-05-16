@@ -864,7 +864,7 @@ if (text && text.startsWith("/broadcast") && chatId) {
   const parts = text.replace("/broadcast", "").replace(/^\s+/, " ").trim().split("|");
   const message = parts[0].trim();
   const offset = Number(parts[1] || 0); // رقم الدفعة
-  const BATCH_SIZE = 205; // 250 مستخدم في كل مرة
+  const BATCH_SIZE = 250; // 250 مستخدم في كل مرة
 
   if (!message) {
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
