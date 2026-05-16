@@ -866,7 +866,7 @@ async function runBroadcastBatch(env, ctx, payload) {
     total_skipped = 0
   } = payload;
 
-  const BATCH_SIZE = 25;
+  const BATCH_SIZE = 5;
 
   const usersData = await env.DB.prepare(`
     SELECT user_id
@@ -888,11 +888,9 @@ async function runBroadcastBatch(env, ctx, payload) {
 
       if (data.ok) {
         sent++;
-      } else if (data.error_code === 429) {
-        skipped++;
-
-        const retryAfter = data.parameters?.retry_after || 3;
-        await new Promise(r => setTimeout(r, retryAfter * 1000));
+      else if (data.error_code === 429) {
+  skipped++;
+}
       } else {
         failed++;
       }
@@ -900,7 +898,7 @@ async function runBroadcastBatch(env, ctx, payload) {
       failed++;
     }
 
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 10));
 
     if (progress_msg_id && (i + 1) % 10 === 0) {
       await editTelegramMessage(
