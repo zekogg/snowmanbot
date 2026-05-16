@@ -2593,28 +2593,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     cursor: pointer;
 }
 
-.deposit-main-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #3CC7FF, #129FDF);
-    color: white;
-    font-weight: 900;
-    font-size: 22px;
-    border-color: rgba(60, 199, 255, 0.5);
-}
-
-.transfer-wallet-btn {
-    width: 100%;
-    height: 58px;
-    border: none;
-    border-radius: 22px;
-    background: linear-gradient(180deg, #3CC7FF 0%, #1290C0 100%);
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 900;
-    cursor: pointer;
-    margin-bottom: 10px;
-}
-
 .transfer-copy-label {
     font-size: 16px;
     font-weight: 800;
@@ -3556,29 +3534,17 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
     <input class="transfer-amount-input" id="depositAmountInput" type="number" value="1" min="0.1" step="0.1">
 
-    <div class="transfer-quick-row">
-        <button class="transfer-quick-btn deposit-main-btn" id="depositActionBtn"
-          type="button" style="display:block; margin:0 auto; width:100%;">Deposit</button>
-        <button class="transfer-action-btn" id="manualCheckBtn" type="button"
-  style="margin-top:0px; margin-left:38px; 
-  display:inline-flex; align-items:center; 
-  width:auto; 
-  padding:3px 5px; 
-  font-size:13px; 
-  white-space:nowrap; 
-  opacity:1;">
-  Sent Manually — Check
-</button>
-    </div>
+    <div style="margin-top:14px;">
+    <button class="transfer-action-btn" id="manualCheckBtn" type="button"
+      style="width:100%; font-size:16px;">
+      Sent Manually — Check
+    </button>
+</div>
 
     <div id="depositStatusMsg" style="text-align:center; font-size:13px; color:#7ee6ff; min-height:18px; margin:6px 0;"></div>
 
-    <div class="transfer-section">
-        <div class="transfer-section-title">Payment Method</div>
-        <button class="transfer-wallet-btn" id="connectWalletBtn" type="button">Connect Wallet</button>
-
         <div class="transfer-copy-box">
-            <div class="transfer-copy-label">or (Manual) Deposit Address</div>
+            <div class="transfer-copy-label">Deposit Address</div>
             <div class="transfer-copy-row">
                 <input class="transfer-copy-input" id="depositAddressValue" type="text"
                   value="UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq" readonly>
@@ -4481,15 +4447,11 @@ function applyLang() {
     // Deposit/Withdraw
     q('#depositTabBtn', 'depositTab');
     q('#withdrawTabBtn', 'withdrawTab');
-    q('#depositActionBtn', 'deposit');
     q('#manualCheckBtn', 'sentManually');
-    q('#connectWalletBtn', 'connectWallet');
     q('#withdrawBtn', 'withdraw');
     q('#withdrawHistoryBtn', 'history');
     const transferTitle = document.querySelector('#depositPanel .transfer-title');
     if (transferTitle) transferTitle.textContent = t('enterAmount');
-    const payMethod = document.querySelector('.transfer-section-title');
-    if (payMethod) payMethod.textContent = t('paymentMethod');
     const manualDepLabel = document.querySelector('.transfer-copy-label');
     if (manualDepLabel) manualDepLabel.textContent = t('manualDeposit');
     const memoLabel = document.querySelector('.transfer-copy-box:last-of-type .transfer-copy-label');
@@ -4910,9 +4872,6 @@ function renderFriendsPanel(data) {
         `;
     }).join('');
 }
-
-let lastSavedWalletAddress = null;
-let walletConnected = false;
         
 function applyBootstrapData(data) {
     if (!data) return;
@@ -4924,16 +4883,6 @@ function applyBootstrapData(data) {
     loadFriends();
     loadMarketListings();
     loadLeaderboard();
-
-    const walletAddress = data.wallet?.wallet_address || '';
-    const connected = !!walletAddress;
-
-    appBootstrap.wallet = {
-        wallet_address: walletAddress,
-        wallet_connected: connected
-    };
-
-    lastSavedWalletAddress = walletAddress || null;
 }
 
 async function bootstrapApp(force = false) {
@@ -6093,8 +6042,6 @@ if (cachedBootstrap) {
     setTimeout(() => setLoadingProgress(50, 'Loading data...'), 500);
     setTimeout(() => setLoadingProgress(75, 'Almost done...'), 1500);
 }
-
-ensureTonConnectInitialized().catch(() => {});
         
 setInterval(() => {
     tickMiningTimer();
@@ -6132,121 +6079,11 @@ taskHistoryModal?.addEventListener('click', (event) => {
 
 const DEPOSIT_WALLET = "UQBJCCvVCXWXJ5pDAlCT4R4ew-k4WNdaigTMjJ-pP_RxbTqq";
 const MANIFEST_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/tonconnect-manifest.json";
-let tonConnectUI = null;
-let tonConnectInitPromise = null;
-let tonConnectScriptPromise = null;
 
 function getTgUser() {
     const u = window.Telegram?.WebApp?.initDataUnsafe?.user;
     return u || { id: 12345, username: "browser_user", first_name: "Browser" };
 }
-
-async function loadTonConnectScript() {
-    if (window.TON_CONNECT_UI) return;
-    if (!tonConnectScriptPromise) {
-        tonConnectScriptPromise = new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@tonconnect/ui@2.0.6/dist/tonconnect-ui.min.js';
-            script.crossOrigin = 'anonymous';
-            script.onload = () => {
-                if (window.TON_CONNECT_UI) resolve();
-                else reject(new Error('TonConnect UI loaded but not available'));
-            };
-            script.onerror = () => reject(new Error('Failed to load TonConnect UI'));
-            document.head.appendChild(script);
-        });
-    }
-    return tonConnectScriptPromise;
-}
-
-async function ensureTonConnectInitialized() {
-  if (tonConnectUI) return tonConnectUI;
-  if (tonConnectInitPromise) return tonConnectInitPromise;
-
-  tonConnectInitPromise = (async () => {
-    await loadTonConnectScript();
-    tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
-      manifestUrl: MANIFEST_URL
-    });
-
-    tonConnectUI.onStatusChange((wallet) => {
-        const address = wallet?.account?.address || '';
-        walletConnected = !!address;
-
-        updateWalletBtn(wallet || null);
-
-        if (address !== lastSavedWalletAddress) {
-            lastSavedWalletAddress = address || null;
-
-            fetch(`${API_BASE}/api/wallet/save`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    user_id: getTgUser().id,
-                    wallet_address: address
-                })
-            });
-        }
-
-        if (appBootstrap) {
-            appBootstrap.wallet = {
-                wallet_address: address,
-                wallet_connected: !!address
-            };
-            writeBootstrap(appBootstrap);
-        }
-    });
-
-    return tonConnectUI;
-  })();
-
-  return tonConnectInitPromise;
-}
-        
-function updateWalletBtn(wallet) {
-    const btn = document.getElementById("connectWalletBtn");
-    if (!btn) return;
-
-    const connected = wallet
-        ? !!(wallet.account && wallet.account.address)
-        : walletConnected;
-
-    walletConnected = connected;
-    btn.textContent = connected ? "Disconnect" : "Connect Wallet";
-    btn.style.background = connected
-        ? "linear-gradient(135deg, #e53935, #b71c1c)"
-        : "";
-    btn.style.color = connected ? "white" : "";
-}
-
-document.getElementById("connectWalletBtn")?.addEventListener("click", async () => {
-
-    if (walletConnected) {
-        const confirmed = confirm("Are you sure you want to disconnect your wallet?");
-
-        if (!confirmed) return;
-
-        await ensureTonConnectInitialized();
-        await tonConnectUI.disconnect();
-        
-walletConnected = false;
-lastSavedWalletAddress = null;
-
-if (appBootstrap) {
-    appBootstrap.wallet = {
-        wallet_address: '',
-        wallet_connected: false
-    };
-    writeBootstrap(appBootstrap);
-}
-
-updateWalletBtn(null);
-        
-    } else {
-        await ensureTonConnectInitialized();
-        await tonConnectUI.openModal();
-    }
-});
 
 function startDepositPolling(userId, amount, statusMsg) {
     let attempts = 0;
@@ -6277,44 +6114,6 @@ function startDepositPolling(userId, amount, statusMsg) {
         }
     }, 10000);
 }
-        
-document.getElementById("depositActionBtn")?.addEventListener("click", async () => {
-    if (!tonConnectUI) await ensureTonConnectInitialized();
-    const tgUser = getTgUser();
-    const amount = parseFloat(document.getElementById("depositAmountInput")?.value || "0");
-    const statusMsg = document.getElementById("depositStatusMsg");
-    
-    if (!amount || amount < 0.1) {
-        if (statusMsg) statusMsg.textContent = "Minimum deposit is 0.1 TON";
-        return;
-    }
-    
-    if (!walletConnected || !tonConnectUI) {
-        if (statusMsg) statusMsg.textContent = "Please connect your wallet first";
-        return;
-    }
-    
-    try {
-        if (statusMsg) statusMsg.textContent = "Waiting for confirmation...";
-        
-       const nanoAmount = Math.round(amount * 1e9).toString();
-
-await tonConnectUI.sendTransaction({
-    validUntil: Math.floor(Date.now() / 1000) + 300,
-    messages: [{
-        address: DEPOSIT_WALLET,
-        amount: nanoAmount
-    }]
-});
-        
-        if (statusMsg) statusMsg.textContent = "Transaction sent! Verifying...";
-        
-        startDepositPolling(tgUser.id, amount, statusMsg);
-        
-    } catch (e) {
-        if (statusMsg) statusMsg.textContent = "Transaction cancelled.";
-    }
-});
 
 const depositMemoEl = document.getElementById("depositMemoValue");
 if (depositMemoEl) {
