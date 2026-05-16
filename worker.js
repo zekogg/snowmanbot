@@ -855,7 +855,7 @@ async function editTelegramMessage(env, chatId, messageId, text) {
   });
 }
 
-async function runBroadcastBatch(env, ctx, payload) {
+function runBroadcastBatch(env, ctx, payload) {
   const {
     message,
     offset = 0,
@@ -904,7 +904,6 @@ async function runBroadcastBatch(env, ctx, payload) {
         `⏳ Broadcasting...\nUsers processed: ${offset + i + 1}\n✅ Sent: ${sent} | ❌ Failed: ${failed} | ⏭️ Skipped: ${skipped}`
       );
     }
-  }
 
   const nextOffset = offset + BATCH_SIZE;
   const hasMore = users.length === BATCH_SIZE;
@@ -929,7 +928,6 @@ async function runBroadcastBatch(env, ctx, payload) {
       `🎉 Broadcast completed.\n✅ Sent: ${sent} | ❌ Failed: ${failed} | ⏭️ Skipped: ${skipped}`
     );
   }
-}
 
 export default {
   async fetch(request, env,ctx) {
