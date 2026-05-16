@@ -861,19 +861,19 @@ if (text && text.startsWith("/broadcast") && chatId) {
     return new Response("ok");
   }
 
-  const payload = text.slice("/broadcast".length).trim();
+  const raw = text.replace("/broadcast", "");
 
-const lastPipe = payload.lastIndexOf("|");
+const separatorIndex = raw.lastIndexOf("|");
 
-const message =
-  lastPipe >= 0
-    ? payload.slice(0, lastPipe).trim()
-    : payload;
+let message = raw;
+let offset = 0;
 
-const offset =
-  lastPipe >= 0
-    ? Number(payload.slice(lastPipe + 1).trim()) || 0
-    : 0;
+if (separatorIndex !== -1) {
+  message = raw.slice(0, separatorIndex);
+  offset = Number(raw.slice(separatorIndex + 1).trim()) || 0;
+}
+
+message = message.replace(/^\s+/, "");
   const BATCH_SIZE = 250; // 250 مستخدم في كل مرة
 
   if (!message) {
