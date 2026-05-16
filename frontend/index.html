@@ -937,6 +937,10 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: calc(100dvh - 170px);
+    overflow-y: auto;
+    padding-right: 4px;
+    min-height: 0;
 }
 
 .task-history-item {
@@ -948,14 +952,23 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 .task-history-row {
     display: flex;
-    justify-content: space-between;
-    gap: 10px;
     align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
     color: #ffffff;
     font-weight: 800;
 }
 
+.task-history-row > div:first-child {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .task-history-status {
+    flex-shrink: 0;
     font-size: 12px;
     padding: 4px 8px;
     border-radius: 999px;
@@ -5298,17 +5311,17 @@ function renderTaskHistory(tasks) {
         const item = document.createElement('div');
         item.className = 'task-history-item';
         item.innerHTML = `
-            <div class="task-history-row">
-                <div>${task.title}</div>
-                <div class="task-history-status" style="font-size:11px;">${status.replace('_', ' ')}</div>
-                ${status === 'online' ? `<span style="font-size:9px; background:rgba(60,199,255,0.2); padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle;">
-                    ${task.completion_limit - (task.completion_count || 0)} left
-                </span>` : ''}
-            </div>
-            <div class="task-history-bar">
-                <div class="task-history-bar-fill" style="width:${percent}%"></div>
-            </div>
-        `;
+    <div class="task-history-row">
+        <div title="${task.title}">${task.title}</div>
+        <div class="task-history-status" style="font-size:11px;">${status.replace('_', ' ')}</div>
+        ${status === 'online' ? `<span style="font-size:9px; background:rgba(60,199,255,0.2); padding:1px 5px; border-radius:8px; margin-left:4px; flex-shrink:0;">
+            ${task.completion_limit - (task.completion_count || 0)} left
+        </span>` : ''}
+    </div>
+    <div class="task-history-bar">
+        <div class="task-history-bar-fill" style="width:${percent}%"></div>
+    </div>
+`;
         taskHistoryList.appendChild(item);
     });
 }
