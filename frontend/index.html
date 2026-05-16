@@ -4774,7 +4774,7 @@ function readBootstrap() {
         const parsed = JSON.parse(raw);
         if (!parsed || !parsed.data) return null;
 
-        if (Date.now() - Number(parsed.ts || 0) > HOUR_MS) {
+        if (Date.now() - Number(parsed.ts || 0) > BOOTSTRAP_TTL_MS) {
             localStorage.removeItem(getBootstrapKey());
             return null;
         }
@@ -5964,7 +5964,8 @@ if (applyPromoBtn) {
 }
 
    const HOUR_MS = 60 * 60 * 1000;
-
+   const BOOTSTRAP_TTL_MS = 20 * 60 * 1000;
+        
 const miningUI = {
     snowman: document.getElementById('snowmanValue'),
     snow: document.getElementById('snowBalanceValue'),
