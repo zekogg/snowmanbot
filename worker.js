@@ -861,95 +861,63 @@ if (text && text.startsWith("/broadcast") && chatId) {
     return new Response("ok");
   }
 
-  // إعلام الأدمن ببدء المعالجة
-  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text: "🔄 جاري معالجة الطلب..." })
-  });
+  const parts = text.replace("/broadcast", "").replace(/^\s+/, " ").trim().split("|");
+  const message = parts[0].trim();
+  const offset = Number(parts[1] || 0); // رقم الدفعة
+  const BATCH_SIZE = 205; // 250 مستخدم في كل مرة
 
-  try {
-    // ✅ تأكد من وجود الجداول
-    await ensureSchema(env);
+  if (!message) {
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: "📝 مثال:\n/broadcast رسالتك هنا"
+      })
+    });
+    return new Response("ok");
+  }
 
-    const parts = text.replace("/broadcast", "").trim().split("|");
-    const message = parts[0].trim();
-    const offset = Number(parts[1] || 0);
-    const BATCH_SIZE = 200;
+  const users = await env.DB.prepare(
+    `SELECT user_id FROM users LIMIT ? OFFSET ?`
+  ).bind(BATCH_SIZE, offset).all();
 
-    if (!message) {
-      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+  const allUsers = users.results || [];
+  let sent = 0, failed = 0;
+
+  for (const user of allUsers) {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: "📝 مثال:\n/broadcast رسالتك هنا"
+          chat_id: user.user_id,
+          text: message,
+          parse_mode: "HTML"
         })
       });
-      return new Response("ok");
+      const data = await res.json();
+      if (data.ok) sent++;
+      else failed++;
+    } catch {
+      failed++;
     }
-
-    // جلب المستخدمين
-    const users = await env.DB.prepare(
-      `SELECT user_id FROM users LIMIT ? OFFSET ?`
-    ).bind(BATCH_SIZE, offset).all();
-
-    const allUsers = users.results || [];
-    
-    // إرسال إحصاء أولي
-    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: `📊 عدد المستخدمين في هذه الدفعة: ${allUsers.length}` })
-    });
-
-    let sent = 0, failed = 0;
-
-    for (const user of allUsers) {
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: user.user_id,
-            text: message,
-            parse_mode: "HTML"
-          })
-        });
-        const data = await res.json();
-        if (data.ok) sent++;
-        else failed++;
-      } catch {
-        failed++;
-      }
-      await new Promise(r => setTimeout(r, 35));
-    }
-
-    const nextOffset = offset + BATCH_SIZE;
-    const hasMore = allUsers.length === BATCH_SIZE;
-
-    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: hasMore
-          ? `✅ دفعة ${offset}-${nextOffset}\n✔️ نجح: ${sent} | ❌ فشل: ${failed}\n\n⏭️ للدفعة التالية أرسل:\n/broadcast ${message}|${nextOffset}`
-          : `🎉 اكتمل الإرسال!\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
-      })
-    });
-
-  } catch (error) {
-    // إرسال تفاصيل الخطأ للأدمن
-    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: `❌ خطأ في البث: ${error.message}\n\n${error.stack || ''}`
-      })
-    });
+    await new Promise(r => setTimeout(r, 35));
   }
+
+  const nextOffset = offset + BATCH_SIZE;
+  const hasMore = allUsers.length === BATCH_SIZE;
+
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: hasMore
+        ? `✅ دفعة ${offset}-${nextOffset}\n✔️ نجح: ${sent} | ❌ فشل: ${failed}\n\n⏭️ للدفعة التالية أرسل:\n/broadcast ${message}|${nextOffset}`
+        : `🎉 اكتمل الإرسال!\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
+    })
+  });
 
   return new Response("ok");
 }
