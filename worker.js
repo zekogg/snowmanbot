@@ -864,8 +864,8 @@ if (text && text.startsWith("/broadcast") && chatId) {
   const parts = text.replace("/broadcast", "").replace(/^\s+/, " ").trim().split("|");
   const message = parts[0].trim();
   const offset = Number(parts[1] || 0);
-  const BATCH_SIZE = 100;
-  
+  const BATCH_SIZE = 25;
+
   if (!message) {
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
@@ -881,11 +881,11 @@ if (text && text.startsWith("/broadcast") && chatId) {
   const users = await env.DB.prepare(
   `SELECT user_id FROM users LIMIT ? OFFSET ?`
 ).bind(BATCH_SIZE, offset).all();
-  
-  const allUsers = users.results || [];
-  let sent = 0, failed = 0;
 
-  // ✅ رسالة البداية مع حفظ message_id للتحديث
+  const allUsers = users.results || [];
+  let sent = 0, failed = 0, skipped = 0;
+
+  // ✅ رسالة البداية
   const startMsg = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -899,6 +899,7 @@ if (text && text.startsWith("/broadcast") && chatId) {
 
   for (let i = 0; i < allUsers.length; i++) {
     const user = allUsers[i];
+
     try {
       const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
         method: "POST",
@@ -910,26 +911,34 @@ if (text && text.startsWith("/broadcast") && chatId) {
         })
       });
       const data = await res.json();
-      if (data.ok) sent++;
-      else failed++;
+
+      if (data.ok) {
+        sent++;
+      } else if (data.error_code === 429) {
+        // ✅ تيليجرام يقول انتظر - نتخطى هذا المستخدم بدل ما نتجمد
+        skipped++;
+      } else {
+        failed++;
+      }
     } catch {
       failed++;
     }
 
-    // ✅ تحديث رسالة التقدم كل 25 مستخدم
-    if (progressMsgId && (i + 1) % 25 === 0) {
+    // ✅ تأخير 50ms آمن
+    await new Promise(r => setTimeout(r, 50));
+
+    // ✅ تحديث كل 10 مستخدمين
+    if (progressMsgId && (i + 1) % 10 === 0) {
       await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/editMessageText`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
           message_id: progressMsgId,
-          text: `⏳ جاري الإرسال...\n${i + 1} / ${allUsers.length}\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
+          text: `⏳ جاري الإرسال...\n${i + 1} / ${allUsers.length}\n✔️ نجح: ${sent} | ❌ فشل: ${failed} | ⏭️ تخطى: ${skipped}`
         })
       });
     }
-
-    await new Promise(r => setTimeout(r, 25));
   }
 
   // ✅ تحديث نهائي للرسالة
@@ -940,7 +949,7 @@ if (text && text.startsWith("/broadcast") && chatId) {
       body: JSON.stringify({
         chat_id: chatId,
         message_id: progressMsgId,
-        text: `✅ انتهت الدفعة ${offset} - ${offset + BATCH_SIZE}\n${allUsers.length} / ${allUsers.length}\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
+        text: `✅ انتهت الدفعة\n${allUsers.length} / ${allUsers.length}\n✔️ نجح: ${sent} | ❌ فشل: ${failed} | ⏭️ تخطى: ${skipped}`
       })
     });
   }
@@ -948,8 +957,8 @@ if (text && text.startsWith("/broadcast") && chatId) {
   const nextOffset = offset + BATCH_SIZE;
   const hasMore = allUsers.length === BATCH_SIZE;
 
-  // ✅ رسالة النتيجة النهائية أو الانتقال للدفعة التالية
   if (hasMore) {
+    // ✅ الدفعة التالية تلقائياً
     await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -964,7 +973,7 @@ if (text && text.startsWith("/broadcast") && chatId) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        text: `🎉 اكتمل الإرسال لجميع المستخدمين!\n✔️ نجح: ${sent} | ❌ فشل: ${failed}`
+        text: `🎉 اكتمل الإرسال لجميع المستخدمين!\n✔️ نجح: ${sent} | ❌ فشل: ${failed} | ⏭️ تخطى: ${skipped}`
       })
     });
   }
