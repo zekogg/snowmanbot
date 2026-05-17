@@ -1469,29 +1469,31 @@ if (url.pathname === "/api/leaderboard" && request.method === "GET") {
     let snowRank = 0, snowValue = 0;
 
     if (userId) {
-      const refAll = await env.DB.prepare(`
-        SELECT u.user_id, COUNT(r.user_id) as ref_count
-        FROM users u
-        LEFT JOIN users r ON r.referred_by = u.user_id
-        GROUP BY u.user_id
-        ORDER BY ref_count DESC
-        LIMIT 500
-      `).all();
-      const refList = refAll.results || [];
-      const refIdx = refList.findIndex(r => Number(r.user_id) === userId);
-      refRank = refIdx >= 0 ? refIdx + 1 : 0;
-      refValue = refIdx >= 0 ? Number(refList[refIdx].ref_count) : 0;
+      const refValueRow = await env.DB.prepare(`
+        SELECT COUNT(*) as ref_count FROM users WHERE referred_by = ?
+      `).bind(userId).first();
+      refValue = Number(refValueRow?.ref_count || 0);
 
-      const snowAll = await env.DB.prepare(`
-        SELECT user_id, snowman_count
-        FROM users
-        ORDER BY snowman_count DESC
-        LIMIT 500
-      `).all();
-      const snowList = snowAll.results || [];
-      const snowIdx = snowList.findIndex(r => Number(r.user_id) === userId);
-      snowRank = snowIdx >= 0 ? snowIdx + 1 : 0;
-      snowValue = snowIdx >= 0 ? Number(snowList[snowIdx].snowman_count) : 0;
+      const refRankRow = await env.DB.prepare(`
+        SELECT COUNT(*) as rank FROM (
+          SELECT u.user_id, COUNT(r.user_id) as ref_count
+          FROM users u
+          LEFT JOIN users r ON r.referred_by = u.user_id
+          GROUP BY u.user_id
+          HAVING COUNT(r.user_id) > ?
+        )
+      `).bind(refValue).first();
+      refRank = Number(refRankRow?.rank || 0) + 1;
+
+      const snowValueRow = await env.DB.prepare(`
+        SELECT snowman_count FROM users WHERE user_id = ?
+      `).bind(userId).first();
+      snowValue = Number(snowValueRow?.snowman_count || 0);
+
+      const snowRankRow = await env.DB.prepare(`
+        SELECT COUNT(*) + 1 as rank FROM users WHERE snowman_count > ?
+      `).bind(snowValue).first();
+      snowRank = Number(snowRankRow?.rank || 1);
     }
 
     return json({
@@ -2055,32 +2057,31 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
     let refRank = 0, refValue = 0;
     let snowRank = 0, snowValue = 0;
 
-    const refAll = await env.DB.prepare(`
-      SELECT u.user_id, COUNT(r.user_id) as ref_count
-      FROM users u
-      LEFT JOIN users r ON r.referred_by = u.user_id
-      GROUP BY u.user_id
-      ORDER BY ref_count DESC
-      LIMIT 500
-    `).all();
+    const refValueRow = await env.DB.prepare(`
+      SELECT COUNT(*) as ref_count FROM users WHERE referred_by = ?
+    `).bind(userId).first();
+    refValue = Number(refValueRow?.ref_count || 0);
 
-    const refList = refAll.results || [];
-    const refIdx = refList.findIndex(r => Number(r.user_id) === userId);
-    refRank = refIdx >= 0 ? refIdx + 1 : 0;
-    refValue = refIdx >= 0 ? Number(refList[refIdx].ref_count) : 0;
+    const refRankRow = await env.DB.prepare(`
+      SELECT COUNT(*) as rank FROM (
+        SELECT u.user_id, COUNT(r.user_id) as ref_count
+        FROM users u
+        LEFT JOIN users r ON r.referred_by = u.user_id
+        GROUP BY u.user_id
+        HAVING COUNT(r.user_id) > ?
+      )
+    `).bind(refValue).first();
+    refRank = Number(refRankRow?.rank || 0) + 1;
 
-    const snowAll = await env.DB.prepare(`
-      SELECT user_id, snowman_count
-      FROM users
-      ORDER BY snowman_count DESC
-      LIMIT 500
-    `).all();
+    const snowValueRow = await env.DB.prepare(`
+      SELECT snowman_count FROM users WHERE user_id = ?
+    `).bind(userId).first();
+    snowValue = Number(snowValueRow?.snowman_count || 0);
 
-    const snowList = snowAll.results || [];
-    const snowIdx = snowList.findIndex(r => Number(r.user_id) === userId);
-    snowRank = snowIdx >= 0 ? snowIdx + 1 : 0;
-    snowValue = snowIdx >= 0 ? Number(snowList[snowIdx].snowman_count) : 0;
-
+    const snowRankRow = await env.DB.prepare(`
+      SELECT COUNT(*) + 1 as rank FROM users WHERE snowman_count > ?
+    `).bind(snowValue).first();
+    snowRank = Number(snowRankRow?.rank || 1);
     const totalRow = await env.DB.prepare(
       `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
     ).first();
