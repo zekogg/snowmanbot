@@ -1118,7 +1118,7 @@ if (!await checkRateLimit(env, userId, 'mint', 5)) {
     const PACKS = {
       starter: { ton: 1,  snowmen: 2450,   speed: 7   },
       pro:     { ton: 5,  snowmen: 10500,  speed: 30  },
-      whale:   { ton: 99, snowmen: 175000, speed: 500 }
+      whale:   { ton: 49, snowmen: 175000, speed: 500 }
     };
 
     if (!userId || !PACKS[pack]) return json({ error: "Invalid params" }, 400);
