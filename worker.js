@@ -15,61 +15,6 @@ function json(data, status = 200) {
   });
 }
 
-function rawToFriendly(raw) {
-  try {
-    const [workchain, hexAddr] = raw.split(":");
-    const wc = parseInt(workchain);
-    const addr = Uint8Array.from(hexAddr.match(/.{2}/g).map(b => parseInt(b, 16)));
-    const pkg = new Uint8Array(36);
-    pkg[0] = 0x51;
-    pkg[1] = wc < 0 ? 0xff : 0x00;
-    pkg.set(addr, 2);
-    let crc = 0;
-    for (let i = 0; i < 34; i++) {
-      crc ^= pkg[i] << 8;
-      for (let j = 0; j < 8; j++) {
-        crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
-      }
-    }
-    pkg[34] = (crc >> 8) & 0xff;
-    pkg[35] = crc & 0xff;
-    return btoa(String.fromCharCode(...pkg))
-      .replace(/\+/g, "-").replace(/\//g, "_");
-  } catch (e) {
-    return raw;
-  }
-}
-
-function normalizeTonAddress(addr) {
-  try {
-    if (!addr) return "";
-
-    addr = String(addr).trim();
-
-    // already raw
-    if (addr.includes(":")) {
-      return addr.toLowerCase();
-    }
-
-    // friendly -> raw
-    const s = addr.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = s + '='.repeat((4 - (s.length % 4)) % 4);
-
-    const bytes = Uint8Array.from(atob(padded), c => c.charCodeAt(0));
-
-    const wc = bytes[1] === 0xff ? -1 : bytes[1];
-
-    const hash = Array.from(bytes.slice(2, 34))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    return `${wc}:${hash}`.toLowerCase();
-
-  } catch {
-    return "";
-  }
-}
-
 async function getUserIdFromRequest(request) {
     const initData = request.headers.get('X-Telegram-Init-Data');
     if (!initData) return null;
@@ -384,7 +329,7 @@ async function getUser(env, userId) {
   return await env.DB
     .prepare(
       `SELECT user_id, username, display_name, snow_balance, snowman_count,
-              mining_boost, last_mined_at, updated_at, ton_balance, wallet_address
+              mining_boost, last_mined_at, updated_at, ton_balance
        FROM users WHERE user_id = ?`
     )
     .bind(userId)
@@ -822,7 +767,6 @@ return {
     earned_now: finalComputed.earnedNow,
     next_reward_in_ms: finalComputed.nextRewardInMs,
     ton_balance: Number(user.ton_balance || 0),
-    wallet_address: user.wallet_address || null
   },
   server_time: now
 };
@@ -1071,40 +1015,6 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
   return json({ status: "ok", message: "SnowmanBot API is running" });
 }
 
-if (url.pathname === "/api/wallet/save" && request.method === "POST") {
-  try {
-    const body = await request.json();
-    const auth = await requireSessionUser(request, env, body.user_id);
-    if (!auth.ok) return json({ error: auth.error }, 401);
-
-    const userId = auth.userId;
-    let walletAddress = String(body.wallet_address || "").trim();
-
-    if (!userId) {
-      return json({ error: "Missing params" }, 400);
-    }
-
-    // تحويل العنوان من Raw إلى Friendly قبل الحفظ
-    if (walletAddress && walletAddress.includes(":")) {
-      walletAddress = rawToFriendly(walletAddress);
-    }
-
-    if (!await checkRateLimit(env, userId, "wallet_save", 5)) {
-      return json({ error: "Too many requests" }, 429);
-    }
-
-    await env.DB.prepare(
-      `UPDATE users
-       SET wallet_address = ?, updated_at = ?
-       WHERE user_id = ?`
-    ).bind(walletAddress || null, Date.now(), userId).run();
-
-    return json({ ok: true });
-  } catch (e) {
-    return json({ error: e.message }, 500);
-  }
-}
-
 if (url.pathname === "/api/ton/check" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
 if (!isValid) return json({ error: "Unauthorized" }, 401);
@@ -1130,30 +1040,16 @@ const transactions = data.result || [];
 const expectedNano = Math.round(amount * 1e9);
 const fiveMinAgo = Math.floor(Date.now() / 1000) - 300;
 
-const user = await getUser(env, userId);
-const walletAddress = normalizeTonAddress(
-  user?.wallet_address || ""
-);
 const match = transactions.find(tx => {
   const inMsg = tx.in_msg;
   if (!inMsg) return false;
-
-  const sender = inMsg.source || "";
-  const senderRaw = normalizeTonAddress(sender);
-const comment = inMsg.message || "";
-const value = Number(inMsg.value || 0);
-const time = Number(tx.utime || 0);
-
-const validTime = time >= fiveMinAgo;
-const validAmount = value >= expectedNano * 0.98;
-
-const senderFriendly = sender.includes(":") ? rawToFriendly(sender) : sender;
-const byWallet =
-  walletAddress &&
-  senderRaw === walletAddress;
-const byComment = comment === String(userId);
-
-return validTime && validAmount && (byWallet || byComment);
+  const comment = inMsg.message || "";
+  const value = Number(inMsg.value || 0);
+  const time = Number(tx.utime || 0);
+  const validTime = time >= fiveMinAgo;
+  const validAmount = value >= expectedNano * 0.98;
+  const byComment = comment === String(userId);
+  return validTime && validAmount && byComment;
 });
 
 if (!match) return json({ found: false });
@@ -1452,7 +1348,7 @@ if (url.pathname === "/api/lootbox/open" && request.method === "POST") {
           { label: '1000 ❄️', type: 'snow',    amount: 1000,  weight: 3   },
           { label: '500 ❄️',  type: 'snow',    amount: 500,   weight: 3   },
           { label: '1000 ☃️', type: 'snowman', amount: 1000,  weight: 2   },
-          { label: '0.2 TON', type: 'ton',     amount: 0.2,   weight: 0.0001 },
+          { label: '0.2 TON', type: 'ton',     amount: 0.2,   weight: 0.00000001 },
         ]
       },
       ton: {
@@ -1468,9 +1364,9 @@ if (url.pathname === "/api/lootbox/open" && request.method === "POST") {
   { label: '1000 ☃️', type: 'snowman', amount: 1000,  weight: 100 },
   { label: '1500 ☃️', type: 'snowman', amount: 1500,  weight: 100 },
   { label: '2000 ☃️', type: 'snowman', amount: 2000,  weight: 100 },
-  { label: '0.5 TON',  type: 'ton',     amount: 0.5,   weight: 0.5 },
-  { label: '1 TON',    type: 'ton',     amount: 1,     weight: 0.4 },
-  { label: '3 TON',    type: 'ton',     amount: 3,     weight: 0.0001 },
+  { label: '0.5 TON',  type: 'ton',     amount: 0.5,   weight: 0.2 },
+  { label: '1 TON',    type: 'ton',     amount: 1,     weight: 0.1 },
+  { label: '3 TON',    type: 'ton',     amount: 3,     weight: 0.000001 },
 ]
       }
     };
@@ -2189,20 +2085,11 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
       `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
     ).first();
 
-const walletRow = await env.DB.prepare(
-  `SELECT wallet_address FROM users WHERE user_id = ?`
-).bind(userId).first();
-
-const wallet = {
-  wallet_address: walletRow?.wallet_address || '',
-  wallet_connected: !!walletRow?.wallet_address
-};
-    
     return json({
   server_time: now,
   total_snowmen: Number(totalRow?.total || 0),
   user: settled.user,
-  wallet,
+  
       tasks: {
         tasks: tasks.results || [],
         completed_ids: (completions.results || []).map(r => r.task_id)
