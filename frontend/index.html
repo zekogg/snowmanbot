@@ -4772,6 +4772,24 @@ function writeBootstrap(data) {
     } catch {}
 }
 
+const sectionCache = new Map();
+
+async function fetchSection(key, url, options = {}, ttlMs = 60000) {
+    const cached = sectionCache.get(key);
+    if (cached && Date.now() - cached.ts < ttlMs) {
+        return cached.data;
+    }
+
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(`${key} failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    sectionCache.set(key, { ts: Date.now(), data });
+    return data;
+}
+
 function renderLeaderboard(data) {
     const refList = document.getElementById('refLeaderboardList');
     const snowList = document.getElementById('snowLeaderboardList');
@@ -4890,13 +4908,7 @@ function renderFriendsPanel(data) {
 function applyBootstrapData(data) {
     if (!data) return;
     appBootstrap = data;
-
     loadMiningState();
-    loadTaskFeed();
-    loadTaskHistory();
-    loadFriends();
-    loadMarketListings();
-    loadLeaderboard();
 }
 
 async function bootstrapApp(force = false) {
@@ -4938,6 +4950,40 @@ async function bootstrapApp(force = false) {
     });
 
     return bootstrapPromise;
+}
+
+async function refreshUserState() {
+    const tgUser = getTgUser();
+    const params = new URLSearchParams({
+        user_id: String(tgUser.id),
+        username: tgUser.username || '',
+        display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
+    });
+
+    const response = await fetch(`${API_BASE}/api/me?${params.toString()}`, {
+        headers: { 'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || '' }
+    });
+
+    if (!response.ok) {
+        throw new Error(`User refresh failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const snapshot = {
+        ...(appBootstrap || {}),
+        user: data.user,
+        total_snowmen: data.total_snowmen,
+        server_time: data.server_time
+    };
+
+    appBootstrap = snapshot;
+    writeBootstrap({
+        server_time: data.server_time,
+        total_snowmen: data.total_snowmen,
+        user: data.user
+    });
+    loadMiningState();
+    return data;
 }
 
         function setActiveNav(activeBtn) {
@@ -5059,7 +5105,6 @@ profileNavBtn?.addEventListener('click', () => {
         marketCreateBtn?.addEventListener('click', () => showMarketScreen('create'));
         openCreateOrderBtn?.addEventListener('click', () => showMarketScreen('create'));
         backToMarketBtn?.addEventListener('click', () => showMarketScreen(currentMarketView === 'yours' ? 'yours' : 'all'));
-        marketRefreshBtn?.addEventListener('click', () => { loadMarketListings(); setMarketMode(currentMarketView); });
 
         marketSortBtn?.addEventListener('click', () => {
     marketSortAsc = !marketSortAsc;
@@ -5134,7 +5179,9 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         if (taskTelegramLink) taskTelegramLink.value = '';
         if (taskTargetUsers) taskTargetUsers.value = '100';
         updateTaskTotal();
-        await bootstrapApp(true);
+        await refreshUserState();
+        await loadTaskFeed(true);
+        await loadTaskHistory(true);
     } catch (error) {
         console.error(error);
         alert('Failed to create task');
@@ -5172,7 +5219,9 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         
         alert('Under review');
         channelLinkInput.value = '';
-        await bootstrapApp(true);
+        await refreshUserState();
+        await loadTaskFeed(true);
+        await loadTaskHistory(true);
     } catch (error) {
         console.error(error);
         alert('Failed to submit channel');
@@ -5256,7 +5305,7 @@ async function submitHatch() {
     
     alert(`Hatched successfully: ${baseAmount} snowflakes`);
 if (hatchModal) hatchModal.style.display = 'none';
-await bootstrapApp(true);
+await refreshUserState();
 updateHatchUI();
 }
 
@@ -5291,13 +5340,35 @@ function renderTaskFeed(tasks, completedIds = []) {
 }
 
 async function loadTaskFeed(force = false) {
-    if (!appBootstrap?.tasks) return;
-    renderTaskFeed(appBootstrap.tasks.tasks || [], appBootstrap.tasks.completed_ids || []);
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'tasks',
+            `${API_BASE}/api/tasks/list?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 120000
+        );
+        renderTaskFeed(data.tasks || [], data.completed_ids || []);
+        appBootstrap = { ...(appBootstrap || {}), tasks: data };
+    } catch (error) {
+        console.error('loadTaskFeed failed', error);
+    }
 }
 
 async function loadTaskHistory(force = false) {
-    if (!appBootstrap?.task_history) return;
-    renderTaskHistory(appBootstrap.task_history.tasks || []);
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'task_history',
+            `${API_BASE}/api/tasks/history?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 120000
+        );
+        renderTaskHistory(data.tasks || []);
+        appBootstrap = { ...(appBootstrap || {}), task_history: data };
+    } catch (error) {
+        console.error('loadTaskHistory failed', error);
+    }
 }
 
 function renderTaskHistory(tasks) {
@@ -5371,7 +5442,9 @@ function startTaskJoin(task, button) {
             button.style.opacity = '0.5';
             button.disabled = true;
             
-            await bootstrapApp(true);
+            await refreshUserState();
+            await loadTaskFeed(true);
+            await loadTaskHistory(true);
         } catch (error) {
             console.error(error);
             button.dataset.running = '0';
@@ -5380,8 +5453,9 @@ function startTaskJoin(task, button) {
     }, 1000);
 }
 
-openMintBtn?.addEventListener('click', () => {
-    const bought = appBootstrap?.mint?.bought || [];
+openMintBtn?.addEventListener('click', async () => {
+    const data = await loadMintStatus();
+    const bought = data?.bought || [];
     document.querySelectorAll('.mint-buy-btn').forEach(btn => {
         const pack = btn.dataset.pack;
         if (bought.includes(pack)) {
@@ -5440,7 +5514,8 @@ document.querySelectorAll('.mint-buy-btn').forEach(btn => {
             const overlay = document.getElementById('mintSuccessOverlay');
             overlay.style.display = 'flex';
 
-            await bootstrapApp(true);
+            await refreshUserState();
+            await loadMintStatus(true);
         } catch(e) {
             alert('Purchase failed');
             btn.disabled = false;
@@ -5619,7 +5694,7 @@ void wheel.offsetWidth;
             pvpState.currentRotation = 0;
             wheel.style.transition = 'none';
             wheel.style.transform = 'rotate(0deg)';
-            bootstrapApp(true).catch(() => {});
+            refreshUserState().catch(() => {});
         }, 3000);
     }, 6200);
 }
@@ -5731,12 +5806,13 @@ pvpSetBtn?.addEventListener('click', async () => {
         });
         const data = await res.json();
         if (!res.ok) alert(data.error || 'Failed');
-        else { await bootstrapApp(true); await pvpPoll(); }
+        else { await refreshUserState(); await pvpPoll(); }
     } catch(e) { alert('Failed to place bet'); }
     pvpSetBtn.disabled = false; pvpSetBtn.textContent = 'Set';
 });
 
-document.getElementById('pvpHistoryBtn')?.addEventListener('click', () => {
+document.getElementById('pvpHistoryBtn')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
     const panel = document.getElementById('pvpHistoryPanel');
     if (!panel) return;
     const isShown = panel.classList.contains('show');
@@ -5745,7 +5821,8 @@ document.getElementById('pvpHistoryBtn')?.addEventListener('click', () => {
     panel.querySelectorAll('.pvp-history-item').forEach(el => el.remove());
     panel.querySelectorAll('div[style]').forEach(el => el.remove());
 
-    const rounds = appBootstrap?.pvp_history?.rounds || [];
+    const data = await loadPvpHistory();
+    const rounds = data?.rounds || [];
     const header = panel.querySelector('.pvp-history-header');
     if (!rounds.length) {
         const empty = document.createElement('div');
@@ -5795,8 +5872,36 @@ function hideLeagueScreen() {
 }
 
 async function loadLeaderboard(force = false) {
-    if (!appBootstrap?.leaderboard) return;
-    renderLeaderboard(appBootstrap.leaderboard);
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'leaderboard',
+            `${API_BASE}/api/leaderboard?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 120000
+        );
+        renderLeaderboard(data);
+        appBootstrap = { ...(appBootstrap || {}), leaderboard: data };
+    } catch (error) {
+        console.error('loadLeaderboard failed', error);
+    }
+}
+
+async function loadMintStatus(force = false) {
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'mint_status',
+            `${API_BASE}/api/mint/status?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 300000
+        );
+        appBootstrap = { ...(appBootstrap || {}), mint: data };
+        return data;
+    } catch (error) {
+        console.error('loadMintStatus failed', error);
+        return null;
+    }
 }
 
 if (leagueBtn) {
@@ -5839,12 +5944,6 @@ allNavBtns.forEach(btn => {
 const pvpHistoryPanel = document.getElementById('pvpHistoryPanel');
 const closePvpHistoryBtn = document.getElementById('closePvpHistoryBtn');
 
-if (pvpHistoryBtn) {
-    pvpHistoryBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'block';
-    });
-}
 if (closePvpHistoryBtn) {
     closePvpHistoryBtn.addEventListener('click', () => {
         if (pvpHistoryPanel) pvpHistoryPanel.style.display = 'none';
@@ -5916,7 +6015,7 @@ if (applyPromoBtn) {
             document.body.appendChild(overlay);
             setTimeout(() => overlay.remove(), 5000);
 
-            await bootstrapApp(true);
+            await refreshUserState();
         } catch (e) {
             alert('Failed to redeem code');
         }
@@ -6073,7 +6172,19 @@ function formatMintCount(n) {
 }
         
 async function loadFriends(force = false) {
-    renderFriendsPanel(appBootstrap?.friends);
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'friends',
+            `${API_BASE}/api/friends?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 120000
+        );
+        renderFriendsPanel(data);
+        appBootstrap = { ...(appBootstrap || {}), friends: data };
+    } catch (error) {
+        console.error('loadFriends failed', error);
+    }
 }
 
 taskHistoryBtn?.addEventListener('click', () => {
@@ -6114,7 +6225,7 @@ function startDepositPolling(userId, amount, statusMsg) {
             if (data.found) {
                 clearInterval(interval);
                 if (statusMsg) statusMsg.textContent = `${amount} TON deposited successfully!`;
-                await bootstrapApp(true);
+                await refreshUserState();
                 return;
             }
         } catch (e) {}
@@ -6183,7 +6294,8 @@ document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
 
         if (statusMsg) statusMsg.textContent = '';
         document.getElementById('withdrawSuccessOverlay').style.display = 'flex';
-        await bootstrapApp(true);
+        await refreshUserState();
+        await loadWithdrawHistory(true);
     } catch (e) {
         if (statusMsg) statusMsg.textContent = 'Request failed. Try again.';
     }
@@ -6191,13 +6303,14 @@ document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
     if (btn) { btn.disabled = false; btn.textContent = 'Withdraw'; }
 });
 
-document.getElementById('withdrawHistoryBtn')?.addEventListener('click', () => {
+document.getElementById('withdrawHistoryBtn')?.addEventListener('click', async () => {
     const overlay = document.getElementById('historyOverlay');
     const listEl = document.getElementById('historyList');
     overlay.style.display = 'flex';
 
-    const withdrawals = appBootstrap?.withdraw_history?.withdrawals || [];
-    const deposits = appBootstrap?.withdraw_history?.deposits || [];
+    const data = await loadWithdrawHistory();
+    const withdrawals = data?.withdrawals || [];
+    const deposits = data?.deposits || [];
 
     if (withdrawals.length === 0 && deposits.length === 0) {
         listEl.innerHTML = '<div style="text-align:center; color:#9EC8E0; padding:20px;">No transactions yet</div>';
@@ -6255,7 +6368,8 @@ window.buyMarketOrder = async function(listingId) {
         });
         const data = await res.json();
         if (!res.ok) { alert(data.error || 'Purchase failed'); return; }
-        await bootstrapApp(true);
+        await refreshUserState();
+        await loadMarketListings(true);
     } catch (e) { alert('Purchase failed'); }
 };
 
@@ -6270,7 +6384,8 @@ window.cancelMarketOrder = async function(listingId) {
         });
         const data = await res.json();
         if (!res.ok) { alert(data.error || 'Cancel failed'); return; }
-        await bootstrapApp(true);
+        await refreshUserState();
+        await loadMarketListings(true);
     } catch (e) { alert('Cancel failed'); }
 };
 
@@ -6327,10 +6442,54 @@ function _renderYourListings(yourListings, yoursEl) {
 }
 
 async function loadMarketListings(force = false) {
-    if (!appBootstrap?.market) return;
-    allMarketListings = appBootstrap.market.all || [];
-    renderMarketListings();
-    _renderYourListings(appBootstrap.market.yours || [], document.getElementById('marketYoursList'));
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'market',
+            `${API_BASE}/api/market/listings?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 60000
+        );
+        allMarketListings = data.all || [];
+        renderMarketListings();
+        _renderYourListings(data.yours || [], document.getElementById('marketYoursList'));
+        appBootstrap = { ...(appBootstrap || {}), market: data };
+    } catch (error) {
+        console.error('loadMarketListings failed', error);
+    }
+}
+
+async function loadWithdrawHistory(force = false) {
+    try {
+        const tgUser = getTgUser();
+        const data = await fetchSection(
+            'withdraw_history',
+            `${API_BASE}/api/withdraw/history?user_id=${tgUser.id}`,
+            { headers: getAuthHeaders() },
+            force ? 0 : 60000
+        );
+        appBootstrap = { ...(appBootstrap || {}), withdraw_history: data };
+        return data;
+    } catch (error) {
+        console.error('loadWithdrawHistory failed', error);
+        return null;
+    }
+}
+
+async function loadPvpHistory(force = false) {
+    try {
+        const data = await fetchSection(
+            'pvp_history',
+            `${API_BASE}/api/pvp/history`,
+            {},
+            force ? 0 : 60000
+        );
+        appBootstrap = { ...(appBootstrap || {}), pvp_history: data };
+        return data;
+    } catch (error) {
+        console.error('loadPvpHistory failed', error);
+        return null;
+    }
 }
 
 document.getElementById('marketSnowInput')?.addEventListener('input', () => {
@@ -6392,7 +6551,8 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
             </div>`;
         document.body.appendChild(successOverlay);
 
-        await bootstrapApp(true);
+        await refreshUserState();
+        await loadMarketListings(true);
 document.querySelectorAll('.market-sub-page').forEach(p => p.classList.remove('active'));
 document.getElementById('market-all')?.classList.add('active');
 document.querySelectorAll('[data-market-mode]').forEach(b => b.classList.remove('active'));
@@ -6405,13 +6565,14 @@ document.querySelector('[data-market-mode="all"]')?.classList.add('active');
     if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
 });
 
-document.getElementById('marketRefreshBtn')?.addEventListener('click', () => {
+document.getElementById('marketRefreshBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('marketRefreshBtn');
     btn?.classList.remove('spinning');
     void btn?.offsetWidth;
     btn?.classList.add('spinning');
     btn?.addEventListener('animationend', () => btn.classList.remove('spinning'), { once: true });
-    bootstrapApp(true).catch(() => {});
+    await loadMarketListings(true);
+    setMarketMode(currentMarketView);
 });  
 document.querySelectorAll('[data-market-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -6623,7 +6784,7 @@ const targetIdx = (prizes.length * 2) + (prizeIndex >= 0 ? prizeIndex : 0);
                     openBtn.disabled = false;
                     openBtn.textContent = 'Open 🎁';
                 }
-                bootstrapApp(true).catch(() => {});
+                refreshUserState().catch(() => {});
             }, 3000);
         }, { once: true });
 
