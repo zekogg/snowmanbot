@@ -277,6 +277,58 @@ await env.DB.prepare(`
       created_at INTEGER NOT NULL
     )
   `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS app_stats (
+      key TEXT PRIMARY KEY,
+      value REAL NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL DEFAULT 0
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO app_stats (key, value, updated_at)
+    VALUES ('total_snowmen', 0, 0)
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TRIGGER IF NOT EXISTS trg_users_total_snowmen_insert
+    AFTER INSERT ON users
+    BEGIN
+      UPDATE app_stats
+      SET value = value + COALESCE(NEW.snowman_count, 0),
+          updated_at = CAST(strftime('%s','now') AS INTEGER) * 1000
+      WHERE key = 'total_snowmen';
+    END
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TRIGGER IF NOT EXISTS trg_users_total_snowmen_update
+    AFTER UPDATE OF snowman_count ON users
+    BEGIN
+      UPDATE app_stats
+      SET value = value + (COALESCE(NEW.snowman_count, 0) - COALESCE(OLD.snowman_count, 0)),
+          updated_at = CAST(strftime('%s','now') AS INTEGER) * 1000
+      WHERE key = 'total_snowmen';
+    END
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_referred_by ON users(referred_by)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_snowman_count ON users(snowman_count DESC)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_task_completions_user ON task_completions(user_id)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_task_completions_task ON task_completions(task_id)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_market_listings_status_created ON market_listings(status, created_at DESC)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_withdrawals_user_created ON withdrawals(user_id, created_at DESC)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_ton_deposits_user_created ON ton_deposits(user_id, created_at DESC)`).run().catch(() => {});
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_pvp_rounds_status_id ON pvp_rounds(status, id DESC)`).run().catch(() => {});
+
+  const statsRow = await env.DB.prepare(`SELECT updated_at FROM app_stats WHERE key = 'total_snowmen'`).first();
+  if (!statsRow || Number(statsRow.updated_at || 0) === 0) {
+    const totalRow = await env.DB.prepare(`SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`).first();
+    await env.DB.prepare(`UPDATE app_stats SET value = ?, updated_at = ? WHERE key = 'total_snowmen'`)
+      .bind(Number(totalRow?.total || 0), Date.now())
+      .run();
+  }
 }
 
 async function getPvpBets(env, roundId) {
@@ -334,6 +386,19 @@ async function getUser(env, userId) {
     )
     .bind(userId)
     .first();
+}
+
+async function getTotalSnowmen(env) {
+  const row = await env.DB.prepare(
+    `SELECT value FROM app_stats WHERE key = 'total_snowmen'`
+  ).first();
+  if (row && Number.isFinite(Number(row.value))) {
+    return Number(row.value || 0);
+  }
+  const totalRow = await env.DB.prepare(
+    `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
+  ).first();
+  return Number(totalRow?.total || 0);
 }
 
 async function createUserIfMissing(env, userId, username = null, displayName = null) {
@@ -1982,145 +2047,12 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
 
     const username = url.searchParams.get("username");
     const displayName = url.searchParams.get("display_name");
-
     const settled = await settleUserMining(env, userId, username, displayName);
-    const now = Date.now();
-
-    const tasks = await getOnlineTasks(env);
-    const completions = await env.DB.prepare(
-      `SELECT task_id FROM task_completions WHERE user_id = ?`
-    ).bind(userId).all();
-
-    const history = await getTasksByCreator(env, userId);
-
-    const friends = await env.DB.prepare(
-      `SELECT user_id, username, display_name
-       FROM users
-       WHERE referred_by = ?
-       ORDER BY updated_at DESC`
-    ).bind(userId).all();
-
-    const rewardRow = await env.DB.prepare(
-      `SELECT referral_ton_earned FROM users WHERE user_id = ?`
-    ).bind(userId).first();
-
-    const marketRows = await env.DB.prepare(
-      `SELECT m.*, u.display_name, u.username
-       FROM market_listings m
-       LEFT JOIN users u ON u.user_id = m.seller_id
-       WHERE m.status = 'active'
-       ORDER BY m.created_at DESC
-       LIMIT 50`
-    ).all();
-
-    const marketAll = marketRows.results || [];
-    const marketYours = marketAll.filter(l => Number(l.seller_id) === userId);
-    const marketOther = marketAll.filter(l => Number(l.seller_id) !== userId);
-
-    const mintPurchases = await env.DB.prepare(
-      `SELECT pack FROM mint_purchases WHERE user_id = ?`
-    ).bind(userId).all();
-
-    const pvpRounds = await env.DB.prepare(
-      `SELECT r.*, u.username, u.display_name
-       FROM pvp_rounds r
-       LEFT JOIN users u ON u.user_id = r.winner_id
-       WHERE r.status = 'finished'
-       ORDER BY r.id DESC LIMIT 20`
-    ).all();
-
-    const withdrawals = await env.DB.prepare(
-      `SELECT * FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
-    ).bind(userId).all();
-
-    const deposits = await env.DB.prepare(
-      `SELECT * FROM ton_deposits WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
-    ).bind(userId).all();
-
-    const refTop = await env.DB.prepare(`
-      SELECT u.user_id, u.username, u.display_name,
-             COUNT(r.user_id) as ref_count
-      FROM users u
-      LEFT JOIN users r ON r.referred_by = u.user_id
-      GROUP BY u.user_id
-      ORDER BY ref_count DESC
-      LIMIT 20
-    `).all();
-
-    const snowTop = await env.DB.prepare(`
-      SELECT user_id, username, display_name, snowman_count
-      FROM users
-      ORDER BY snowman_count DESC
-      LIMIT 20
-    `).all();
-
-    let refRank = 0, refValue = 0;
-    let snowRank = 0, snowValue = 0;
-
-    const refValueRow = await env.DB.prepare(`
-      SELECT COUNT(*) as ref_count FROM users WHERE referred_by = ?
-    `).bind(userId).first();
-    refValue = Number(refValueRow?.ref_count || 0);
-
-    const refRankRow = await env.DB.prepare(`
-      SELECT COUNT(*) as rank FROM (
-        SELECT u.user_id, COUNT(r.user_id) as ref_count
-        FROM users u
-        LEFT JOIN users r ON r.referred_by = u.user_id
-        GROUP BY u.user_id
-        HAVING COUNT(r.user_id) > ?
-      )
-    `).bind(refValue).first();
-    refRank = Number(refRankRow?.rank || 0) + 1;
-
-    const snowValueRow = await env.DB.prepare(`
-      SELECT snowman_count FROM users WHERE user_id = ?
-    `).bind(userId).first();
-    snowValue = Number(snowValueRow?.snowman_count || 0);
-
-    const snowRankRow = await env.DB.prepare(`
-      SELECT COUNT(*) + 1 as rank FROM users WHERE snowman_count > ?
-    `).bind(snowValue).first();
-    snowRank = Number(snowRankRow?.rank || 1);
-    const totalRow = await env.DB.prepare(
-      `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
-    ).first();
 
     return json({
-  server_time: now,
-  total_snowmen: Number(totalRow?.total || 0),
-  user: settled.user,
-  
-      tasks: {
-        tasks: tasks.results || [],
-        completed_ids: (completions.results || []).map(r => r.task_id)
-      },
-      task_history: {
-        tasks: history.results || []
-      },
-      friends: {
-        friends: friends.results || [],
-        count: (friends.results || []).length,
-        ton_earned: Number(rewardRow?.referral_ton_earned || 0)
-      },
-      market: {
-        all: marketOther,
-        yours: marketYours
-      },
-      leaderboard: {
-        referrals: { top: refTop.results || [], user_rank: refRank, user_value: refValue },
-        snowmen: { top: snowTop.results || [], user_rank: snowRank, user_value: snowValue }
-      },
-      mint: {
-        bought: (mintPurchases.results || []).map(r => r.pack)
-      },
-      pvp_history: {
-        rounds: pvpRounds.results || []
-      },
-      withdraw_history: {
-        withdrawals: withdrawals.results || [],
-        deposits: deposits.results || []
-      }
+      server_time: Date.now(),
+      total_snowmen: await getTotalSnowmen(env),
+      user: settled.user
     });
   } catch (e) {
     return json({ error: e.message }, 500);
@@ -2152,9 +2084,8 @@ if (url.pathname === "/api/me" && request.method === "GET") {
 
   try {
     const result = await settleUserMining(env, userId, username, displayName);
-const totalRow = await env.DB.prepare(`SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`).first();
-result.total_snowmen = Number(totalRow?.total || 0);
-return json(result);
+    result.total_snowmen = await getTotalSnowmen(env);
+    return json(result);
   } catch (error) {
     return json({ error: error.message }, 500);
   }
