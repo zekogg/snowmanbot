@@ -1,6 +1,10 @@
 const WEB_APP_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/";
 const HOUR_MS = 60 * 60 * 1000;
 
+let leaderboardCache = null;
+let leaderboardCacheTime = 0;
+const LEADERBOARD_CACHE_MS = 60 * 60 * 1000;
+
 // إصلاح دالة json لدعم الـ CORS (ضروري لعمل البوت في المتصفح وتليجرام)
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -1511,60 +1515,103 @@ return json({
     
 if (url.pathname === "/api/leaderboard" && request.method === "GET") {
   try {
+    const now = Date.now();
     const userId = Number(url.searchParams.get("user_id"));
 
-    const refTop = await env.DB.prepare(`
-      SELECT u.user_id, u.username, u.display_name,
-             COUNT(r.user_id) as ref_count
-      FROM users u
-      LEFT JOIN users r ON r.referred_by = u.user_id
-      GROUP BY u.user_id
-      ORDER BY ref_count DESC
-      LIMIT 20
-    `).all();
+    // إذا الكاش موجود وأقل من 10 دقائق
+    if (leaderboardCache && (now - leaderboardCacheTime) < LEADERBOARD_CACHE_MS) {
+      
+      // نسخة للمستخدم الحالي فقط (استعلامات خفيفة)
+      const result = {
+        referrals: { ...leaderboardCache.referrals, user_rank: 0, user_value: 0 },
+        snowmen:   { ...leaderboardCache.snowmen,   user_rank: 0, user_value: 0 }
+      };
 
-    const snowTop = await env.DB.prepare(`
-      SELECT user_id, username, display_name, snowman_count
-      FROM users
-      ORDER BY snowman_count DESC
-      LIMIT 20
-    `).all();
+      if (userId) {
+        const [refValueRow, snowValueRow] = await Promise.all([
+          env.DB.prepare(`SELECT COUNT(*) as ref_count FROM users WHERE referred_by = ?`).bind(userId).first(),
+          env.DB.prepare(`SELECT snowman_count FROM users WHERE user_id = ?`).bind(userId).first()
+        ]);
 
-    let refRank = 0, refValue = 0;
-    let snowRank = 0, snowValue = 0;
+        const refValue  = Number(refValueRow?.ref_count || 0);
+        const snowValue = Number(snowValueRow?.snowman_count || 0);
+
+        const [refRankRow, snowRankRow] = await Promise.all([
+          env.DB.prepare(`SELECT COUNT(*) as rank FROM users WHERE user_id IN (
+            SELECT u.user_id FROM users u
+            LEFT JOIN users r ON r.referred_by = u.user_id
+            GROUP BY u.user_id
+            HAVING COUNT(r.user_id) > ?
+          )`).bind(refValue).first(),
+          env.DB.prepare(`SELECT COUNT(*) + 1 as rank FROM users WHERE snowman_count > ?`).bind(snowValue).first()
+        ]);
+
+        result.referrals.user_rank  = Number(refRankRow?.rank  || 0) + 1;
+        result.referrals.user_value = refValue;
+        result.snowmen.user_rank    = Number(snowRankRow?.rank  || 1);
+        result.snowmen.user_value   = snowValue;
+      }
+
+      return json(result);
+    }
+
+    // بناء الكاش الجديد (يحدث مرة كل 10 دقائق فقط)
+    const [refTop, snowTop] = await Promise.all([
+      env.DB.prepare(`
+        SELECT u.user_id, u.username, u.display_name,
+               COUNT(r.user_id) as ref_count
+        FROM users u
+        LEFT JOIN users r ON r.referred_by = u.user_id
+        GROUP BY u.user_id
+        ORDER BY ref_count DESC
+        LIMIT 20
+      `).all(),
+      env.DB.prepare(`
+        SELECT user_id, username, display_name, snowman_count
+        FROM users
+        ORDER BY snowman_count DESC
+        LIMIT 20
+      `).all()
+    ]);
+
+    leaderboardCache = {
+      referrals: { top: refTop.results  || [], user_rank: 0, user_value: 0 },
+      snowmen:   { top: snowTop.results || [], user_rank: 0, user_value: 0 }
+    };
+    leaderboardCacheTime = now;
+
+    // حساب ترتيب المستخدم الحالي
+    const result = {
+      referrals: { ...leaderboardCache.referrals },
+      snowmen:   { ...leaderboardCache.snowmen }
+    };
 
     if (userId) {
-      const refValueRow = await env.DB.prepare(`
-        SELECT COUNT(*) as ref_count FROM users WHERE referred_by = ?
-      `).bind(userId).first();
-      refValue = Number(refValueRow?.ref_count || 0);
+      const [refValueRow, snowValueRow] = await Promise.all([
+        env.DB.prepare(`SELECT COUNT(*) as ref_count FROM users WHERE referred_by = ?`).bind(userId).first(),
+        env.DB.prepare(`SELECT snowman_count FROM users WHERE user_id = ?`).bind(userId).first()
+      ]);
 
-      const refRankRow = await env.DB.prepare(`
-        SELECT COUNT(*) as rank FROM (
-          SELECT u.user_id, COUNT(r.user_id) as ref_count
-          FROM users u
+      const refValue  = Number(refValueRow?.ref_count || 0);
+      const snowValue = Number(snowValueRow?.snowman_count || 0);
+
+      const [refRankRow, snowRankRow] = await Promise.all([
+        env.DB.prepare(`SELECT COUNT(*) as rank FROM users WHERE user_id IN (
+          SELECT u.user_id FROM users u
           LEFT JOIN users r ON r.referred_by = u.user_id
           GROUP BY u.user_id
           HAVING COUNT(r.user_id) > ?
-        )
-      `).bind(refValue).first();
-      refRank = Number(refRankRow?.rank || 0) + 1;
+        )`).bind(refValue).first(),
+        env.DB.prepare(`SELECT COUNT(*) + 1 as rank FROM users WHERE snowman_count > ?`).bind(snowValue).first()
+      ]);
 
-      const snowValueRow = await env.DB.prepare(`
-        SELECT snowman_count FROM users WHERE user_id = ?
-      `).bind(userId).first();
-      snowValue = Number(snowValueRow?.snowman_count || 0);
-
-      const snowRankRow = await env.DB.prepare(`
-        SELECT COUNT(*) + 1 as rank FROM users WHERE snowman_count > ?
-      `).bind(snowValue).first();
-      snowRank = Number(snowRankRow?.rank || 1);
+      result.referrals.user_rank  = Number(refRankRow?.rank  || 0) + 1;
+      result.referrals.user_value = refValue;
+      result.snowmen.user_rank    = Number(snowRankRow?.rank  || 1);
+      result.snowmen.user_value   = snowValue;
     }
 
-    return json({
-      referrals: { top: refTop.results || [], user_rank: refRank, user_value: refValue },
-      snowmen: { top: snowTop.results || [], user_rank: snowRank, user_value: snowValue }
-    });
+    return json(result);
   } catch (e) {
     return json({ error: e.message }, 500);
   }
