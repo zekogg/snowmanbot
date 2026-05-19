@@ -5815,7 +5815,7 @@ async function loadLeaderboard(force = false) {
             'leaderboard',
             `${API_BASE}/api/leaderboard?user_id=${tgUser.id}`,
             { headers: getAuthHeaders() },
-            force ? 0 : 120000
+            force ? 0 : 28800000
         );
         renderLeaderboard(data);
         appBootstrap = { ...(appBootstrap || {}), leaderboard: data };
