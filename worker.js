@@ -167,12 +167,13 @@ async function ensureSchema(env) {
   `).run().catch(() => {});
 
   await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS mint_purchases (
+    CREATE TABLE IF NOT EXISTS boost_purchases (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       pack TEXT NOT NULL,
-      purchased_at INTEGER NOT NULL,
-      UNIQUE(user_id, pack)
+      boost_factor REAL NOT NULL,
+      ton_cost REAL NOT NULL,
+      purchased_at INTEGER NOT NULL
     )
   `).run().catch(() => {});
 
@@ -765,9 +766,10 @@ async function handleTaskComplete(env, userId, body) {
 
 function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
+  const miningBoost = Number(user.mining_boost || 1);
    // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
-  const baseSpeed = snowmanCount * 0;
-  const speedPerHour = baseSpeed;
+const baseSpeed = snowmanCount / 350;
+  const speedPerHour = baseSpeed * miningBoost;
 
   const lastMinedAt = Number(user.last_mined_at || now);
   const elapsed = Math.max(0, now - lastMinedAt);
@@ -1166,85 +1168,95 @@ if (url.pathname === "/tonconnect-manifest.json") {
   });
 }
 
-if (url.pathname === "/api/mint" && request.method === "POST") {
+if (url.pathname === "/api/boost" && request.method === "POST") {
   const isValid = await verifyTelegramAuth(request, env);
-if (!isValid) return json({ error: "Unauthorized" }, 401);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json();
-const sessionUserId = await getUserIdFromRequest(request);
-const userId = sessionUserId || Number(body.user_id);
-if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
-    return json({ error: "Unauthorized" }, 401);
-}
-const pack = String(body.pack || "").trim();
+    const sessionUserId = await getUserIdFromRequest(request);
+    const userId = sessionUserId || Number(body.user_id);
+    if (!sessionUserId || sessionUserId !== Number(body.user_id)) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+    const pack = String(body.pack || "").trim();
 
-if (!await checkRateLimit(env, userId, 'mint', 5)) {
-    return json({ error: "Too many requests" }, 429);
-}
-    
+    if (!await checkRateLimit(env, userId, 'boost', 5)) {
+      return json({ error: "Too many requests" }, 429);
+    }
+
     const PACKS = {
-      starter: { ton: 1,  snowmen: 2450,   speed: 7   },
-      pro:     { ton: 5,  snowmen: 10500,  speed: 30  },
-      whale:   { ton: 49, snowmen: 175000, speed: 500 }
+      boost2x: { ton: 1, factor: 2 },
+      boost10x: { ton: 4, factor: 10 }
     };
 
     if (!userId || !PACKS[pack]) return json({ error: "Invalid params" }, 400);
-
-    const already = await env.DB.prepare(
-      `SELECT id FROM mint_purchases WHERE user_id = ? AND pack = ?`
-    ).bind(userId, pack).first();
-    if (already) return json({ error: "Already purchased" }, 400);
 
     const user = await getUser(env, userId);
     if (!user) return json({ error: "User not found" }, 404);
 
     const cost = PACKS[pack].ton;
-const now = Date.now();
-const mintResult = await env.DB.prepare(
-  `UPDATE users SET ton_balance = ton_balance - ?, snowman_count = snowman_count + ?, last_mined_at = ?, updated_at = ? 
-   WHERE user_id = ? AND ton_balance >= ?`
-).bind(cost, PACKS[pack].snowmen, now, now, userId, cost).run();
+    const factor = PACKS[pack].factor;
+    const now = Date.now();
 
-if (mintResult.meta.changes === 0) return json({ error: "Not enough TON" }, 400);
-    
+    await settleUserMining(env, userId);
+
+    const boostResult = await env.DB.prepare(
+      `UPDATE users
+       SET ton_balance = ton_balance - ?,
+           mining_boost = COALESCE(mining_boost, 1) * ?,
+           last_mined_at = ?,
+           updated_at = ?
+       WHERE user_id = ? AND ton_balance >= ?`
+    ).bind(cost, factor, now, now, userId, cost).run();
+
+    if (boostResult.meta.changes === 0) return json({ error: "Not enough TON" }, 400);
+
     await env.DB.prepare(
-      `INSERT INTO mint_purchases (user_id, pack, purchased_at) VALUES (?, ?, ?)`
-    ).bind(userId, pack, now).run();
+      `INSERT INTO boost_purchases (user_id, pack, boost_factor, ton_cost, purchased_at) VALUES (?, ?, ?, ?, ?)`
+    ).bind(userId, pack, factor, cost, now).run();
 
-const buyer = await getUser(env, userId);
-if (buyer?.referred_by) {
-  const refReward = cost * 0.15;
-  await env.DB.prepare(
-    `UPDATE users SET ton_balance = ton_balance + ?, referral_ton_earned = referral_ton_earned + ?, updated_at = ? WHERE user_id = ?`
-  ).bind(refReward, refReward, now, buyer.referred_by).run();
+    const buyer = await getUser(env, userId);
+    if (buyer?.referred_by) {
+      const refReward = cost * 0.15;
+      await env.DB.prepare(
+        `UPDATE users SET ton_balance = ton_balance + ?, referral_ton_earned = referral_ton_earned + ?, updated_at = ? WHERE user_id = ?`
+      ).bind(refReward, refReward, now, buyer.referred_by).run();
 
-  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: buyer.referred_by,
-      text: `Your friend bought a pack! You earned ${refReward.toFixed(2)} TON referral bonus.`
-    })
-  });
-}
-    
-    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: userId,
-        text: `You purchased the ${pack.charAt(0).toUpperCase() + pack.slice(1)} Pack! +${PACKS[pack].snowmen} Snowmen added to your account.`
-      })
-    });
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: buyer.referred_by,
+          text: `Your friend bought a booster! You earned ${refReward.toFixed(2)} TON referral bonus.`
+        })
+      });
+    }
 
     const updatedUser = await getUser(env, userId);
-    return json({ ok: true, pack, snowmen: PACKS[pack].snowmen, user: updatedUser });
+    const computed = computeMiningState(updatedUser, now);
+
+    return json({
+      ok: true,
+      pack,
+      factor,
+      ton_cost: cost,
+      speed_per_hour: computed.speedPerHour,
+      user: {
+        user_id: Number(updatedUser.user_id),
+        username: updatedUser.username || null,
+        display_name: updatedUser.display_name || null,
+        snow_balance: Number(updatedUser.snow_balance || 0),
+        snowman_count: Number(updatedUser.snowman_count || 0),
+        mining_boost: Number(updatedUser.mining_boost || 1),
+        last_mined_at: Number(updatedUser.last_mined_at || 0),
+        updated_at: Number(updatedUser.updated_at || 0),
+        ton_balance: Number(updatedUser.ton_balance || 0)
+      }
+    });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
-}
-
-if (url.pathname === "/api/pvp/current" && request.method === "GET") {
+}if (url.pathname === "/api/pvp/current" && request.method === "GET") {
   try {
     await ensureSchema(env);
     const now = Date.now();
@@ -1891,36 +1903,28 @@ const userId = sessionUserId;
     ).bind(userId).all();
 
     const deposits = await env.DB.prepare(
-      `SELECT * FROM ton_deposits WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
-    ).bind(userId).all();
-    
+      `SELECT * FROM ton_deposits WHERE user_id = ? ORDERif (url.pathname === "/api/boost/status" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+  try {
+    const sessionUserId = await getUserIdFromRequest(request);
+    if (!sessionUserId) return json({ error: "Unauthorized" }, 401);
+    const userId = sessionUserId;
+    if (!userId) return json({ error: "Missing user_id" }, 400);
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+
+    const computed = computeMiningState(user, Date.now());
     return json({
-      withdrawals: withdrawals.results || [],
-      deposits: deposits.results || []
+      boost: Number(user.mining_boost || 1),
+      speed_per_hour: computed.speedPerHour,
+      ton_balance: Number(user.ton_balance || 0)
     });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
 }
-    
-if (url.pathname === "/api/mint/status" && request.method === "GET") {
-  const isValid = await verifyTelegramAuth(request, env);
-  if (!isValid) return json({ error: "Unauthorized" }, 401);
-  try {
-    const sessionUserId = await getUserIdFromRequest(request);
-if (!sessionUserId) return json({ error: "Unauthorized" }, 401);
-const userId = sessionUserId;
-    if (!userId) return json({ error: "Missing user_id" }, 400);
-    const purchases = await env.DB.prepare(
-      `SELECT pack FROM mint_purchases WHERE user_id = ?`
-    ).bind(userId).all();
-    const bought = (purchases.results || []).map(r => r.pack);
-    return json({ bought });
-  } catch (e) {
-    return json({ error: e.message }, 500);
-  }
-}
-    
+
 if (url.pathname === "/api/tasks/create" && request.method === "POST") {
   try {
     const body = await request.json();
