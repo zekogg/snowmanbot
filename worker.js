@@ -1936,19 +1936,6 @@ if (url.pathname === "/api/tasks/create" && request.method === "POST") {
   }
 }
 
-if (url.pathname === "/api/tasks/submit-channel" && request.method === "POST") {
-  try {
-    const body = await request.json();
-    const auth = await requireSessionUser(request, env, body.user_id);
-    if (!auth.ok) return json({ error: auth.error }, 401);
-
-    const result = await handleTaskCreate(env, auth.userId, body, "submit_channel");
-    return json(result);
-  } catch (error) {
-    return json({ error: error.message }, 400);
-  }
-}
-
 if (url.pathname === "/api/tasks/list" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
 if (!isValid) return json({ error: "Unauthorized" }, 401);
