@@ -768,7 +768,7 @@ function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
   const miningBoost = Number(user.mining_boost || 1);
    // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
-  const baseSpeed = snowmanCount * 0;
+  const baseSpeed = snowmanCount / 350;
   const speedPerHour = baseSpeed * miningBoost;
 
   const lastMinedAt = Number(user.last_mined_at || now);
