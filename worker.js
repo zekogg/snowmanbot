@@ -1,9 +1,11 @@
 const WEB_APP_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/";
 const HOUR_MS = 60 * 60 * 1000;
 
+let schemaInitialized = false;
 let leaderboardCache = null;
 let leaderboardCacheTime = 0;
 const LEADERBOARD_CACHE_MS = 8 * 60 * 60 * 1000;
+const rateLimitMemory = new Map();
 
 // إصلاح دالة json لدعم الـ CORS (ضروري لعمل البوت في المتصفح وتليجرام)
 function json(data, status = 200) {
@@ -89,26 +91,21 @@ async function checkRateLimit(env, userId, action, maxPerMinute = 10) {
     const now = Date.now();
     const windowMs = 60000;
 
-    const existing = await env.DB.prepare(
-        `SELECT count, window_start FROM rate_limits WHERE key = ?`
-    ).bind(key).first();
+    const existing = rateLimitMemory.get(key);
 
-    if (!existing || now - existing.window_start > windowMs) {
-        await env.DB.prepare(
-            `INSERT OR REPLACE INTO rate_limits (key, count, window_start) VALUES (?, 1, ?)`
-        ).bind(key, now).run();
+    if (!existing || now - existing.windowStart > windowMs) {
+        rateLimitMemory.set(key, { count: 1, windowStart: now });
         return true;
     }
 
     if (existing.count >= maxPerMinute) return false;
 
-    await env.DB.prepare(
-        `UPDATE rate_limits SET count = count + 1 WHERE key = ?`
-    ).bind(key).run();
+    existing.count++;
     return true;
 }
 
 async function ensureSchema(env) {
+  if (schemaInitialized) return;
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS users (
       user_id INTEGER PRIMARY KEY,
@@ -333,6 +330,7 @@ await env.DB.prepare(`
       .bind(Number(totalRow?.total || 0), Date.now())
       .run();
   }
+  schemaInitialized = true;
 }
 
 async function getPvpBets(env, roundId) {
