@@ -3,7 +3,7 @@ const HOUR_MS = 60 * 60 * 1000;
 
 let leaderboardCache = null;
 let leaderboardCacheTime = 0;
-const LEADERBOARD_CACHE_MS = 60 * 60 * 1000;
+const LEADERBOARD_CACHE_MS = 8 * 60 * 60 * 1000;
 
 // إصلاح دالة json لدعم الـ CORS (ضروري لعمل البوت في المتصفح وتليجرام)
 function json(data, status = 200) {
