@@ -768,7 +768,7 @@ function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
   const miningBoost = Number(user.mining_boost || 1);
    // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
-const baseSpeed = snowmanCount / 350;
+  const baseSpeed = snowmanCount * 0;
   const speedPerHour = baseSpeed * miningBoost;
 
   const lastMinedAt = Number(user.last_mined_at || now);
@@ -1940,18 +1940,20 @@ if (url.pathname === "/api/tasks/create" && request.method === "POST") {
 
 if (url.pathname === "/api/tasks/list" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
-if (!isValid) return json({ error: "Unauthorized" }, 401);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+
   const userId = Number(url.searchParams.get("user_id"));
   const tasks = await getOnlineTasks(env);
-  
+
   let completedIds = [];
   if (userId) {
-    const completions = await env.DB.prepare(
-      `SELECT task_id FROM task_completions WHERE user_id = ?`
-    ).bind(userId).all();
-    completedIds = (completions.results || []).map(r => r.task_id);
+    const completions = await env.DB.prepare("SELECT task_id FROM task_completions WHERE user_id = ?")
+      .bind(userId)
+      .all();
+
+    completedIds = (completions.results || []).map((r) => r.task_id);
   }
-  
+
   return json({ tasks: tasks.results || [], completed_ids: completedIds });
 }
 
