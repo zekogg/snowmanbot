@@ -741,7 +741,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     color: #ffffff;
 }
 
-.channel-submit-card, .market-panel {
+ .market-panel {
     background: linear-gradient(180deg, rgba(27, 31, 58, 0.96), rgba(18, 22, 42, 0.96));
     border: 1px solid rgba(129, 212, 250, 0.18);
     border-radius: 28px;
@@ -750,15 +750,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     text-align: center;
 }
 
-.channel-submit-text {
-    font-size: 15px;
-    font-weight: 600;
-    color: rgba(224, 247, 250, 0.9);
-    margin-bottom: 16px;
-    line-height: 1.4;
-}
-
-.channel-input, .form-input {
+ .form-input {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(129, 212, 250, 0.4);
@@ -770,7 +762,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     margin-bottom: 14px;
 }
 
-.submit-channel-btn, .market-create-btn {
+.market-create-btn {
     background: linear-gradient(180deg, #67d9ff 0%, #1c9ed8 100%);
     border: none;
     border-radius: 30px;
@@ -3732,14 +3724,6 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div class="tasks-title">Tasks</div>
     </div>
     
-    <div class="channel-submit-card">
-        <div class="channel-submit-text">
-            Post about Our "Bot" on your channel and earn 5 to 1000 Snow <br> plus a "task reward" per approved post .
-        </div>
-        <input type="text" class="channel-input" placeholder="https://t.me/YourChannel" id="channelLinkInput">
-        <button class="submit-channel-btn" id="submitChannelBtn" type="button">Submit Channel</button>
-    </div>
-    
     <div class="task-list" id="taskFeed"></div>
     
     <button id="floatingAddTaskBtn" class="floating-add-task" type="button">
@@ -4093,7 +4077,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <script>
     // ======== وضع الصيانة (Maintenance Mode) ========
-const MAINTENANCE = false; // false للتعطيل
+const MAINTENANCE = true; // false للتعطيل
 if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495986) {
     // إخفاء أيقونة eruda إن وجدت
     if (window.eruda) {
@@ -4399,13 +4383,10 @@ function applyLang() {
 
     // Tasks
     q('.tasks-title', 'tasksTitle');
-    q('#submitChannelBtn', 'submitChannel');
     q('.floating-add-task span:last-child', 'addTask');
     q('.task-history-title', 'taskHistory');
     document.querySelectorAll('.task-join-btn:not([disabled])').forEach(e => e.textContent = t('join'));
     document.querySelectorAll('.task-join-btn[disabled]').forEach(e => e.textContent = t('done'));
-    document.querySelectorAll('.channel-submit-text').forEach(e => e.textContent = t('channelPost'));
-
 // Hatch modal texts
     document.querySelectorAll('.hatch-label').forEach((e, i) => {
         const keys = ['snowToHatch', 'craftFee', 'totalRequired'];
@@ -4643,9 +4624,6 @@ const hatchFeeValue = document.getElementById('hatchFeeValue');
 const hatchTotalValue = document.getElementById('hatchTotalValue');
 const hatchPctBtns = document.querySelectorAll('.pct-btn');
 const finalHatchBtn = document.querySelector('.final-hatch-btn');
-
-        const submitChannelBtn = document.getElementById('submitChannelBtn');
-        const channelLinkInput = document.getElementById('channelLinkInput');
 
         const marketModes = document.querySelectorAll('.market-mode');
         const marketPages = document.querySelectorAll('.market-sub-page');
@@ -5186,48 +5164,7 @@ confirmCreateTaskBtn?.addEventListener('click', async () => {
         console.error(error);
         alert('Failed to create task');
     }
-});
-
-        if (submitChannelBtn && channelLinkInput) {
-            submitChannelBtn?.addEventListener('click', async () => {
-    const channelUrl = channelLinkInput.value.trim();
-    if (!channelUrl) {
-        alert('Please enter your Telegram channel link');
-        return;
-    }
-    
-    try {
-        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-        const userId = tgUser?.id || 12345;
-        
-        const response = await fetch(`${API_BASE}/api/tasks/submit-channel`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-                user_id: userId,
-                link: channelUrl,
-                target_users: 250,
-                source_type: 'submit_channel'
-            })
-        });
-        
-        const data = await response.json();
-        if (!response.ok) {
-            alert(data.error || 'Failed to submit channel');
-            return;
-        }
-        
-        alert('Under review');
-        channelLinkInput.value = '';
-        await refreshUserState();
-        await loadTaskFeed(true);
-        await loadTaskHistory(true);
-    } catch (error) {
-        console.error(error);
-        alert('Failed to submit channel');
-    }
-});
-        }
+});    
 
         function getHatchAvailableSnowflakes() {
     return Math.max(0, Math.floor(Number(miningState.snowBalance || 0)));
