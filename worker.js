@@ -1887,23 +1887,35 @@ if (url.pathname === "/api/withdraw" && request.method === "POST") {
 
 if (url.pathname === "/api/withdraw/history" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
-if (!isValid) return json({ error: "Unauthorized" }, 401);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
     const sessionUserId = await getUserIdFromRequest(request);
-if (!sessionUserId) return json({ error: "Unauthorized" }, 401);
-const userId = sessionUserId;
+    if (!sessionUserId) return json({ error: "Unauthorized" }, 401);
+    const userId = sessionUserId;
     if (!userId) return json({ error: "Missing user_id" }, 400);
 
     if (!await checkRateLimit(env, userId, 'withdraw_history', 10)) {
-    return json({ error: "Too many requests" }, 429);
-}
+      return json({ error: "Too many requests" }, 429);
+    }
 
     const withdrawals = await env.DB.prepare(
       `SELECT * FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
     ).bind(userId).all();
 
     const deposits = await env.DB.prepare(
-      `SELECT * FROM ton_deposits WHERE user_id = ? ORDERif (url.pathname === "/api/boost/status" && request.method === "GET") {
+      `SELECT * FROM ton_deposits WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
+    ).bind(userId).all();
+
+    return json({
+      withdrawals: withdrawals.results || [],
+      deposits: deposits.results || []
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/boost/status" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
   if (!isValid) return json({ error: "Unauthorized" }, 401);
   try {
