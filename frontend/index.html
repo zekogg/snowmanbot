@@ -70,7 +70,7 @@ button, .pct-btn, .nav-icon, .add-button-blue {
 }
 
 button:active, .pct-btn:active, .nav-icon:active, .add-button-blue:active,
-        .final-hatch-btn:active, .close-mint:active, .close-hatch:active,
+        .final-hatch-btn:active, .close-boost:active, .close-hatch:active,
         .task-join-btn:active, .create-btn-large:active, .market-refresh:active,
         .market-mode:active, .market-filter:active, .market-sort:active,
         .market-buy-btn:active, .market-create-btn:active, .back-mini:active,
@@ -167,7 +167,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 .add-button-blue {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #3CC7FF, #129FDF);
+    background: linear-gradient(135deg, #FFB25B, #D66200);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -411,7 +411,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     box-shadow: 0 10px 26px rgba(28, 158, 216, 0.65);
 }
 
-.btn-mint {
+.btn-boost {
     background: linear-gradient(180deg, rgba(193, 92, 255, 0.95) 0%, rgba(122, 44, 255, 0.85) 100%);
     box-shadow: 0 10px 26px rgba(122, 44, 255, 0.65);
 }
@@ -452,7 +452,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     text-shadow: 0 0 6px #3CC7FF;
 }
 
-#mintModal, #hatchModal {
+#boostModal, #hatchModal {
     display: none;
     position: fixed;
     inset: 0;
@@ -463,13 +463,13 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     padding: 20px;
 }
 
-.mint-content, .hatch-content {
+.boost-content, .hatch-content {
     background: rgba(12, 25, 38, 0.96);
     width: 100%;
     max-width: 420px;
     border-radius: 25px;
     padding: 20px;
-    border: 1.5px solid #3CC7FF;
+    border: 1.5px solid #FF9A3C;
     color: white;
     text-align: center;
     position: relative;
@@ -480,10 +480,10 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     padding: 25px;
 }
 
-.mint-title, .hatch-header {
+.boost-title, .hatch-header {
     margin: 0 0 18px 0;
     font-size: 24px;
-    background: linear-gradient(135deg, #B3F0FF, #6BC8FF);
+    background: linear-gradient(135deg, #FFE0B2, #FF9A3C);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -494,7 +494,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border-radius: 15px;
     padding: 15px;
     margin-bottom: 15px;
-    border-left: 4px solid #3CC7FF;
+    border-left: 4px solid #FF9A3C;
 }
 
 .pack-box h3 {
@@ -514,7 +514,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     margin: 0;
 }
 
-.close-mint, .close-hatch {
+.close-boost, .close-hatch {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     color: white;
@@ -523,7 +523,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     transition: transform 0.14s ease;
 }
 
-.close-mint {
+.close-boost {
     font-size: 18px;
     margin-top: 6px;
     padding: 8px 16px;
@@ -2394,7 +2394,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border-radius: 22px;
     padding: 14px 16px;
     margin: 12px 0 10px;
-    border-left: 4px solid #3CC7FF;
+    border-left: 4px solid #FF9A3C;
 }
 
 .rank-number {
@@ -3043,11 +3043,11 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     max-width: 100%;
 }
         
-.mint-buy-btn {
+.boost-buy-btn {
     padding: 4px 10px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(135deg, #3CC7FF, #129FDF);
+    background: linear-gradient(135deg, #FFB25B, #D66200);
     color: white;
     font-size: 22px;
     font-weight: 900;
@@ -3056,7 +3056,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     flex-shrink: 0;
 }
 
-.mint-buy-btn:disabled {
+.boost-buy-btn:disabled {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.35);
     cursor: not-allowed;
@@ -3413,7 +3413,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <div class="action-buttons" id="mainActionButtons">
     <button class="btn btn-hatch" id="openHatchBtn" type="button">Hatch ❄️</button>
-    <button class="btn btn-mint" id="openMintBtn" type="button">Mint ☃️</button>
+    <button class="btn btn-boost" id="openBoostBtn" type="button">Boost ⚡</button>
 </div>
 
 <button class="promo-btn" id="promoBtn" type="button">
@@ -3632,56 +3632,46 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <button class="nav-icon" id="profileNavBtn" type="button">🏦</button>
 </div>
 
-<div id="mintModal">
-    <div class="mint-content">
-        <h2 class="mint-title">Mint Snowmen ☃️</h2>
-        <p style="text-align:center; font-size:11px; color:#FF6B6B; margin:-10px 0 12px; letter-spacing:0.5px;">
-            You can only buy 1 pack
+<div id="boostModal">
+    <div class="boost-content">
+        <h2 class="boost-title">Mining Booster ⚡</h2>
+        <div style="text-align:center; font-size:12px; color:#ffd6a6; margin:-6px 0 10px; font-weight:700;">Current boost: <span id="boostCurrentValue">1.00x</span></div>
+        <p style="text-align:center; font-size:11px; color:#FFB25B; margin:-10px 0 12px; letter-spacing:0.5px;">
+            Stackable. Multiple purchases allowed.
         </p>
-        <div class="pack-box" id="packBox_starter">
-    <h3>Starter Pack</h3>
-    <div class="pack-row">
-        <button class="mint-buy-btn" data-pack="starter" data-ton="1" data-snowmen="2450" type="button">Buy</button>
-        <p class="pack-price" style="margin:0;">1 TON ➔ 2,450 ☃️</p>
-    </div>
-    <p class="pack-speed">Mining Speed: +7.00 ❄️/hr</p>
-</div>
-<div class="pack-box" id="packBox_pro">
-    <h3>Pro Pack</h3>
-    <div class="pack-row">
-        <button class="mint-buy-btn" data-pack="pro" data-ton="5" data-snowmen="10500" type="button">Buy</button>
-        <p class="pack-price" style="margin:0;">5 TON ➔ 10,500 ☃️</p>
-    </div>
-    <p class="pack-speed">Mining Speed: +30.00 ❄️/hr</p>
-</div>
-<div class="pack-box" id="packBox_whale" style="margin-bottom:18px;">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <h3 style="margin:0;">Whale Pack</h3>
-        <span style="background:linear-gradient(135deg,#FF6B6B,#FF3366);color:white;font-size:12px;padding:2px 8px;border-radius:20px;font-weight:900;">50% OFF</span>
-    </div>
-    <div class="pack-row">
-        <button class="mint-buy-btn" data-pack="whale" data-ton="49" data-snowmen="175000" type="button">Buy</button>
-        <p class="pack-price" style="margin:0;"><span style="text-decoration:line-through;opacity:0.5;font-size:13px;">99 TON</span> 49 TON ➔ 175,000 ☃️</p>
-    </div>
-    <p class="pack-speed">Mining Speed: +500.00 ❄️/hr</p>
-</div>
-<button class="close-mint" id="closeMintBtn" type="button">CANCEL</button>
+        <div class="pack-box" id="packBox_boost2x">
+            <h3>2x Booster</h3>
+            <div class="pack-row">
+                <button class="boost-buy-btn" data-pack="boost2x" data-ton="1" data-factor="2" type="button">Buy</button>
+                <p class="pack-price" style="margin:0;">1 TON ➔ 2x Speed</p>
+            </div>
+            <p class="pack-speed">Multiplier: x2</p>
+        </div>
+        <div class="pack-box" id="packBox_boost10x" style="margin-bottom:18px;">
+            <h3>10x Booster</h3>
+            <div class="pack-row">
+                <button class="boost-buy-btn" data-pack="boost10x" data-ton="4" data-factor="10" type="button">Buy</button>
+                <p class="pack-price" style="margin:0;">4 TON ➔ 10x Speed</p>
+            </div>
+            <p class="pack-speed">Multiplier: x10</p>
+        </div>
+        <button class="close-boost" id="closeBoostBtn" type="button">CANCEL</button>
     </div>
 </div>
 
-<div id="mintSuccessOverlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column;">
-    <div id="mintSuccessCard" style="background:rgba(10,25,40,0.97); border:2px solid #3CC7FF; border-radius:28px; padding:32px 28px; text-align:center; max-width:320px; width:90%; animation: mintPop 0.4s ease;">
-        <div style="font-size:60px; margin-bottom:12px;">☃️</div>
-        <div style="font-size:22px; font-weight:900; color:#7ee6ff; margin-bottom:8px;">Pack Purchased!</div>
-        <div id="mintSuccessPackName" style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:16px;"></div>
-        <div style="background:rgba(60,199,255,0.12); border-radius:16px; padding:14px; margin-bottom:20px;">
-            <div id="mintSuccessSnowmen" style="font-size:28px; font-weight:900; color:#3CC7FF;"></div>
-            <div style="font-size:13px; color:#B2DAFF; margin-top:4px;">Snowmen Added</div>
-            <div id="mintSuccessSpeed" style="font-size:15px; font-weight:700; color:#7ee6ff; margin-top:8px;"></div>
+<div id="boostSuccessOverlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column;">
+    <div id="boostSuccessCard" style="background:rgba(10,25,40,0.97); border:2px solid #FF9A3C; border-radius:28px; padding:32px 28px; text-align:center; max-width:320px; width:90%; animation: mintPop 0.4s ease;">
+        <div style="font-size:60px; margin-bottom:12px;">⚡</div>
+        <div style="font-size:22px; font-weight:900; color:#ffd6a6; margin-bottom:8px;">Boost Purchased!</div>
+        <div id="boostSuccessPackName" style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:16px;"></div>
+        <div style="background:rgba(255,154,60,0.12); border-radius:16px; padding:14px; margin-bottom:20px;">
+            <div id="boostSuccessSummary" style="font-size:28px; font-weight:900; color:#FFB25B;"></div>
+            <div style="font-size:13px; color:#B2DAFF; margin-top:4px;">Stackable multiplier added</div>
+            <div id="boostSuccessRate" style="font-size:15px; font-weight:700; color:#ffd6a6; margin-top:8px;"></div>
         </div>
-        <button onclick="document.getElementById('mintSuccessOverlay').style.display='none'" 
-            style="width:100%; padding:14px; border:none; border-radius:20px; background:linear-gradient(135deg,#3CC7FF,#129FDF); color:white; font-size:18px; font-weight:900; cursor:pointer;">
-            Awesome! 🎉
+        <button onclick="document.getElementById('boostSuccessOverlay').style.display='none'" 
+            style="width:100%; padding:14px; border:none; border-radius:20px; background:linear-gradient(135deg,#FFB25B,#D66200); color:white; font-size:18px; font-weight:900; cursor:pointer;">
+            Great! ⚡
         </button>
     </div>
 </div>
@@ -4120,17 +4110,17 @@ const T = {
         // Nav
         tasks: 'Tasks', market: 'Market', friends: 'Friends', profile: 'Profile',
         // Home
-        hatchBtn: 'Hatch ❄️', mintBtn: 'Mint ☃️', promoCode: 'Promo Code', limited: 'LIMITED',
+        hatchBtn: 'Hatch ❄️', boostBtn: 'Boost ⚡', promoCode: 'Promo Code', limited: 'LIMITED',
         // Hatch
         hatchTitle: 'Hatch Snow ❄️', snowToHatch: '❄️ Snow to Hatch',
         craftFee: 'Craft fee (10%)', totalRequired: '❄️ Total required',
         available: 'Available', snowflakes: 'snowflakes', hatch: 'Hatch ❄️',
-        // Mint
-        mintTitle: 'Mint Snowmen ☃️', mintOnly1: 'You can only buy 1 pack',
+        // Boost
+        boostTitle: 'Mining Booster ⚡', boostNote: 'Stackable. Multiple purchases allowed.',
         starterPack: 'Starter Pack', proPack: 'Pro Pack', whalePack: 'Whale Pack',
-        miningSpeed: 'Mining Speed', buy: 'Buy', purchased: 'Purchased ✓',
-        cancel: 'CANCEL', packPurchased: 'Pack Purchased!', snowmenAdded: 'Snowmen Added',
-        awesome: 'Awesome! 🎉',
+        boostSpeed: 'Mining Speed', buy: 'Buy', purchased: 'Purchased ✓',
+        cancel: 'CANCEL', packPurchased: 'Boost Purchased!', snowmenAdded: 'Boost Added',
+        awesome: 'Great! ⚡',
         // Tasks
         tasksTitle: 'Tasks', submitChannel: 'Submit Channel', addTask: 'Add a Task',
         taskHistory: 'Task History', join: 'Join', done: 'Done',
@@ -4157,7 +4147,7 @@ const T = {
         // Friends
         friendsTitle: 'Friends', yourReward: 'Your Reward', yourFriends: 'Your Friends',
         freeSnowman: '+1 free SnowMan per Friend', snowHatch: '5% Snow when they Hatch',
-        tonMint: '15% TON when they buy SnowMans',
+        tonBoost: '15% TON when they buy SnowMans',
         copy: '📋 Copy', share: '📤 Share', noFriends: 'No friends yet 🧱',
         // Leaderboard
         leaderboard: '🏆 Leaderboard', referrals: 'Referrals', snowmen: 'Snowmen',
@@ -4178,13 +4168,13 @@ const T = {
     },
     ar: {
         tasks: 'المهام', market: 'السوق', friends: 'الأصدقاء', profile: 'الملف',
-        hatchBtn: 'تحويل ❄️', mintBtn: 'سك ☃️', promoCode: 'كود ترويجي', limited: 'محدود',
+        hatchBtn: 'تحويل ❄️', boostBtn: 'سك ☃️', promoCode: 'كود ترويجي', limited: 'محدود',
         hatchTitle: 'تحويل Snow ❄️', snowToHatch: '❄️ Snow للتحويل',
         craftFee: 'رسوم الصنع (10%)', totalRequired: '❄️ المجموع المطلوب',
         available: 'متاح', snowflakes: 'رقاقات', hatch: 'تحويل ❄️',
-        mintTitle: 'سك Snowmen ☃️', mintOnly1: 'يمكنك شراء باقة واحدة فقط',
+        boostTitle: 'سك Snowmen ☃️', boostNote: 'يمكنك شراء باقة واحدة فقط',
         starterPack: 'باقة المبتدئ', proPack: 'الباقة الاحترافية', whalePack: 'باقة الحوت',
-        miningSpeed: 'سرعة التعدين', buy: 'شراء', purchased: 'تم الشراء ✓',
+        boostSpeed: 'سرعة التعدين', buy: 'شراء', purchased: 'تم الشراء ✓',
         cancel: 'إلغاء', packPurchased: 'تم شراء الباقة!', snowmenAdded: 'تمت إضافة Snowmen',
         awesome: 'رائع! 🎉',
         tasksTitle: 'المهام', submitChannel: 'إرسال القناة', addTask: 'إضافة مهمة',
@@ -4210,7 +4200,7 @@ const T = {
         gotIt: 'حسناً! 👍', loading: 'جاري التحميل...', deposit: 'إيداع',
         friendsTitle: 'الأصدقاء', yourReward: 'مكافأتك', yourFriends: 'أصدقاؤك',
         freeSnowman: '+1 Snowman مجاني لكل صديق', snowHatch: '5% Snow عند تحويلهم',
-        tonMint: '15% TON عند شرائهم Snowmen',
+        tonBoost: '15% TON عند شرائهم Snowmen',
         copy: '📋 نسخ', share: '📤 مشاركة', noFriends: 'لا أصدقاء بعد 🧱',
         leaderboard: '🏆 المتصدرون', referrals: 'الإحالات', snowmen: 'Snowmen',
         participateWin: 'شارك واكسب TON', prizes: '🎁 الجوائز :',
@@ -4226,13 +4216,13 @@ const T = {
     },
     ru: {
         tasks: 'Задания', market: 'Рынок', friends: 'Друзья', profile: 'Профиль',
-        hatchBtn: 'Конвертировать ❄️', mintBtn: 'Создать ☃️', promoCode: 'Промокод', limited: 'ОГРАНИЧЕНО',
+        hatchBtn: 'Конвертировать ❄️', boostBtn: 'Создать ☃️', promoCode: 'Промокод', limited: 'ОГРАНИЧЕНО',
         hatchTitle: 'Конвертировать Snow ❄️', snowToHatch: '❄️ Snow для конвертации',
         craftFee: 'Комиссия (10%)', totalRequired: '❄️ Итого требуется',
         available: 'Доступно', snowflakes: 'снежинок', hatch: 'Конвертировать ❄️',
-        mintTitle: 'Создать Snowmen ☃️', mintOnly1: 'Можно купить только 1 пакет',
+        boostTitle: 'Создать Snowmen ☃️', boostNote: 'Можно купить только 1 пакет',
         starterPack: 'Стартовый пакет', proPack: 'Про пакет', whalePack: 'Пакет кита',
-        miningSpeed: 'Скорость майнинга', buy: 'Купить', purchased: 'Куплено ✓',
+        boostSpeed: 'Скорость майнинга', buy: 'Купить', purchased: 'Куплено ✓',
         cancel: 'ОТМЕНА', packPurchased: 'Пакет куплен!', snowmenAdded: 'Snowmen добавлены',
         awesome: 'Отлично! 🎉',
         tasksTitle: 'Задания', submitChannel: 'Отправить канал', addTask: 'Добавить задание',
@@ -4258,7 +4248,7 @@ const T = {
         gotIt: 'Понял! 👍', loading: 'Загрузка...', deposit: 'Депозит',
         friendsTitle: 'Друзья', yourReward: 'Ваша награда', yourFriends: 'Ваши друзья',
         freeSnowman: '+1 бесплатный Snowman за друга', snowHatch: '5% Snow за их конвертацию',
-        tonMint: '15% TON за их покупку Snowmen',
+        tonBoost: '15% TON за их покупку Snowmen',
         copy: '📋 Копировать', share: '📤 Поделиться', noFriends: 'Пока нет друзей 🧱',
         leaderboard: '🏆 Лидерборд', referrals: 'Рефералы', snowmen: 'Snowmen',
         participateWin: 'Участвуй и выиграй TON', prizes: '🎁 Призы :',
@@ -4274,13 +4264,13 @@ const T = {
     },
     tr: {
         tasks: 'Görevler', market: 'Pazar', friends: 'Arkadaşlar', profile: 'Profil',
-        hatchBtn: 'Dönüştür ❄️', mintBtn: 'Oluştur ☃️', promoCode: 'Promosyon Kodu', limited: 'SINIRLI',
+        hatchBtn: 'Dönüştür ❄️', boostBtn: 'Oluştur ☃️', promoCode: 'Promosyon Kodu', limited: 'SINIRLI',
         hatchTitle: 'Snow Dönüştür ❄️', snowToHatch: '❄️ Dönüştürülecek Snow',
         craftFee: 'Üretim ücreti (%10)', totalRequired: '❄️ Toplam gerekli',
         available: 'Mevcut', snowflakes: 'snowflake', hatch: 'Dönüştür ❄️',
-        mintTitle: 'Snowmen Oluştur ☃️', mintOnly1: 'Sadece 1 paket satın alabilirsiniz',
+        boostTitle: 'Snowmen Oluştur ☃️', boostNote: 'Sadece 1 paket satın alabilirsiniz',
         starterPack: 'Başlangıç Paketi', proPack: 'Pro Paket', whalePack: 'Balina Paketi',
-        miningSpeed: 'Madencilik Hızı', buy: 'Satın Al', purchased: 'Satın Alındı ✓',
+        boostSpeed: 'Madencilik Hızı', buy: 'Satın Al', purchased: 'Satın Alındı ✓',
         cancel: 'İPTAL', packPurchased: 'Paket Satın Alındı!', snowmenAdded: 'Snowmen Eklendi',
         awesome: 'Harika! 🎉',
         tasksTitle: 'Görevler', submitChannel: 'Kanal Gönder', addTask: 'Görev Ekle',
@@ -4306,7 +4296,7 @@ const T = {
         gotIt: 'Anladım! 👍', loading: 'Yükleniyor...', deposit: 'Yatır',
         friendsTitle: 'Arkadaşlar', yourReward: 'Ödülünüz', yourFriends: 'Arkadaşlarınız',
         freeSnowman: 'Her arkadaş için +1 ücretsiz Snowman', snowHatch: 'Dönüştürmelerinde %5 Snow',
-        tonMint: 'Snowmen satın aldıklarında %15 TON',
+        tonBoost: 'Snowmen satın aldıklarında %15 TON',
         copy: '📋 Kopyala', share: '📤 Paylaş', noFriends: 'Henüz arkadaş yok 🧱',
         leaderboard: '🏆 Liderlik Tablosu', referrals: 'Referanslar', snowmen: 'Snowmen',
         participateWin: 'Katıl ve TON kazan', prizes: '🎁 Ödüller :',
@@ -4320,21 +4310,21 @@ const T = {
         success: 'Başarılı!', failed: 'Başarısız', insufficient: 'Yetersiz bakiye',
         tooMany: 'Çok fazla istek', set: 'Ayarla', noHistory: 'İşlem yok',
     },
-    de: { tasks:'Aufgaben',market:'Markt',friends:'Freunde',profile:'Profil',hatchBtn:'Konvertieren ❄️',mintBtn:'Erstellen ☃️',promoCode:'Promocode',limited:'BEGRENZT',hatchTitle:'Snow konvertieren ❄️',snowToHatch:'❄️ Snow zum Konvertieren',craftFee:'Herstellungsgebühr (10%)',totalRequired:'❄️ Gesamt benötigt',available:'Verfügbar',snowflakes:'Schneeflocken',hatch:'Konvertieren ❄️',mintTitle:'Snowmen erstellen ☃️',mintOnly1:'Nur 1 Paket kaufbar',starterPack:'Starter-Paket',proPack:'Pro-Paket',whalePack:'Wal-Paket',miningSpeed:'Mining-Geschwindigkeit',buy:'Kaufen',purchased:'Gekauft ✓',cancel:'ABBRECHEN',packPurchased:'Paket gekauft!',snowmenAdded:'Snowmen hinzugefügt',awesome:'Toll! 🎉',tasksTitle:'Aufgaben',submitChannel:'Kanal einreichen',addTask:'Aufgabe hinzufügen',taskHistory:'Aufgabenverlauf',join:'Beitreten',done:'Fertig',channelPost:'Poste über unseren Bot in deinem Kanal und verdiene 5 bis 1000 Snow.',marketTitle:'Markt',all:'Alle',yours:'Meine',lootBox:'Lootbox',createOrder:'+ Bestellung erstellen',confirmOrder:'Bestellung bestätigen',amountSnow:'Snow-Menge ❄️',pricePerSnow:'Preis pro Snow',totalValue:'Gesamtwert',noOrders:'Keine Bestellungen verfügbar',noYourOrders:'Keine aktiven Bestellungen.',createSnowOrder:'Erstelle eine Snow-Order zum Handeln.',depositTab:'Einzahlung',withdrawTab:'Auszahlung',enterAmount:'Betrag eingeben (TON)',sentManually:'Manuell gesendet — Prüfen',paymentMethod:'Zahlungsmethode',connectWallet:'Wallet verbinden',disconnect:'Trennen',manualDeposit:'oder (Manuell) Einzahlungsadresse',memo:'Memo (Erforderlich — Ihre ID)',memoNote:'Füge immer das Memo hinzu. Einzahlungen ohne Memo können nicht automatisch gutgeschrieben werden.',withdrawAmount:'Auszahlungsbetrag',tonAddress:'TON-Adresse',enterTonAddress:'TON-Adresse eingeben',minWithdraw:'min 0.2',feeWithdraw:'Gebühr 5%',withdraw:'Auszahlen',history:'Verlauf',transactionHistory:'Transaktionsverlauf',withdrawRequested:'Auszahlung beantragt',withdrawNote:'Auszahlungen dauern 1 bis 12 Stunden.',gotIt:'Verstanden! 👍',loading:'Laden...',deposit:'Einzahlen',friendsTitle:'Freunde',yourReward:'Ihre Belohnung',yourFriends:'Ihre Freunde',freeSnowman:'+1 kostenloser Snowman pro Freund',snowHatch:'5% Snow bei deren Konvertierung',tonMint:'15% TON bei deren Snowmen-Kauf',copy:'📋 Kopieren',share:'📤 Teilen',noFriends:'Noch keine Freunde 🧱',leaderboard:'🏆 Rangliste',referrals:'Empfehlungen',snowmen:'Snowmen',participateWin:'Mitmachen & TON gewinnen',prizes:'🎁 Preise :',yourPosition:'Ihre Position',topReferrers:'🏅 Top-Empfehler',topSnowmen:'🏅 Top Snowmen-Besitzer',wallet:'WALLET',yourBalance:'Ihr Guthaben',activeSnowman:'Aktive Snowman',snowBalance:'Snow-Guthaben',waiting:'WARTEN',live:'LIVE',winner:'Gewinner',won:'Gewonnen',promoActivated:'Promo aktiviert!',snowAdded:'Snow zu Ihrem Guthaben hinzugefügt',apply:'Anwenden',success:'Erfolg!',failed:'Fehlgeschlagen',insufficient:'Unzureichendes Guthaben',tooMany:'Zu viele Anfragen',set:'Setzen',noHistory:'Keine Transaktionen' },
-    es: { tasks:'Tareas',market:'Mercado',friends:'Amigos',profile:'Perfil',hatchBtn:'Convertir ❄️',mintBtn:'Crear ☃️',promoCode:'Código Promo',limited:'LIMITADO',hatchTitle:'Convertir Snow ❄️',snowToHatch:'❄️ Snow para convertir',craftFee:'Tarifa de creación (10%)',totalRequired:'❄️ Total requerido',available:'Disponible',snowflakes:'copos',hatch:'Convertir ❄️',mintTitle:'Crear Snowmen ☃️',mintOnly1:'Solo puedes comprar 1 paquete',starterPack:'Paquete Inicial',proPack:'Paquete Pro',whalePack:'Paquete Ballena',miningSpeed:'Velocidad de minería',buy:'Comprar',purchased:'Comprado ✓',cancel:'CANCELAR',packPurchased:'¡Paquete comprado!',snowmenAdded:'Snowmen añadidos',awesome:'¡Genial! 🎉',tasksTitle:'Tareas',submitChannel:'Enviar Canal',addTask:'Añadir Tarea',taskHistory:'Historial de Tareas',join:'Unirse',done:'Hecho',channelPost:'Publica sobre nuestro bot en tu canal y gana de 5 a 1000 Snow.',marketTitle:'Mercado',all:'Todos',yours:'Mis Pedidos',lootBox:'Caja de Botín',createOrder:'+ Crear Pedido',confirmOrder:'Confirmar Pedido',amountSnow:'Cantidad de Snow ❄️',pricePerSnow:'Precio por Snow',totalValue:'Valor Total',noOrders:'No hay pedidos disponibles',noYourOrders:'No hay pedidos activos.',createSnowOrder:'Crea un pedido de Snow para comenzar.',depositTab:'Depositar',withdrawTab:'Retirar',enterAmount:'Ingresar Monto (TON)',sentManually:'Enviado Manualmente — Verificar',paymentMethod:'Método de Pago',connectWallet:'Conectar Billetera',disconnect:'Desconectar',manualDeposit:'o (Manual) Dirección de Depósito',memo:'Memo (Requerido — tu ID)',memoNote:'Incluye siempre el memo. Los depósitos sin memo no se acreditan automáticamente.',withdrawAmount:'Monto a Retirar',tonAddress:'Dirección TON',enterTonAddress:'Ingresa dirección TON',minWithdraw:'mín 0.2',feeWithdraw:'comisión 5%',withdraw:'Retirar',history:'Historial',transactionHistory:'Historial de Transacciones',withdrawRequested:'Retiro Solicitado',withdrawNote:'Los retiros pueden tardar de 1 a 12 horas.',gotIt:'¡Entendido! 👍',loading:'Cargando...',deposit:'Depositar',friendsTitle:'Amigos',yourReward:'Tu Recompensa',yourFriends:'Tus Amigos',freeSnowman:'+1 Snowman gratis por amigo',snowHatch:'5% Snow cuando conviertan',tonMint:'15% TON cuando compren Snowmen',copy:'📋 Copiar',share:'📤 Compartir',noFriends:'Aún no hay amigos 🧱',leaderboard:'🏆 Clasificación',referrals:'Referidos',snowmen:'Snowmen',participateWin:'Participa y gana TON',prizes:'🎁 Premios :',yourPosition:'Tu Posición',topReferrers:'🏅 Mejores Referidores',topSnowmen:'🏅 Mejores Dueños de Snowmen',wallet:'BILLETERA',yourBalance:'Tu Saldo',activeSnowman:'Snowman Activo',snowBalance:'Saldo Snow',waiting:'ESPERANDO',live:'EN VIVO',winner:'Ganador',won:'Ganó',promoActivated:'¡Promo activada!',snowAdded:'Snow añadido a tu saldo',apply:'Aplicar',success:'¡Éxito!',failed:'Fallido',insufficient:'Saldo insuficiente',tooMany:'Demasiadas solicitudes',set:'Establecer',noHistory:'Sin transacciones' },
-    fr: { tasks:'Tâches',market:'Marché',friends:'Amis',profile:'Profil',hatchBtn:'Convertir ❄️',mintBtn:'Créer ☃️',promoCode:'Code Promo',limited:'LIMITÉ',hatchTitle:'Convertir Snow ❄️',snowToHatch:'❄️ Snow à convertir',craftFee:'Frais de fabrication (10%)',totalRequired:'❄️ Total requis',available:'Disponible',snowflakes:'flocons',hatch:'Convertir ❄️',mintTitle:'Créer Snowmen ☃️',mintOnly1:'Vous ne pouvez acheter qu\'1 pack',starterPack:'Pack Débutant',proPack:'Pack Pro',whalePack:'Pack Baleine',miningSpeed:'Vitesse de minage',buy:'Acheter',purchased:'Acheté ✓',cancel:'ANNULER',packPurchased:'Pack acheté!',snowmenAdded:'Snowmen ajoutés',awesome:'Super! 🎉',tasksTitle:'Tâches',submitChannel:'Soumettre une chaîne',addTask:'Ajouter une tâche',taskHistory:'Historique des tâches',join:'Rejoindre',done:'Fait',channelPost:'Postez sur notre bot dans votre chaîne et gagnez de 5 à 1000 Snow.',marketTitle:'Marché',all:'Tout',yours:'Mes commandes',lootBox:'Boîte de butin',createOrder:'+ Créer commande',confirmOrder:'Confirmer commande',amountSnow:'Quantité de Snow ❄️',pricePerSnow:'Prix par Snow',totalValue:'Valeur totale',noOrders:'Aucune commande disponible',noYourOrders:'Aucune commande active.',createSnowOrder:'Créez une commande Snow pour commencer.',depositTab:'Dépôt',withdrawTab:'Retrait',enterAmount:'Entrer le montant (TON)',sentManually:'Envoyé manuellement — Vérifier',paymentMethod:'Méthode de paiement',connectWallet:'Connecter le portefeuille',disconnect:'Déconnecter',manualDeposit:'ou (Manuel) Adresse de dépôt',memo:'Mémo (Requis — votre ID)',memoNote:'Incluez toujours le mémo. Les dépôts sans mémo ne peuvent pas être crédités automatiquement.',withdrawAmount:'Montant du retrait',tonAddress:'Adresse TON',enterTonAddress:'Entrer l\'adresse TON',minWithdraw:'min 0.2',feeWithdraw:'frais 5%',withdraw:'Retirer',history:'Historique',transactionHistory:'Historique des transactions',withdrawRequested:'Retrait demandé',withdrawNote:'Les retraits peuvent prendre de 1 à 12 heures.',gotIt:'Compris! 👍',loading:'Chargement...',deposit:'Déposer',friendsTitle:'Amis',yourReward:'Votre récompense',yourFriends:'Vos amis',freeSnowman:'+1 Snowman gratuit par ami',snowHatch:'5% Snow quand ils convertissent',tonMint:'15% TON quand ils achètent des Snowmen',copy:'📋 Copier',share:'📤 Partager',noFriends:'Pas encore d\'amis 🧱',leaderboard:'🏆 Classement',referrals:'Parrainages',snowmen:'Snowmen',participateWin:'Participez et gagnez TON',prizes:'🎁 Prix :',yourPosition:'Votre position',topReferrers:'🏅 Meilleurs parrains',topSnowmen:'🏅 Meilleurs propriétaires de Snowmen',wallet:'PORTEFEUILLE',yourBalance:'Votre solde',activeSnowman:'Snowman actif',snowBalance:'Solde Snow',waiting:'EN ATTENTE',live:'EN DIRECT',winner:'Gagnant',won:'Gagné',promoActivated:'Promo activée!',snowAdded:'Snow ajouté à votre solde',apply:'Appliquer',success:'Succès!',failed:'Échec',insufficient:'Solde insuffisant',tooMany:'Trop de demandes',set:'Définir',noHistory:'Aucune transaction' },
-    pt: { tasks:'Tarefas',market:'Mercado',friends:'Amigos',profile:'Perfil',hatchBtn:'Converter ❄️',mintBtn:'Criar ☃️',promoCode:'Código Promo',limited:'LIMITADO',hatchTitle:'Converter Snow ❄️',snowToHatch:'❄️ Snow para converter',craftFee:'Taxa de criação (10%)',totalRequired:'❄️ Total necessário',available:'Disponível',snowflakes:'flocos',hatch:'Converter ❄️',mintTitle:'Criar Snowmen ☃️',mintOnly1:'Só pode comprar 1 pacote',starterPack:'Pacote Iniciante',proPack:'Pacote Pro',whalePack:'Pacote Baleia',miningSpeed:'Velocidade de mineração',buy:'Comprar',purchased:'Comprado ✓',cancel:'CANCELAR',packPurchased:'Pacote comprado!',snowmenAdded:'Snowmen adicionados',awesome:'Incrível! 🎉',tasksTitle:'Tarefas',submitChannel:'Enviar Canal',addTask:'Adicionar Tarefa',taskHistory:'Histórico de Tarefas',join:'Entrar',done:'Feito',channelPost:'Poste sobre o nosso bot no seu canal e ganhe de 5 a 1000 Snow.',marketTitle:'Mercado',all:'Todos',yours:'Meus pedidos',lootBox:'Caixa de Loot',createOrder:'+ Criar Pedido',confirmOrder:'Confirmar Pedido',amountSnow:'Quantidade de Snow ❄️',pricePerSnow:'Preço por Snow',totalValue:'Valor Total',noOrders:'Nenhum pedido disponível',noYourOrders:'Nenhum pedido ativo.',createSnowOrder:'Crie um pedido Snow para começar.',depositTab:'Depositar',withdrawTab:'Sacar',enterAmount:'Inserir Valor (TON)',sentManually:'Enviado Manualmente — Verificar',paymentMethod:'Método de Pagamento',connectWallet:'Conectar Carteira',disconnect:'Desconectar',manualDeposit:'ou (Manual) Endereço de Depósito',memo:'Memo (Obrigatório — seu ID)',memoNote:'Sempre inclua o memo. Depósitos sem memo não podem ser creditados automaticamente.',withdrawAmount:'Valor do Saque',tonAddress:'Endereço TON',enterTonAddress:'Inserir endereço TON',minWithdraw:'mín 0.2',feeWithdraw:'taxa 5%',withdraw:'Sacar',history:'Histórico',transactionHistory:'Histórico de Transações',withdrawRequested:'Saque Solicitado',withdrawNote:'Os saques podem levar de 1 a 12 horas.',gotIt:'Entendi! 👍',loading:'Carregando...',deposit:'Depositar',friendsTitle:'Amigos',yourReward:'Sua Recompensa',yourFriends:'Seus Amigos',freeSnowman:'+1 Snowman grátis por amigo',snowHatch:'5% Snow quando converterem',tonMint:'15% TON quando comprarem Snowmen',copy:'📋 Copiar',share:'📤 Compartilhar',noFriends:'Ainda sem amigos 🧱',leaderboard:'🏆 Classificação',referrals:'Indicações',snowmen:'Snowmen',participateWin:'Participe e ganhe TON',prizes:'🎁 Prêmios :',yourPosition:'Sua Posição',topReferrers:'🏅 Melhores Indicadores',topSnowmen:'🏅 Melhores Donos de Snowmen',wallet:'CARTEIRA',yourBalance:'Seu Saldo',activeSnowman:'Snowman Ativo',snowBalance:'Saldo Snow',waiting:'AGUARDANDO',live:'AO VIVO',winner:'Vencedor',won:'Ganhou',promoActivated:'Promo ativada!',snowAdded:'Snow adicionado ao saldo',apply:'Aplicar',success:'Sucesso!',failed:'Falhou',insufficient:'Saldo insuficiente',tooMany:'Muitas solicitações',set:'Definir',noHistory:'Sem transações' },
-    it: { tasks:'Attività',market:'Mercato',friends:'Amici',profile:'Profilo',hatchBtn:'Converti ❄️',mintBtn:'Crea ☃️',promoCode:'Codice Promo',limited:'LIMITATO',hatchTitle:'Converti Snow ❄️',snowToHatch:'❄️ Snow da convertire',craftFee:'Commissione di creazione (10%)',totalRequired:'❄️ Totale richiesto',available:'Disponibile',snowflakes:'fiocchi',hatch:'Converti ❄️',mintTitle:'Crea Snowmen ☃️',mintOnly1:'Puoi acquistare solo 1 pacchetto',starterPack:'Pacchetto Starter',proPack:'Pacchetto Pro',whalePack:'Pacchetto Balena',miningSpeed:'Velocità di mining',buy:'Acquista',purchased:'Acquistato ✓',cancel:'ANNULLA',packPurchased:'Pacchetto acquistato!',snowmenAdded:'Snowmen aggiunti',awesome:'Fantastico! 🎉',tasksTitle:'Attività',submitChannel:'Invia Canale',addTask:'Aggiungi Attività',taskHistory:'Cronologia Attività',join:'Unisciti',done:'Fatto',channelPost:'Pubblica del nostro bot sul tuo canale e guadagna da 5 a 1000 Snow.',marketTitle:'Mercato',all:'Tutti',yours:'I miei',lootBox:'Loot Box',createOrder:'+ Crea Ordine',confirmOrder:'Conferma Ordine',amountSnow:'Quantità Snow ❄️',pricePerSnow:'Prezzo per Snow',totalValue:'Valore Totale',noOrders:'Nessun ordine disponibile',noYourOrders:'Nessun ordine attivo.',createSnowOrder:'Crea un ordine Snow per iniziare.',depositTab:'Deposito',withdrawTab:'Prelievo',enterAmount:'Inserisci Importo (TON)',sentManually:'Inviato Manualmente — Verifica',paymentMethod:'Metodo di Pagamento',connectWallet:'Collega Portafoglio',disconnect:'Disconnetti',manualDeposit:'o (Manuale) Indirizzo di Deposito',memo:'Memo (Obbligatorio — tuo ID)',memoNote:'Includi sempre il memo. I depositi senza memo non possono essere accreditati automaticamente.',withdrawAmount:'Importo Prelievo',tonAddress:'Indirizzo TON',enterTonAddress:'Inserisci indirizzo TON',minWithdraw:'min 0.2',feeWithdraw:'commissione 5%',withdraw:'Preleva',history:'Cronologia',transactionHistory:'Cronologia Transazioni',withdrawRequested:'Prelievo Richiesto',withdrawNote:'I prelievi possono richiedere da 1 a 12 ore.',gotIt:'Capito! 👍',loading:'Caricamento...',deposit:'Deposita',friendsTitle:'Amici',yourReward:'La tua Ricompensa',yourFriends:'I tuoi Amici',freeSnowman:'+1 Snowman gratuito per amico',snowHatch:'5% Snow quando convertono',tonMint:'15% TON quando acquistano Snowmen',copy:'📋 Copia',share:'📤 Condividi',noFriends:'Ancora nessun amico 🧱',leaderboard:'🏆 Classifica',referrals:'Referral',snowmen:'Snowmen',participateWin:'Partecipa e vinci TON',prizes:'🎁 Premi :',yourPosition:'La tua Posizione',topReferrers:'🏅 Migliori Referral',topSnowmen:'🏅 Migliori Proprietari di Snowmen',wallet:'PORTAFOGLIO',yourBalance:'Il tuo Saldo',activeSnowman:'Snowman Attivo',snowBalance:'Saldo Snow',waiting:'IN ATTESA',live:'LIVE',winner:'Vincitore',won:'Vinto',promoActivated:'Promo attivata!',snowAdded:'Snow aggiunto al saldo',apply:'Applica',success:'Successo!',failed:'Fallito',insufficient:'Saldo insufficiente',tooMany:'Troppe richieste',set:'Imposta',noHistory:'Nessuna transazione' },
-    vi: { tasks:'Nhiệm vụ',market:'Thị trường',friends:'Bạn bè',profile:'Hồ sơ',hatchBtn:'Chuyển đổi ❄️',mintBtn:'Tạo ☃️',promoCode:'Mã Promo',limited:'GIỚI HẠN',hatchTitle:'Chuyển đổi Snow ❄️',snowToHatch:'❄️ Snow để chuyển đổi',craftFee:'Phí tạo (10%)',totalRequired:'❄️ Tổng cần thiết',available:'Có sẵn',snowflakes:'bông tuyết',hatch:'Chuyển đổi ❄️',mintTitle:'Tạo Snowmen ☃️',mintOnly1:'Chỉ có thể mua 1 gói',starterPack:'Gói Khởi đầu',proPack:'Gói Pro',whalePack:'Gói Cá voi',miningSpeed:'Tốc độ khai thác',buy:'Mua',purchased:'Đã mua ✓',cancel:'HỦY',packPurchased:'Đã mua gói!',snowmenAdded:'Đã thêm Snowmen',awesome:'Tuyệt vời! 🎉',tasksTitle:'Nhiệm vụ',submitChannel:'Gửi Kênh',addTask:'Thêm Nhiệm vụ',taskHistory:'Lịch sử Nhiệm vụ',join:'Tham gia',done:'Xong',channelPost:'Đăng về bot của chúng tôi trên kênh của bạn và kiếm từ 5 đến 1000 Snow.',marketTitle:'Thị trường',all:'Tất cả',yours:'Của tôi',lootBox:'Hộp Loot',createOrder:'+ Tạo đơn hàng',confirmOrder:'Xác nhận đơn hàng',amountSnow:'Số lượng Snow ❄️',pricePerSnow:'Giá mỗi Snow',totalValue:'Tổng giá trị',noOrders:'Không có đơn hàng',noYourOrders:'Không có đơn hàng nào.',createSnowOrder:'Tạo đơn Snow để bắt đầu giao dịch.',depositTab:'Nạp tiền',withdrawTab:'Rút tiền',enterAmount:'Nhập số tiền (TON)',sentManually:'Đã gửi thủ công — Kiểm tra',paymentMethod:'Phương thức thanh toán',connectWallet:'Kết nối ví',disconnect:'Ngắt kết nối',manualDeposit:'hoặc (Thủ công) Địa chỉ nạp tiền',memo:'Ghi chú (Bắt buộc — ID của bạn)',memoNote:'Luôn bao gồm ghi chú. Khoản nạp không có ghi chú không thể ghi tự động.',withdrawAmount:'Số tiền rút',tonAddress:'Địa chỉ TON',enterTonAddress:'Nhập địa chỉ TON',minWithdraw:'tối thiểu 0.2',feeWithdraw:'phí 5%',withdraw:'Rút tiền',history:'Lịch sử',transactionHistory:'Lịch sử giao dịch',withdrawRequested:'Yêu cầu rút tiền',withdrawNote:'Việc rút tiền có thể mất từ 1 đến 12 giờ.',gotIt:'Hiểu rồi! 👍',loading:'Đang tải...',deposit:'Nạp tiền',friendsTitle:'Bạn bè',yourReward:'Phần thưởng của bạn',yourFriends:'Bạn bè của bạn',freeSnowman:'+1 Snowman miễn phí mỗi bạn bè',snowHatch:'5% Snow khi họ chuyển đổi',tonMint:'15% TON khi họ mua Snowmen',copy:'📋 Sao chép',share:'📤 Chia sẻ',noFriends:'Chưa có bạn bè 🧱',leaderboard:'🏆 Bảng xếp hạng',referrals:'Giới thiệu',snowmen:'Snowmen',participateWin:'Tham gia và giành TON',prizes:'🎁 Giải thưởng :',yourPosition:'Vị trí của bạn',topReferrers:'🏅 Người giới thiệu hàng đầu',topSnowmen:'🏅 Chủ sở hữu Snowmen hàng đầu',wallet:'VÍ',yourBalance:'Số dư của bạn',activeSnowman:'Snowman Hoạt động',snowBalance:'Số dư Snow',waiting:'CHỜ ĐỢI',live:'TRỰC TIẾP',winner:'Người thắng',won:'Đã thắng',promoActivated:'Promo đã kích hoạt!',snowAdded:'Snow đã được thêm',apply:'Áp dụng',success:'Thành công!',failed:'Thất bại',insufficient:'Số dư không đủ',tooMany:'Quá nhiều yêu cầu',set:'Đặt',noHistory:'Không có giao dịch' },
-    id: { tasks:'Tugas',market:'Pasar',friends:'Teman',profile:'Profil',hatchBtn:'Konversi ❄️',mintBtn:'Buat ☃️',promoCode:'Kode Promo',limited:'TERBATAS',hatchTitle:'Konversi Snow ❄️',snowToHatch:'❄️ Snow untuk dikonversi',craftFee:'Biaya pembuatan (10%)',totalRequired:'❄️ Total diperlukan',available:'Tersedia',snowflakes:'kepingan salju',hatch:'Konversi ❄️',mintTitle:'Buat Snowmen ☃️',mintOnly1:'Hanya bisa membeli 1 paket',starterPack:'Paket Pemula',proPack:'Paket Pro',whalePack:'Paket Paus',miningSpeed:'Kecepatan penambangan',buy:'Beli',purchased:'Dibeli ✓',cancel:'BATAL',packPurchased:'Paket dibeli!',snowmenAdded:'Snowmen ditambahkan',awesome:'Luar biasa! 🎉',tasksTitle:'Tugas',submitChannel:'Kirim Saluran',addTask:'Tambah Tugas',taskHistory:'Riwayat Tugas',join:'Bergabung',done:'Selesai',channelPost:'Posting tentang bot kami di saluran Anda dan dapatkan 5 hingga 1000 Snow.',marketTitle:'Pasar',all:'Semua',yours:'Pesanan Saya',lootBox:'Kotak Loot',createOrder:'+ Buat Pesanan',confirmOrder:'Konfirmasi Pesanan',amountSnow:'Jumlah Snow ❄️',pricePerSnow:'Harga per Snow',totalValue:'Total Nilai',noOrders:'Tidak ada pesanan',noYourOrders:'Tidak ada pesanan aktif.',createSnowOrder:'Buat pesanan Snow untuk mulai berdagang.',depositTab:'Setor',withdrawTab:'Tarik',enterAmount:'Masukkan Jumlah (TON)',sentManually:'Dikirim Manual — Periksa',paymentMethod:'Metode Pembayaran',connectWallet:'Hubungkan Dompet',disconnect:'Putuskan',manualDeposit:'atau (Manual) Alamat Setoran',memo:'Memo (Wajib — ID Anda)',memoNote:'Selalu sertakan memo. Setoran tanpa memo tidak dapat dikreditkan secara otomatis.',withdrawAmount:'Jumlah Penarikan',tonAddress:'Alamat TON',enterTonAddress:'Masukkan alamat TON',minWithdraw:'min 0.2',feeWithdraw:'biaya 5%',withdraw:'Tarik',history:'Riwayat',transactionHistory:'Riwayat Transaksi',withdrawRequested:'Penarikan Diminta',withdrawNote:'Penarikan membutuhkan waktu 1 hingga 12 jam.',gotIt:'Mengerti! 👍',loading:'Memuat...',deposit:'Setor',friendsTitle:'Teman',yourReward:'Hadiah Anda',yourFriends:'Teman Anda',freeSnowman:'+1 Snowman gratis per teman',snowHatch:'5% Snow saat mereka mengkonversi',tonMint:'15% TON saat mereka membeli Snowmen',copy:'📋 Salin',share:'📤 Bagikan',noFriends:'Belum ada teman 🧱',leaderboard:'🏆 Papan Peringkat',referrals:'Referral',snowmen:'Snowmen',participateWin:'Ikut & menangkan TON',prizes:'🎁 Hadiah :',yourPosition:'Posisi Anda',topReferrers:'🏅 Referral Terbaik',topSnowmen:'🏅 Pemilik Snowmen Terbaik',wallet:'DOMPET',yourBalance:'Saldo Anda',activeSnowman:'Snowman Aktif',snowBalance:'Saldo Snow',waiting:'MENUNGGU',live:'LANGSUNG',winner:'Pemenang',won:'Menang',promoActivated:'Promo diaktifkan!',snowAdded:'Snow ditambahkan',apply:'Terapkan',success:'Berhasil!',failed:'Gagal',insufficient:'Saldo tidak cukup',tooMany:'Terlalu banyak permintaan',set:'Atur',noHistory:'Tidak ada transaksi' },
-    uk: { tasks:'Завдання',market:'Ринок',friends:'Друзі',profile:'Профіль',hatchBtn:'Конвертувати ❄️',mintBtn:'Створити ☃️',promoCode:'Промокод',limited:'ОБМЕЖЕНО',hatchTitle:'Конвертувати Snow ❄️',snowToHatch:'❄️ Snow для конвертації',craftFee:'Комісія (10%)',totalRequired:'❄️ Всього потрібно',available:'Доступно',snowflakes:'сніжинок',hatch:'Конвертувати ❄️',mintTitle:'Створити Snowmen ☃️',mintOnly1:'Можна придбати лише 1 пакет',starterPack:'Стартовий пакет',proPack:'Про пакет',whalePack:'Пакет кита',miningSpeed:'Швидкість майнінгу',buy:'Купити',purchased:'Куплено ✓',cancel:'СКАСУВАТИ',packPurchased:'Пакет куплено!',snowmenAdded:'Snowmen додано',awesome:'Чудово! 🎉',tasksTitle:'Завдання',submitChannel:'Надіслати канал',addTask:'Додати завдання',taskHistory:'Історія завдань',join:'Приєднатись',done:'Готово',channelPost:'Опублікуйте про нашого бота у своєму каналі та заробіть від 5 до 1000 Snow.',marketTitle:'Ринок',all:'Усі',yours:'Мої',lootBox:'Лутбокс',createOrder:'+ Створити ордер',confirmOrder:'Підтвердити ордер',amountSnow:'Кількість Snow ❄️',pricePerSnow:'Ціна за Snow',totalValue:'Загальна вартість',noOrders:'Немає доступних ордерів',noYourOrders:'Немає активних ордерів.',createSnowOrder:'Створіть ордер Snow для торгівлі.',depositTab:'Депозит',withdrawTab:'Виведення',enterAmount:'Введіть суму (TON)',sentManually:'Відправлено вручну — Перевірити',paymentMethod:'Спосіб оплати',connectWallet:'Підключити гаманець',disconnect:'Відключити',manualDeposit:'або (Вручну) Адреса депозиту',memo:'Коментар (Обовʼязково — ваш ID)',memoNote:'Завжди вказуйте коментар. Депозити без коментаря не зараховуються автоматично.',withdrawAmount:'Сума виведення',tonAddress:'Адреса TON',enterTonAddress:'Введіть адресу TON',minWithdraw:'мін 0.2',feeWithdraw:'комісія 5%',withdraw:'Вивести',history:'Історія',transactionHistory:'Історія транзакцій',withdrawRequested:'Запит на виведення',withdrawNote:'Виведення займає від 1 до 12 годин.',gotIt:'Зрозуміло! 👍',loading:'Завантаження...',deposit:'Поповнити',friendsTitle:'Друзі',yourReward:'Ваша нагорода',yourFriends:'Ваші друзі',freeSnowman:'+1 безкоштовний Snowman за друга',snowHatch:'5% Snow за їх конвертацію',tonMint:'15% TON за їх купівлю Snowmen',copy:'📋 Копіювати',share:'📤 Поділитись',noFriends:'Поки немає друзів 🧱',leaderboard:'🏆 Рейтинг',referrals:'Реферали',snowmen:'Snowmen',participateWin:'Беріть участь і вигравайте TON',prizes:'🎁 Призи :',yourPosition:'Ваша позиція',topReferrers:'🏅 Топ рефералів',topSnowmen:'🏅 Топ власників Snowmen',wallet:'ГАМАНЕЦЬ',yourBalance:'Ваш баланс',activeSnowman:'Активні Snowman',snowBalance:'Баланс Snow',waiting:'ОЧІКУВАННЯ',live:'НАЖИВО',winner:'Переможець',won:'Виграв',promoActivated:'Промокод активовано!',snowAdded:'Snow додано до балансу',apply:'Застосувати',success:'Успішно!',failed:'Помилка',insufficient:'Недостатньо коштів',tooMany:'Забагато запитів',set:'Встановити',noHistory:'Немає транзакцій' },
-    fa: { tasks:'وظایف',market:'بازار',friends:'دوستان',profile:'پروفایل',hatchBtn:'تبدیل ❄️',mintBtn:'ایجاد ☃️',promoCode:'کد تخفیف',limited:'محدود',hatchTitle:'تبدیل Snow ❄️',snowToHatch:'❄️ Snow برای تبدیل',craftFee:'کارمزد ساخت (10%)',totalRequired:'❄️ مجموع مورد نیاز',available:'موجود',snowflakes:'دانه برف',hatch:'تبدیل ❄️',mintTitle:'ایجاد Snowmen ☃️',mintOnly1:'فقط می‌توانید 1 بسته بخرید',starterPack:'بسته مبتدی',proPack:'بسته حرفه‌ای',whalePack:'بسته نهنگ',miningSpeed:'سرعت استخراج',buy:'خرید',purchased:'خریداری شد ✓',cancel:'لغو',packPurchased:'بسته خریداری شد!',snowmenAdded:'Snowmen اضافه شد',awesome:'عالی! 🎉',tasksTitle:'وظایف',submitChannel:'ارسال کانال',addTask:'افزودن وظیفه',taskHistory:'تاریخچه وظایف',join:'پیوستن',done:'انجام شد',channelPost:'در مورد ربات ما در کانال خود پست بگذارید و از 5 تا 1000 Snow کسب کنید.',marketTitle:'بازار',all:'همه',yours:'سفارشات من',lootBox:'جعبه غنیمت',createOrder:'+ ایجاد سفارش',confirmOrder:'تأیید سفارش',amountSnow:'مقدار Snow ❄️',pricePerSnow:'قیمت هر Snow',totalValue:'ارزش کل',noOrders:'هیچ سفارشی موجود نیست',noYourOrders:'سفارش فعالی وجود ندارد.',createSnowOrder:'یک سفارش Snow برای تجارت ایجاد کنید.',depositTab:'واریز',withdrawTab:'برداشت',enterAmount:'مبلغ را وارد کنید (TON)',sentManually:'دستی ارسال شد — بررسی',paymentMethod:'روش پرداخت',connectWallet:'اتصال کیف پول',disconnect:'قطع اتصال',manualDeposit:'یا (دستی) آدرس واریز',memo:'یادداشت (الزامی — شناسه شما)',memoNote:'همیشه یادداشت را وارد کنید. واریزهای بدون یادداشت به صورت خودکار اعتبارسنجی نمی‌شوند.',withdrawAmount:'مبلغ برداشت',tonAddress:'آدرس TON',enterTonAddress:'آدرس TON را وارد کنید',minWithdraw:'حداقل 0.2',feeWithdraw:'کارمزد 5%',withdraw:'برداشت',history:'تاریخچه',transactionHistory:'تاریخچه تراکنش‌ها',withdrawRequested:'درخواست برداشت ثبت شد',withdrawNote:'برداشت‌ها ممکن است از 1 تا 12 ساعت طول بکشند.',gotIt:'متوجه شدم! 👍',loading:'در حال بارگذاری...',deposit:'واریز',friendsTitle:'دوستان',yourReward:'پاداش شما',yourFriends:'دوستان شما',freeSnowman:'+1 Snowman رایگان به ازای هر دوست',snowHatch:'5% Snow هنگام تبدیل آن‌ها',tonMint:'15% TON هنگام خرید Snowmen',copy:'📋 کپی',share:'📤 اشتراک‌گذاری',noFriends:'هنوز دوستی نیست 🧱',leaderboard:'🏆 جدول رتبه‌بندی',referrals:'معرفی‌ها',snowmen:'Snowmen',participateWin:'شرکت کنید و TON ببرید',prizes:'🎁 جوایز :',yourPosition:'موقعیت شما',topReferrers:'🏅 برترین معرفان',topSnowmen:'🏅 برترین صاحبان Snowmen',wallet:'کیف پول',yourBalance:'موجودی شما',activeSnowman:'Snowman فعال',snowBalance:'موجودی Snow',waiting:'در انتظار',live:'زنده',winner:'برنده',won:'برد',promoActivated:'کد تخفیف فعال شد!',snowAdded:'Snow به موجودی اضافه شد',apply:'اعمال',success:'موفق!',failed:'ناموفق',insufficient:'موجودی کافی نیست',tooMany:'درخواست‌های زیاد',set:'تنظیم',noHistory:'تراکنشی وجود ندارد' },
-    pl: { tasks:'Zadania',market:'Rynek',friends:'Przyjaciele',profile:'Profil',hatchBtn:'Konwertuj ❄️',mintBtn:'Utwórz ☃️',promoCode:'Kod Promo',limited:'OGRANICZONY',hatchTitle:'Konwertuj Snow ❄️',snowToHatch:'❄️ Snow do konwersji',craftFee:'Opłata za tworzenie (10%)',totalRequired:'❄️ Łącznie wymagane',available:'Dostępne',snowflakes:'płatków',hatch:'Konwertuj ❄️',mintTitle:'Utwórz Snowmen ☃️',mintOnly1:'Możesz kupić tylko 1 pakiet',starterPack:'Pakiet Startowy',proPack:'Pakiet Pro',whalePack:'Pakiet Wieloryba',miningSpeed:'Prędkość wydobycia',buy:'Kup',purchased:'Kupiono ✓',cancel:'ANULUJ',packPurchased:'Pakiet kupiony!',snowmenAdded:'Snowmen dodani',awesome:'Świetnie! 🎉',tasksTitle:'Zadania',submitChannel:'Wyślij Kanał',addTask:'Dodaj Zadanie',taskHistory:'Historia Zadań',join:'Dołącz',done:'Gotowe',channelPost:'Opublikuj o naszym bocie na swoim kanale i zarabiaj od 5 do 1000 Snow.',marketTitle:'Rynek',all:'Wszystkie',yours:'Moje',lootBox:'Skrzynka',createOrder:'+ Utwórz zamówienie',confirmOrder:'Potwierdź zamówienie',amountSnow:'Ilość Snow ❄️',pricePerSnow:'Cena za Snow',totalValue:'Całkowita wartość',noOrders:'Brak dostępnych zamówień',noYourOrders:'Brak aktywnych zamówień.',createSnowOrder:'Utwórz zamówienie Snow aby handlować.',depositTab:'Wpłata',withdrawTab:'Wypłata',enterAmount:'Wprowadź kwotę (TON)',sentManually:'Wysłano ręcznie — Sprawdź',paymentMethod:'Metoda płatności',connectWallet:'Połącz portfel',disconnect:'Rozłącz',manualDeposit:'lub (Ręcznie) Adres wpłaty',memo:'Memo (Wymagane — Twoje ID)',memoNote:'Zawsze dołączaj memo. Wpłaty bez memo nie mogą być naliczone automatycznie.',withdrawAmount:'Kwota wypłaty',tonAddress:'Adres TON',enterTonAddress:'Wprowadź adres TON',minWithdraw:'min 0.2',feeWithdraw:'opłata 5%',withdraw:'Wypłać',history:'Historia',transactionHistory:'Historia transakcji',withdrawRequested:'Żądanie wypłaty',withdrawNote:'Wypłaty mogą zająć od 1 do 12 godzin.',gotIt:'Rozumiem! 👍',loading:'Ładowanie...',deposit:'Wpłać',friendsTitle:'Przyjaciele',yourReward:'Twoja nagroda',yourFriends:'Twoi znajomi',freeSnowman:'+1 darmowy Snowman za znajomego',snowHatch:'5% Snow przy ich konwersji',tonMint:'15% TON przy ich zakupie Snowmen',copy:'📋 Kopiuj',share:'📤 Udostępnij',noFriends:'Brak znajomych 🧱',leaderboard:'🏆 Rankingi',referrals:'Polecenia',snowmen:'Snowmen',participateWin:'Weź udział i wygraj TON',prizes:'🎁 Nagrody :',yourPosition:'Twoja pozycja',topReferrers:'🏅 Najlepsi polecający',topSnowmen:'🏅 Najlepsi właściciele Snowmen',wallet:'PORTFEL',yourBalance:'Twoje saldo',activeSnowman:'Aktywny Snowman',snowBalance:'Saldo Snow',waiting:'OCZEKIWANIE',live:'NA ŻYWO',winner:'Zwycięzca',won:'Wygrał',promoActivated:'Promo aktywowane!',snowAdded:'Snow dodany do salda',apply:'Zastosuj',success:'Sukces!',failed:'Niepowodzenie',insufficient:'Niewystarczające saldo',tooMany:'Zbyt wiele żądań',set:'Ustaw',noHistory:'Brak transakcji' },
-    uz: { tasks:'Vazifalar',market:'Bozor',friends:'Doʻstlar',profile:'Profil',hatchBtn:'Konvertatsiya ❄️',mintBtn:'Yaratish ☃️',promoCode:'Promo kod',limited:'CHEKLANGAN',hatchTitle:'Snow konvertatsiya ❄️',snowToHatch:'❄️ Konvertatsiya uchun Snow',craftFee:'Yaratish to\'lovi (10%)',totalRequired:'❄️ Jami kerak',available:'Mavjud',snowflakes:'qor parchalar',hatch:'Konvertatsiya ❄️',mintTitle:'Snowmen yaratish ☃️',mintOnly1:'Faqat 1 paket sotib olish mumkin',starterPack:'Boshlang\'ich paket',proPack:'Pro paket',whalePack:'Kit paketi',miningSpeed:'Qazib olish tezligi',buy:'Sotib olish',purchased:'Sotib olindi ✓',cancel:'BEKOR',packPurchased:'Paket sotib olindi!',snowmenAdded:'Snowmen qoʻshildi',awesome:'Ajoyib! 🎉',tasksTitle:'Vazifalar',submitChannel:'Kanal yuborish',addTask:'Vazifa qoʻshish',taskHistory:'Vazifalar tarixi',join:'Qoʻshilish',done:'Bajarildi',channelPost:'Kanalingizda botimiz haqida post qoʻying va 5 dan 1000 gacha Snow toping.',marketTitle:'Bozor',all:'Barchasi',yours:'Menikilar',lootBox:'Loot qutisi',createOrder:'+ Buyurtma yaratish',confirmOrder:'Buyurtmani tasdiqlash',amountSnow:'Snow miqdori ❄️',pricePerSnow:'Har bir Snow narxi',totalValue:'Jami qiymat',noOrders:'Buyurtmalar yoʻq',noYourOrders:'Faol buyurtmalar yoʻq.',createSnowOrder:'Savdo uchun Snow buyurtmasi yarating.',depositTab:'Kiritish',withdrawTab:'Chiqarish',enterAmount:'Miqdorni kiriting (TON)',sentManually:'Qoʻlda yuborildi — Tekshirish',paymentMethod:'To\'lov usuli',connectWallet:'Hamyon ulash',disconnect:'Uzish',manualDeposit:'yoki (Qoʻlda) Kiritish manzili',memo:'Izoh (Majburiy — ID)',memoNote:'Izohni doim qoʻshing. Izohi yoʻq kirimlar avtomatik qoʻshilmaydi.',withdrawAmount:'Chiqarish miqdori',tonAddress:'TON manzili',enterTonAddress:'TON manzilini kiriting',minWithdraw:'min 0.2',feeWithdraw:'toʻlov 5%',withdraw:'Chiqarish',history:'Tarix',transactionHistory:'Tranzaksiyalar tarixi',withdrawRequested:'Chiqarish soʻraldi',withdrawNote:'Chiqarishlar 1 dan 12 soatgacha davom etishi mumkin.',gotIt:'Tushundim! 👍',loading:'Yuklanmoqda...',deposit:'Kiritish',friendsTitle:'Doʻstlar',yourReward:'Sizning mukofotingiz',yourFriends:'Sizning doʻstlaringiz',freeSnowman:'Har doʻst uchun +1 bepul Snowman',snowHatch:'Ular konvertatsiya qilganda 5% Snow',tonMint:'Ular Snowmen sotib olganda 15% TON',copy:'📋 Nusxa',share:'📤 Ulashish',noFriends:'Hali doʻstlar yoʻq 🧱',leaderboard:'🏆 Reyting',referrals:'Referallar',snowmen:'Snowmen',participateWin:'Qatnashing va TON yuting',prizes:'🎁 Mukofotlar :',yourPosition:'Sizning oʻrningiz',topReferrers:'🏅 Eng yaxshi referallar',topSnowmen:'🏅 Eng koʻp Snowmen egalari',wallet:'HAMYON',yourBalance:'Balansingiz',activeSnowman:'Faol Snowman',snowBalance:'Snow balansi',waiting:'KUTISH',live:'JONLI',winner:'Gʻolib',won:'Yutdi',promoActivated:'Promo faollashtirildi!',snowAdded:'Snow balansga qoʻshildi',apply:'Qoʻllash',success:'Muvaffaqiyat!',failed:'Muvaffaqiyatsiz',insufficient:'Balans yetarli emas',tooMany:'Juda koʻp soʻrovlar',set:'Belgilash',noHistory:'Tranzaksiyalar yoʻq' },
-    th: { tasks:'งาน',market:'ตลาด',friends:'เพื่อน',profile:'โปรไฟล์',hatchBtn:'แปลง ❄️',mintBtn:'สร้าง ☃️',promoCode:'รหัสโปรโม',limited:'จำกัด',hatchTitle:'แปลง Snow ❄️',snowToHatch:'❄️ Snow ที่จะแปลง',craftFee:'ค่าธรรมเนียมการสร้าง (10%)',totalRequired:'❄️ รวมที่ต้องการ',available:'ที่มีอยู่',snowflakes:'เกล็ดหิมะ',hatch:'แปลง ❄️',mintTitle:'สร้าง Snowmen ☃️',mintOnly1:'ซื้อได้แค่ 1 แพ็กเกจ',starterPack:'แพ็กเกจเริ่มต้น',proPack:'แพ็กเกจโปร',whalePack:'แพ็กเกจวาฬ',miningSpeed:'ความเร็วการขุด',buy:'ซื้อ',purchased:'ซื้อแล้ว ✓',cancel:'ยกเลิก',packPurchased:'ซื้อแพ็กเกจแล้ว!',snowmenAdded:'เพิ่ม Snowmen แล้ว',awesome:'ยอดเยี่ยม! 🎉',tasksTitle:'งาน',submitChannel:'ส่งช่อง',addTask:'เพิ่มงาน',taskHistory:'ประวัติงาน',join:'เข้าร่วม',done:'เสร็จแล้ว',channelPost:'โพสต์เกี่ยวกับบอทของเราในช่องของคุณและรับ 5 ถึง 1000 Snow',marketTitle:'ตลาด',all:'ทั้งหมด',yours:'ของฉัน',lootBox:'กล่องรางวัล',createOrder:'+ สร้างคำสั่ง',confirmOrder:'ยืนยันคำสั่ง',amountSnow:'จำนวน Snow ❄️',pricePerSnow:'ราคาต่อ Snow',totalValue:'มูลค่ารวม',noOrders:'ไม่มีคำสั่ง',noYourOrders:'ไม่มีคำสั่งที่ใช้งาน',createSnowOrder:'สร้างคำสั่ง Snow เพื่อเริ่มซื้อขาย',depositTab:'ฝาก',withdrawTab:'ถอน',enterAmount:'ใส่จำนวน (TON)',sentManually:'ส่งด้วยตนเอง — ตรวจสอบ',paymentMethod:'วิธีการชำระเงิน',connectWallet:'เชื่อมต่อกระเป๋า',disconnect:'ตัดการเชื่อมต่อ',manualDeposit:'หรือ (ด้วยตนเอง) ที่อยู่ฝาก',memo:'หมายเหตุ (จำเป็น — ID ของคุณ)',memoNote:'ใส่หมายเหตุเสมอ การฝากที่ไม่มีหมายเหตุไม่สามารถเครดิตได้โดยอัตโนมัติ',withdrawAmount:'จำนวนถอน',tonAddress:'ที่อยู่ TON',enterTonAddress:'ใส่ที่อยู่ TON',minWithdraw:'ขั้นต่ำ 0.2',feeWithdraw:'ค่าธรรมเนียม 5%',withdraw:'ถอน',history:'ประวัติ',transactionHistory:'ประวัติธุรกรรม',withdrawRequested:'ร้องขอถอน',withdrawNote:'การถอนอาจใช้เวลา 1 ถึง 12 ชั่วโมง',gotIt:'เข้าใจแล้ว! 👍',loading:'กำลังโหลด...',deposit:'ฝาก',friendsTitle:'เพื่อน',yourReward:'รางวัลของคุณ',yourFriends:'เพื่อนของคุณ',freeSnowman:'+1 Snowman ฟรีต่อเพื่อน',snowHatch:'5% Snow เมื่อพวกเขาแปลง',tonMint:'15% TON เมื่อพวกเขาซื้อ Snowmen',copy:'📋 คัดลอก',share:'📤 แชร์',noFriends:'ยังไม่มีเพื่อน 🧱',leaderboard:'🏆 กระดานผู้นำ',referrals:'การแนะนำ',snowmen:'Snowmen',participateWin:'เข้าร่วมและชนะ TON',prizes:'🎁 รางวัล :',yourPosition:'ตำแหน่งของคุณ',topReferrers:'🏅 ผู้แนะนำอันดับต้น',topSnowmen:'🏅 เจ้าของ Snowmen อันดับต้น',wallet:'กระเป๋า',yourBalance:'ยอดคงเหลือ',activeSnowman:'Snowman ที่ใช้งาน',snowBalance:'ยอด Snow',waiting:'รอ',live:'สด',winner:'ผู้ชนะ',won:'ชนะ',promoActivated:'เปิดใช้งานโปรโมชัน!',snowAdded:'เพิ่ม Snow แล้ว',apply:'ใช้',success:'สำเร็จ!',failed:'ล้มเหลว',insufficient:'ยอดไม่เพียงพอ',tooMany:'คำขอมากเกินไป',set:'ตั้งค่า',noHistory:'ไม่มีธุรกรรม' },
-    bn: { tasks:'কাজ',market:'বাজার',friends:'বন্ধুরা',profile:'প্রোফাইল',hatchBtn:'রূপান্তর ❄️',mintBtn:'তৈরি ☃️',promoCode:'প্রমো কোড',limited:'সীমিত',hatchTitle:'Snow রূপান্তর ❄️',snowToHatch:'❄️ রূপান্তরের জন্য Snow',craftFee:'তৈরির ফি (10%)',totalRequired:'❄️ মোট প্রয়োজন',available:'উপলব্ধ',snowflakes:'তুষার',hatch:'রূপান্তর ❄️',mintTitle:'Snowmen তৈরি ☃️',mintOnly1:'শুধু 1টি প্যাক কিনতে পারবেন',starterPack:'স্টার্টার প্যাক',proPack:'প্রো প্যাক',whalePack:'হোয়েল প্যাক',miningSpeed:'মাইনিং গতি',buy:'কিনুন',purchased:'কেনা হয়েছে ✓',cancel:'বাতিল',packPurchased:'প্যাক কেনা হয়েছে!',snowmenAdded:'Snowmen যোগ হয়েছে',awesome:'দারুণ! 🎉',tasksTitle:'কাজ',submitChannel:'চ্যানেল জমা দিন',addTask:'কাজ যোগ করুন',taskHistory:'কাজের ইতিহাস',join:'যোগ দিন',done:'হয়েছে',channelPost:'আপনার চ্যানেলে আমাদের বট সম্পর্কে পোস্ট করুন এবং 5 থেকে 1000 Snow উপার্জন করুন।',marketTitle:'বাজার',all:'সব',yours:'আমার',lootBox:'লুট বক্স',createOrder:'+ অর্ডার তৈরি',confirmOrder:'অর্ডার নিশ্চিত',amountSnow:'Snow পরিমাণ ❄️',pricePerSnow:'প্রতি Snow মূল্য',totalValue:'মোট মূল্য',noOrders:'কোনো অর্ডার নেই',noYourOrders:'কোনো সক্রিয় অর্ডার নেই।',createSnowOrder:'ট্রেড করতে Snow অর্ডার তৈরি করুন।',depositTab:'জমা',withdrawTab:'উত্তোলন',enterAmount:'পরিমাণ লিখুন (TON)',sentManually:'ম্যানুয়ালি পাঠানো হয়েছে — যাচাই করুন',paymentMethod:'পেমেন্ট পদ্ধতি',connectWallet:'ওয়ালেট সংযুক্ত করুন',disconnect:'সংযোগ বিচ্ছিন্ন',manualDeposit:'অথবা (ম্যানুয়াল) জমার ঠিকানা',memo:'মেমো (প্রয়োজনীয় — আপনার ID)',memoNote:'সর্বদা মেমো অন্তর্ভুক্ত করুন। মেমো ছাড়া জমা স্বয়ংক্রিয়ভাবে যোগ হয় না।',withdrawAmount:'উত্তোলনের পরিমাণ',tonAddress:'TON ঠিকানা',enterTonAddress:'TON ঠিকানা লিখুন',minWithdraw:'সর্বনিম্ন 0.2',feeWithdraw:'ফি 5%',withdraw:'উত্তোলন',history:'ইতিহাস',transactionHistory:'লেনদেনের ইতিহাস',withdrawRequested:'উত্তোলনের অনুরোধ',withdrawNote:'উত্তোলনে 1 থেকে 12 ঘণ্টা সময় লাগতে পারে।',gotIt:'বুঝেছি! 👍',loading:'লোড হচ্ছে...',deposit:'জমা',friendsTitle:'বন্ধুরা',yourReward:'আপনার পুরস্কার',yourFriends:'আপনার বন্ধুরা',freeSnowman:'প্রতি বন্ধুর জন্য +1 বিনামূল্যে Snowman',snowHatch:'তারা রূপান্তর করলে 5% Snow',tonMint:'তারা Snowmen কিনলে 15% TON',copy:'📋 কপি',share:'📤 শেয়ার',noFriends:'এখনো বন্ধু নেই 🧱',leaderboard:'🏆 লিডারবোর্ড',referrals:'রেফারেল',snowmen:'Snowmen',participateWin:'অংশগ্রহণ করুন ও TON জিতুন',prizes:'🎁 পুরস্কার :',yourPosition:'আপনার অবস্থান',topReferrers:'🏅 শীর্ষ রেফারকারী',topSnowmen:'🏅 শীর্ষ Snowmen মালিক',wallet:'ওয়ালেট',yourBalance:'আপনার ব্যালেন্স',activeSnowman:'সক্রিয় Snowman',snowBalance:'Snow ব্যালেন্স',waiting:'অপেক্ষা',live:'সরাসরি',winner:'বিজয়ী',won:'জিতেছে',promoActivated:'প্রমো সক্রিয়!',snowAdded:'Snow যোগ করা হয়েছে',apply:'প্রয়োগ',success:'সফল!',failed:'ব্যর্থ',insufficient:'অপর্যাপ্ত ব্যালেন্স',tooMany:'অনেক বেশি অনুরোধ',set:'সেট',noHistory:'কোনো লেনদেন নেই' },
-    ur: { tasks:'کام',market:'مارکیٹ',friends:'دوست',profile:'پروفائل',hatchBtn:'تبدیل ❄️',mintBtn:'بنائیں ☃️',promoCode:'پرومو کوڈ',limited:'محدود',hatchTitle:'Snow تبدیل ❄️',snowToHatch:'❄️ تبدیلی کے لیے Snow',craftFee:'بنانے کی فیس (10%)',totalRequired:'❄️ کل ضروری',available:'دستیاب',snowflakes:'برف کے ذرات',hatch:'تبدیل ❄️',mintTitle:'Snowmen بنائیں ☃️',mintOnly1:'صرف 1 پیکج خرید سکتے ہیں',starterPack:'اسٹارٹر پیکج',proPack:'پرو پیکج',whalePack:'وہیل پیکج',miningSpeed:'مائننگ کی رفتار',buy:'خریدیں',purchased:'خریدا گیا ✓',cancel:'منسوخ',packPurchased:'پیکج خریدا گیا!',snowmenAdded:'Snowmen شامل',awesome:'شاندار! 🎉',tasksTitle:'کام',submitChannel:'چینل جمع کریں',addTask:'کام شامل کریں',taskHistory:'کاموں کی تاریخ',join:'شامل ہوں',done:'ہو گیا',channelPost:'اپنے چینل پر ہمارے بوٹ کے بارے میں پوسٹ کریں اور 5 سے 1000 Snow کمائیں۔',marketTitle:'مارکیٹ',all:'سب',yours:'میرے',lootBox:'لوٹ باکس',createOrder:'+ آرڈر بنائیں',confirmOrder:'آرڈر کی تصدیق',amountSnow:'Snow کی مقدار ❄️',pricePerSnow:'فی Snow قیمت',totalValue:'کل قیمت',noOrders:'کوئی آرڈر نہیں',noYourOrders:'کوئی فعال آرڈر نہیں۔',createSnowOrder:'تجارت کے لیے Snow آرڈر بنائیں۔',depositTab:'جمع',withdrawTab:'نکاسی',enterAmount:'رقم درج کریں (TON)',sentManually:'دستی بھیجا گیا — جانچیں',paymentMethod:'ادائیگی کا طریقہ',connectWallet:'ولیٹ جوڑیں',disconnect:'منقطع کریں',manualDeposit:'یا (دستی) جمع کا پتہ',memo:'میمو (ضروری — آپ کا ID)',memoNote:'ہمیشہ میمو شامل کریں۔ میمو کے بغیر جمع خودکار نہیں ہوتا۔',withdrawAmount:'نکاسی کی رقم',tonAddress:'TON پتہ',enterTonAddress:'TON پتہ درج کریں',minWithdraw:'کم از کم 0.2',feeWithdraw:'فیس 5%',withdraw:'نکاسی',history:'تاریخ',transactionHistory:'لین دین کی تاریخ',withdrawRequested:'نکاسی کی درخواست',withdrawNote:'نکاسی میں 1 سے 12 گھنٹے لگ سکتے ہیں۔',gotIt:'سمجھ گیا! 👍',loading:'لوڈ ہو رہا ہے...',deposit:'جمع',friendsTitle:'دوست',yourReward:'آپ کا انعام',yourFriends:'آپ کے دوست',freeSnowman:'ہر دوست کے لیے +1 مفت Snowman',snowHatch:'جب وہ تبدیل کریں 5% Snow',tonMint:'جب وہ Snowmen خریدیں 15% TON',copy:'📋 کاپی',share:'📤 شیئر',noFriends:'ابھی کوئی دوست نہیں 🧱',leaderboard:'🏆 لیڈر بورڈ',referrals:'حوالہ جات',snowmen:'Snowmen',participateWin:'حصہ لیں اور TON جیتیں',prizes:'🎁 انعامات :',yourPosition:'آپ کی پوزیشن',topReferrers:'🏅 بہترین حوالہ دہندگان',topSnowmen:'🏅 بہترین Snowmen مالکان',wallet:'ولیٹ',yourBalance:'آپ کا بیلنس',activeSnowman:'فعال Snowman',snowBalance:'Snow بیلنس',waiting:'انتظار',live:'براہ راست',winner:'فاتح',won:'جیتا',promoActivated:'پرومو فعال!',snowAdded:'Snow بیلنس میں شامل',apply:'لاگو کریں',success:'کامیاب!',failed:'ناکام',insufficient:'ناکافی بیلنس',tooMany:'بہت زیادہ درخواستیں',set:'سیٹ',noHistory:'کوئی لین دین نہیں' },
-    my: { tasks:'တာဝန်များ',market:'ဈေးကွက်',friends:'သူငယ်ချင်းများ',profile:'ပရိုဖိုင်',hatchBtn:'ပြောင်းလဲ ❄️',mintBtn:'ဖန်တီး ☃️',promoCode:'ပရိုမိုကုဒ်',limited:'အကန့်အသတ်',hatchTitle:'Snow ပြောင်းလဲ ❄️',snowToHatch:'❄️ ပြောင်းလဲမည့် Snow',craftFee:'ဖန်တီးမှုကြေး (10%)',totalRequired:'❄️ စုစုပေါင်းလိုအပ်သည်',available:'ရရှိနိုင်',snowflakes:'နှင်းပွင့်',hatch:'ပြောင်းလဲ ❄️',mintTitle:'Snowmen ဖန်တီး ☃️',mintOnly1:'ပက်ကေ့ 1 ခုသာဝယ်နိုင်သည်',starterPack:'စတင်သူပက်ကေ့',proPack:'ပရိုပက်ကေ့',whalePack:'ငါးဝပ်ပက်ကေ့',miningSpeed:'တူးဖော်မှုအမြန်နှုန်း',buy:'ဝယ်',purchased:'ဝယ်ပြီး ✓',cancel:'ပယ်ဖျက်',packPurchased:'ပက်ကေ့ဝယ်ပြီ!',snowmenAdded:'Snowmen ထည့်သွင်းပြီ',awesome:'အံ့ဩဖွယ်! 🎉',tasksTitle:'တာဝန်များ',submitChannel:'ချန်နယ်တင်သွင်း',addTask:'တာဝန်ထည့်',taskHistory:'တာဝန်မှတ်တမ်း',join:'ပါဝင်',done:'ပြီးပြီ',channelPost:'သင့်ချန်နယ်တွင်ကျွန်ုပ်တို့ဘော့အကြောင်းပို့စ်တင်ပြီး Snow 5 မှ 1000 ရယူပါ',marketTitle:'ဈေးကွက်',all:'အားလုံး',yours:'ကျွန်ုပ်၏',lootBox:'ဆုလက်ဆောင်ပုံး',createOrder:'+ အမိန့်ဖန်တီး',confirmOrder:'အမိန့်အတည်ပြု',amountSnow:'Snow ပမာဏ ❄️',pricePerSnow:'Snow တစ်ခုစျေး',totalValue:'စုစုပေါင်းတန်ဖိုး',noOrders:'အမိန့်မရှိ',noYourOrders:'တက်ကြွသောအမိန့်မရှိ',createSnowOrder:'ကုန်သွယ်ရန် Snow အမိန့်ဖန်တီးပါ',depositTab:'ထည့်သွင်း',withdrawTab:'ထုတ်ယူ',enterAmount:'ပမာဏထည့်သွင်းပါ (TON)',sentManually:'လက်ဖြင့်ပို့ပြီ — စစ်ဆေး',paymentMethod:'ငွေပေးချေမှုနည်းလမ်း',connectWallet:'ပိုက်ဆံအိတ်ချိတ်ဆက်',disconnect:'ချိတ်ဆက်မှုဖြတ်တောက်',manualDeposit:'သို့မဟုတ် (လက်ဖြင့်) ထည့်သွင်းလိပ်စာ',memo:'မှတ်ချက် (လိုအပ်သည် — ID)',memoNote:'မှတ်ချက်ကိုအမြဲထည့်ပါ မှတ်ချက်မပါဘဲထည့်သွင်းမှုများကိုအလိုအလျောက်မည်မဟုတ်',withdrawAmount:'ထုတ်ယူပမာဏ',tonAddress:'TON လိပ်စာ',enterTonAddress:'TON လိပ်စာထည့်ပါ',minWithdraw:'အနည်းဆုံး 0.2',feeWithdraw:'ကြေး 5%',withdraw:'ထုတ်ယူ',history:'မှတ်တမ်း',transactionHistory:'ငွေလွှဲမှတ်တမ်း',withdrawRequested:'ထုတ်ယူမှုတောင်းဆိုပြီ',withdrawNote:'ထုတ်ယူမှုသည် 1 မှ 12 နာရီအထိကြာနိုင်သည်',gotIt:'နားလည်ပြီ! 👍',loading:'တင်နေသည်...',deposit:'ထည့်သွင်း',friendsTitle:'သူငယ်ချင်းများ',yourReward:'သင့်ဆုလာဘ်',yourFriends:'သင့်သူငယ်ချင်းများ',freeSnowman:'သူငယ်ချင်းတစ်ဦးလျှင် +1 Snowman အခမဲ့',snowHatch:'သူတို့ပြောင်းလဲသောအခါ 5% Snow',tonMint:'သူတို့ Snowmen ဝယ်သောအခါ 15% TON',copy:'📋 ကူးယူ',share:'📤 မျှဝေ',noFriends:'သူငယ်ချင်းမရှိသေး 🧱',leaderboard:'🏆 ဂုဏ်ထူးဆောင်ဇယား',referrals:'ညွှန်ကြားချက်များ',snowmen:'Snowmen',participateWin:'ပါဝင်ပြီး TON ရယူ',prizes:'🎁 ဆုများ :',yourPosition:'သင့်အနေအထား',topReferrers:'🏅 အကောင်းဆုံးညွှန်ကြားသူများ',topSnowmen:'🏅 Snowmen အများဆုံးပိုင်ဆိုင်သူများ',wallet:'ပိုက်ဆံအိတ်',yourBalance:'သင့်လက်ကျန်',activeSnowman:'တက်ကြွသော Snowman',snowBalance:'Snow လက်ကျန်',waiting:'စောင့်နေသည်',live:'တိုက်ရိုက်',winner:'နိုင်သူ',won:'နိုင်',promoActivated:'ပရိုမိုဖွင့်ပြီ!',snowAdded:'Snow လက်ကျန်ထည့်သွင်းပြီ',apply:'အသုံးချ',success:'အောင်မြင်သည်!',failed:'မအောင်မြင်',insufficient:'လက်ကျန်မလုံလောက်',tooMany:'တောင်းဆိုမှုများလွန်း',set:'သတ်မှတ်',noHistory:'ငွေလွှဲမှတ်တမ်းမရှိ' },
+    de: { tasks:'Aufgaben',market:'Markt',friends:'Freunde',profile:'Profil',hatchBtn:'Konvertieren ❄️',boostBtn:'Erstellen ☃️',promoCode:'Promocode',limited:'BEGRENZT',hatchTitle:'Snow konvertieren ❄️',snowToHatch:'❄️ Snow zum Konvertieren',craftFee:'Herstellungsgebühr (10%)',totalRequired:'❄️ Gesamt benötigt',available:'Verfügbar',snowflakes:'Schneeflocken',hatch:'Konvertieren ❄️',boostTitle:'Snowmen erstellen ☃️',boostNote:'Nur 1 Paket kaufbar',starterPack:'Starter-Paket',proPack:'Pro-Paket',whalePack:'Wal-Paket',boostSpeed:'Mining-Geschwindigkeit',buy:'Kaufen',purchased:'Gekauft ✓',cancel:'ABBRECHEN',packPurchased:'Paket gekauft!',snowmenAdded:'Snowmen hinzugefügt',awesome:'Toll! 🎉',tasksTitle:'Aufgaben',submitChannel:'Kanal einreichen',addTask:'Aufgabe hinzufügen',taskHistory:'Aufgabenverlauf',join:'Beitreten',done:'Fertig',channelPost:'Poste über unseren Bot in deinem Kanal und verdiene 5 bis 1000 Snow.',marketTitle:'Markt',all:'Alle',yours:'Meine',lootBox:'Lootbox',createOrder:'+ Bestellung erstellen',confirmOrder:'Bestellung bestätigen',amountSnow:'Snow-Menge ❄️',pricePerSnow:'Preis pro Snow',totalValue:'Gesamtwert',noOrders:'Keine Bestellungen verfügbar',noYourOrders:'Keine aktiven Bestellungen.',createSnowOrder:'Erstelle eine Snow-Order zum Handeln.',depositTab:'Einzahlung',withdrawTab:'Auszahlung',enterAmount:'Betrag eingeben (TON)',sentManually:'Manuell gesendet — Prüfen',paymentMethod:'Zahlungsmethode',connectWallet:'Wallet verbinden',disconnect:'Trennen',manualDeposit:'oder (Manuell) Einzahlungsadresse',memo:'Memo (Erforderlich — Ihre ID)',memoNote:'Füge immer das Memo hinzu. Einzahlungen ohne Memo können nicht automatisch gutgeschrieben werden.',withdrawAmount:'Auszahlungsbetrag',tonAddress:'TON-Adresse',enterTonAddress:'TON-Adresse eingeben',minWithdraw:'min 0.2',feeWithdraw:'Gebühr 5%',withdraw:'Auszahlen',history:'Verlauf',transactionHistory:'Transaktionsverlauf',withdrawRequested:'Auszahlung beantragt',withdrawNote:'Auszahlungen dauern 1 bis 12 Stunden.',gotIt:'Verstanden! 👍',loading:'Laden...',deposit:'Einzahlen',friendsTitle:'Freunde',yourReward:'Ihre Belohnung',yourFriends:'Ihre Freunde',freeSnowman:'+1 kostenloser Snowman pro Freund',snowHatch:'5% Snow bei deren Konvertierung',tonBoost:'15% TON bei deren Snowmen-Kauf',copy:'📋 Kopieren',share:'📤 Teilen',noFriends:'Noch keine Freunde 🧱',leaderboard:'🏆 Rangliste',referrals:'Empfehlungen',snowmen:'Snowmen',participateWin:'Mitmachen & TON gewinnen',prizes:'🎁 Preise :',yourPosition:'Ihre Position',topReferrers:'🏅 Top-Empfehler',topSnowmen:'🏅 Top Snowmen-Besitzer',wallet:'WALLET',yourBalance:'Ihr Guthaben',activeSnowman:'Aktive Snowman',snowBalance:'Snow-Guthaben',waiting:'WARTEN',live:'LIVE',winner:'Gewinner',won:'Gewonnen',promoActivated:'Promo aktiviert!',snowAdded:'Snow zu Ihrem Guthaben hinzugefügt',apply:'Anwenden',success:'Erfolg!',failed:'Fehlgeschlagen',insufficient:'Unzureichendes Guthaben',tooMany:'Zu viele Anfragen',set:'Setzen',noHistory:'Keine Transaktionen' },
+    es: { tasks:'Tareas',market:'Mercado',friends:'Amigos',profile:'Perfil',hatchBtn:'Convertir ❄️',boostBtn:'Crear ☃️',promoCode:'Código Promo',limited:'LIMITADO',hatchTitle:'Convertir Snow ❄️',snowToHatch:'❄️ Snow para convertir',craftFee:'Tarifa de creación (10%)',totalRequired:'❄️ Total requerido',available:'Disponible',snowflakes:'copos',hatch:'Convertir ❄️',boostTitle:'Crear Snowmen ☃️',boostNote:'Solo puedes comprar 1 paquete',starterPack:'Paquete Inicial',proPack:'Paquete Pro',whalePack:'Paquete Ballena',boostSpeed:'Velocidad de minería',buy:'Comprar',purchased:'Comprado ✓',cancel:'CANCELAR',packPurchased:'¡Paquete comprado!',snowmenAdded:'Snowmen añadidos',awesome:'¡Genial! 🎉',tasksTitle:'Tareas',submitChannel:'Enviar Canal',addTask:'Añadir Tarea',taskHistory:'Historial de Tareas',join:'Unirse',done:'Hecho',channelPost:'Publica sobre nuestro bot en tu canal y gana de 5 a 1000 Snow.',marketTitle:'Mercado',all:'Todos',yours:'Mis Pedidos',lootBox:'Caja de Botín',createOrder:'+ Crear Pedido',confirmOrder:'Confirmar Pedido',amountSnow:'Cantidad de Snow ❄️',pricePerSnow:'Precio por Snow',totalValue:'Valor Total',noOrders:'No hay pedidos disponibles',noYourOrders:'No hay pedidos activos.',createSnowOrder:'Crea un pedido de Snow para comenzar.',depositTab:'Depositar',withdrawTab:'Retirar',enterAmount:'Ingresar Monto (TON)',sentManually:'Enviado Manualmente — Verificar',paymentMethod:'Método de Pago',connectWallet:'Conectar Billetera',disconnect:'Desconectar',manualDeposit:'o (Manual) Dirección de Depósito',memo:'Memo (Requerido — tu ID)',memoNote:'Incluye siempre el memo. Los depósitos sin memo no se acreditan automáticamente.',withdrawAmount:'Monto a Retirar',tonAddress:'Dirección TON',enterTonAddress:'Ingresa dirección TON',minWithdraw:'mín 0.2',feeWithdraw:'comisión 5%',withdraw:'Retirar',history:'Historial',transactionHistory:'Historial de Transacciones',withdrawRequested:'Retiro Solicitado',withdrawNote:'Los retiros pueden tardar de 1 a 12 horas.',gotIt:'¡Entendido! 👍',loading:'Cargando...',deposit:'Depositar',friendsTitle:'Amigos',yourReward:'Tu Recompensa',yourFriends:'Tus Amigos',freeSnowman:'+1 Snowman gratis por amigo',snowHatch:'5% Snow cuando conviertan',tonBoost:'15% TON cuando compren Snowmen',copy:'📋 Copiar',share:'📤 Compartir',noFriends:'Aún no hay amigos 🧱',leaderboard:'🏆 Clasificación',referrals:'Referidos',snowmen:'Snowmen',participateWin:'Participa y gana TON',prizes:'🎁 Premios :',yourPosition:'Tu Posición',topReferrers:'🏅 Mejores Referidores',topSnowmen:'🏅 Mejores Dueños de Snowmen',wallet:'BILLETERA',yourBalance:'Tu Saldo',activeSnowman:'Snowman Activo',snowBalance:'Saldo Snow',waiting:'ESPERANDO',live:'EN VIVO',winner:'Ganador',won:'Ganó',promoActivated:'¡Promo activada!',snowAdded:'Snow añadido a tu saldo',apply:'Aplicar',success:'¡Éxito!',failed:'Fallido',insufficient:'Saldo insuficiente',tooMany:'Demasiadas solicitudes',set:'Establecer',noHistory:'Sin transacciones' },
+    fr: { tasks:'Tâches',market:'Marché',friends:'Amis',profile:'Profil',hatchBtn:'Convertir ❄️',boostBtn:'Créer ☃️',promoCode:'Code Promo',limited:'LIMITÉ',hatchTitle:'Convertir Snow ❄️',snowToHatch:'❄️ Snow à convertir',craftFee:'Frais de fabrication (10%)',totalRequired:'❄️ Total requis',available:'Disponible',snowflakes:'flocons',hatch:'Convertir ❄️',boostTitle:'Créer Snowmen ☃️',boostNote:'Vous ne pouvez acheter qu\'1 pack',starterPack:'Pack Débutant',proPack:'Pack Pro',whalePack:'Pack Baleine',boostSpeed:'Vitesse de minage',buy:'Acheter',purchased:'Acheté ✓',cancel:'ANNULER',packPurchased:'Pack acheté!',snowmenAdded:'Snowmen ajoutés',awesome:'Super! 🎉',tasksTitle:'Tâches',submitChannel:'Soumettre une chaîne',addTask:'Ajouter une tâche',taskHistory:'Historique des tâches',join:'Rejoindre',done:'Fait',channelPost:'Postez sur notre bot dans votre chaîne et gagnez de 5 à 1000 Snow.',marketTitle:'Marché',all:'Tout',yours:'Mes commandes',lootBox:'Boîte de butin',createOrder:'+ Créer commande',confirmOrder:'Confirmer commande',amountSnow:'Quantité de Snow ❄️',pricePerSnow:'Prix par Snow',totalValue:'Valeur totale',noOrders:'Aucune commande disponible',noYourOrders:'Aucune commande active.',createSnowOrder:'Créez une commande Snow pour commencer.',depositTab:'Dépôt',withdrawTab:'Retrait',enterAmount:'Entrer le montant (TON)',sentManually:'Envoyé manuellement — Vérifier',paymentMethod:'Méthode de paiement',connectWallet:'Connecter le portefeuille',disconnect:'Déconnecter',manualDeposit:'ou (Manuel) Adresse de dépôt',memo:'Mémo (Requis — votre ID)',memoNote:'Incluez toujours le mémo. Les dépôts sans mémo ne peuvent pas être crédités automatiquement.',withdrawAmount:'Montant du retrait',tonAddress:'Adresse TON',enterTonAddress:'Entrer l\'adresse TON',minWithdraw:'min 0.2',feeWithdraw:'frais 5%',withdraw:'Retirer',history:'Historique',transactionHistory:'Historique des transactions',withdrawRequested:'Retrait demandé',withdrawNote:'Les retraits peuvent prendre de 1 à 12 heures.',gotIt:'Compris! 👍',loading:'Chargement...',deposit:'Déposer',friendsTitle:'Amis',yourReward:'Votre récompense',yourFriends:'Vos amis',freeSnowman:'+1 Snowman gratuit par ami',snowHatch:'5% Snow quand ils convertissent',tonBoost:'15% TON quand ils achètent des Snowmen',copy:'📋 Copier',share:'📤 Partager',noFriends:'Pas encore d\'amis 🧱',leaderboard:'🏆 Classement',referrals:'Parrainages',snowmen:'Snowmen',participateWin:'Participez et gagnez TON',prizes:'🎁 Prix :',yourPosition:'Votre position',topReferrers:'🏅 Meilleurs parrains',topSnowmen:'🏅 Meilleurs propriétaires de Snowmen',wallet:'PORTEFEUILLE',yourBalance:'Votre solde',activeSnowman:'Snowman actif',snowBalance:'Solde Snow',waiting:'EN ATTENTE',live:'EN DIRECT',winner:'Gagnant',won:'Gagné',promoActivated:'Promo activée!',snowAdded:'Snow ajouté à votre solde',apply:'Appliquer',success:'Succès!',failed:'Échec',insufficient:'Solde insuffisant',tooMany:'Trop de demandes',set:'Définir',noHistory:'Aucune transaction' },
+    pt: { tasks:'Tarefas',market:'Mercado',friends:'Amigos',profile:'Perfil',hatchBtn:'Converter ❄️',boostBtn:'Criar ☃️',promoCode:'Código Promo',limited:'LIMITADO',hatchTitle:'Converter Snow ❄️',snowToHatch:'❄️ Snow para converter',craftFee:'Taxa de criação (10%)',totalRequired:'❄️ Total necessário',available:'Disponível',snowflakes:'flocos',hatch:'Converter ❄️',boostTitle:'Criar Snowmen ☃️',boostNote:'Só pode comprar 1 pacote',starterPack:'Pacote Iniciante',proPack:'Pacote Pro',whalePack:'Pacote Baleia',boostSpeed:'Velocidade de mineração',buy:'Comprar',purchased:'Comprado ✓',cancel:'CANCELAR',packPurchased:'Pacote comprado!',snowmenAdded:'Snowmen adicionados',awesome:'Incrível! 🎉',tasksTitle:'Tarefas',submitChannel:'Enviar Canal',addTask:'Adicionar Tarefa',taskHistory:'Histórico de Tarefas',join:'Entrar',done:'Feito',channelPost:'Poste sobre o nosso bot no seu canal e ganhe de 5 a 1000 Snow.',marketTitle:'Mercado',all:'Todos',yours:'Meus pedidos',lootBox:'Caixa de Loot',createOrder:'+ Criar Pedido',confirmOrder:'Confirmar Pedido',amountSnow:'Quantidade de Snow ❄️',pricePerSnow:'Preço por Snow',totalValue:'Valor Total',noOrders:'Nenhum pedido disponível',noYourOrders:'Nenhum pedido ativo.',createSnowOrder:'Crie um pedido Snow para começar.',depositTab:'Depositar',withdrawTab:'Sacar',enterAmount:'Inserir Valor (TON)',sentManually:'Enviado Manualmente — Verificar',paymentMethod:'Método de Pagamento',connectWallet:'Conectar Carteira',disconnect:'Desconectar',manualDeposit:'ou (Manual) Endereço de Depósito',memo:'Memo (Obrigatório — seu ID)',memoNote:'Sempre inclua o memo. Depósitos sem memo não podem ser creditados automaticamente.',withdrawAmount:'Valor do Saque',tonAddress:'Endereço TON',enterTonAddress:'Inserir endereço TON',minWithdraw:'mín 0.2',feeWithdraw:'taxa 5%',withdraw:'Sacar',history:'Histórico',transactionHistory:'Histórico de Transações',withdrawRequested:'Saque Solicitado',withdrawNote:'Os saques podem levar de 1 a 12 horas.',gotIt:'Entendi! 👍',loading:'Carregando...',deposit:'Depositar',friendsTitle:'Amigos',yourReward:'Sua Recompensa',yourFriends:'Seus Amigos',freeSnowman:'+1 Snowman grátis por amigo',snowHatch:'5% Snow quando converterem',tonBoost:'15% TON quando comprarem Snowmen',copy:'📋 Copiar',share:'📤 Compartilhar',noFriends:'Ainda sem amigos 🧱',leaderboard:'🏆 Classificação',referrals:'Indicações',snowmen:'Snowmen',participateWin:'Participe e ganhe TON',prizes:'🎁 Prêmios :',yourPosition:'Sua Posição',topReferrers:'🏅 Melhores Indicadores',topSnowmen:'🏅 Melhores Donos de Snowmen',wallet:'CARTEIRA',yourBalance:'Seu Saldo',activeSnowman:'Snowman Ativo',snowBalance:'Saldo Snow',waiting:'AGUARDANDO',live:'AO VIVO',winner:'Vencedor',won:'Ganhou',promoActivated:'Promo ativada!',snowAdded:'Snow adicionado ao saldo',apply:'Aplicar',success:'Sucesso!',failed:'Falhou',insufficient:'Saldo insuficiente',tooMany:'Muitas solicitações',set:'Definir',noHistory:'Sem transações' },
+    it: { tasks:'Attività',market:'Mercato',friends:'Amici',profile:'Profilo',hatchBtn:'Converti ❄️',boostBtn:'Crea ☃️',promoCode:'Codice Promo',limited:'LIMITATO',hatchTitle:'Converti Snow ❄️',snowToHatch:'❄️ Snow da convertire',craftFee:'Commissione di creazione (10%)',totalRequired:'❄️ Totale richiesto',available:'Disponibile',snowflakes:'fiocchi',hatch:'Converti ❄️',boostTitle:'Crea Snowmen ☃️',boostNote:'Puoi acquistare solo 1 pacchetto',starterPack:'Pacchetto Starter',proPack:'Pacchetto Pro',whalePack:'Pacchetto Balena',boostSpeed:'Velocità di mining',buy:'Acquista',purchased:'Acquistato ✓',cancel:'ANNULLA',packPurchased:'Pacchetto acquistato!',snowmenAdded:'Snowmen aggiunti',awesome:'Fantastico! 🎉',tasksTitle:'Attività',submitChannel:'Invia Canale',addTask:'Aggiungi Attività',taskHistory:'Cronologia Attività',join:'Unisciti',done:'Fatto',channelPost:'Pubblica del nostro bot sul tuo canale e guadagna da 5 a 1000 Snow.',marketTitle:'Mercato',all:'Tutti',yours:'I miei',lootBox:'Loot Box',createOrder:'+ Crea Ordine',confirmOrder:'Conferma Ordine',amountSnow:'Quantità Snow ❄️',pricePerSnow:'Prezzo per Snow',totalValue:'Valore Totale',noOrders:'Nessun ordine disponibile',noYourOrders:'Nessun ordine attivo.',createSnowOrder:'Crea un ordine Snow per iniziare.',depositTab:'Deposito',withdrawTab:'Prelievo',enterAmount:'Inserisci Importo (TON)',sentManually:'Inviato Manualmente — Verifica',paymentMethod:'Metodo di Pagamento',connectWallet:'Collega Portafoglio',disconnect:'Disconnetti',manualDeposit:'o (Manuale) Indirizzo di Deposito',memo:'Memo (Obbligatorio — tuo ID)',memoNote:'Includi sempre il memo. I depositi senza memo non possono essere accreditati automaticamente.',withdrawAmount:'Importo Prelievo',tonAddress:'Indirizzo TON',enterTonAddress:'Inserisci indirizzo TON',minWithdraw:'min 0.2',feeWithdraw:'commissione 5%',withdraw:'Preleva',history:'Cronologia',transactionHistory:'Cronologia Transazioni',withdrawRequested:'Prelievo Richiesto',withdrawNote:'I prelievi possono richiedere da 1 a 12 ore.',gotIt:'Capito! 👍',loading:'Caricamento...',deposit:'Deposita',friendsTitle:'Amici',yourReward:'La tua Ricompensa',yourFriends:'I tuoi Amici',freeSnowman:'+1 Snowman gratuito per amico',snowHatch:'5% Snow quando convertono',tonBoost:'15% TON quando acquistano Snowmen',copy:'📋 Copia',share:'📤 Condividi',noFriends:'Ancora nessun amico 🧱',leaderboard:'🏆 Classifica',referrals:'Referral',snowmen:'Snowmen',participateWin:'Partecipa e vinci TON',prizes:'🎁 Premi :',yourPosition:'La tua Posizione',topReferrers:'🏅 Migliori Referral',topSnowmen:'🏅 Migliori Proprietari di Snowmen',wallet:'PORTAFOGLIO',yourBalance:'Il tuo Saldo',activeSnowman:'Snowman Attivo',snowBalance:'Saldo Snow',waiting:'IN ATTESA',live:'LIVE',winner:'Vincitore',won:'Vinto',promoActivated:'Promo attivata!',snowAdded:'Snow aggiunto al saldo',apply:'Applica',success:'Successo!',failed:'Fallito',insufficient:'Saldo insufficiente',tooMany:'Troppe richieste',set:'Imposta',noHistory:'Nessuna transazione' },
+    vi: { tasks:'Nhiệm vụ',market:'Thị trường',friends:'Bạn bè',profile:'Hồ sơ',hatchBtn:'Chuyển đổi ❄️',boostBtn:'Tạo ☃️',promoCode:'Mã Promo',limited:'GIỚI HẠN',hatchTitle:'Chuyển đổi Snow ❄️',snowToHatch:'❄️ Snow để chuyển đổi',craftFee:'Phí tạo (10%)',totalRequired:'❄️ Tổng cần thiết',available:'Có sẵn',snowflakes:'bông tuyết',hatch:'Chuyển đổi ❄️',boostTitle:'Tạo Snowmen ☃️',boostNote:'Chỉ có thể mua 1 gói',starterPack:'Gói Khởi đầu',proPack:'Gói Pro',whalePack:'Gói Cá voi',boostSpeed:'Tốc độ khai thác',buy:'Mua',purchased:'Đã mua ✓',cancel:'HỦY',packPurchased:'Đã mua gói!',snowmenAdded:'Đã thêm Snowmen',awesome:'Tuyệt vời! 🎉',tasksTitle:'Nhiệm vụ',submitChannel:'Gửi Kênh',addTask:'Thêm Nhiệm vụ',taskHistory:'Lịch sử Nhiệm vụ',join:'Tham gia',done:'Xong',channelPost:'Đăng về bot của chúng tôi trên kênh của bạn và kiếm từ 5 đến 1000 Snow.',marketTitle:'Thị trường',all:'Tất cả',yours:'Của tôi',lootBox:'Hộp Loot',createOrder:'+ Tạo đơn hàng',confirmOrder:'Xác nhận đơn hàng',amountSnow:'Số lượng Snow ❄️',pricePerSnow:'Giá mỗi Snow',totalValue:'Tổng giá trị',noOrders:'Không có đơn hàng',noYourOrders:'Không có đơn hàng nào.',createSnowOrder:'Tạo đơn Snow để bắt đầu giao dịch.',depositTab:'Nạp tiền',withdrawTab:'Rút tiền',enterAmount:'Nhập số tiền (TON)',sentManually:'Đã gửi thủ công — Kiểm tra',paymentMethod:'Phương thức thanh toán',connectWallet:'Kết nối ví',disconnect:'Ngắt kết nối',manualDeposit:'hoặc (Thủ công) Địa chỉ nạp tiền',memo:'Ghi chú (Bắt buộc — ID của bạn)',memoNote:'Luôn bao gồm ghi chú. Khoản nạp không có ghi chú không thể ghi tự động.',withdrawAmount:'Số tiền rút',tonAddress:'Địa chỉ TON',enterTonAddress:'Nhập địa chỉ TON',minWithdraw:'tối thiểu 0.2',feeWithdraw:'phí 5%',withdraw:'Rút tiền',history:'Lịch sử',transactionHistory:'Lịch sử giao dịch',withdrawRequested:'Yêu cầu rút tiền',withdrawNote:'Việc rút tiền có thể mất từ 1 đến 12 giờ.',gotIt:'Hiểu rồi! 👍',loading:'Đang tải...',deposit:'Nạp tiền',friendsTitle:'Bạn bè',yourReward:'Phần thưởng của bạn',yourFriends:'Bạn bè của bạn',freeSnowman:'+1 Snowman miễn phí mỗi bạn bè',snowHatch:'5% Snow khi họ chuyển đổi',tonBoost:'15% TON khi họ mua Snowmen',copy:'📋 Sao chép',share:'📤 Chia sẻ',noFriends:'Chưa có bạn bè 🧱',leaderboard:'🏆 Bảng xếp hạng',referrals:'Giới thiệu',snowmen:'Snowmen',participateWin:'Tham gia và giành TON',prizes:'🎁 Giải thưởng :',yourPosition:'Vị trí của bạn',topReferrers:'🏅 Người giới thiệu hàng đầu',topSnowmen:'🏅 Chủ sở hữu Snowmen hàng đầu',wallet:'VÍ',yourBalance:'Số dư của bạn',activeSnowman:'Snowman Hoạt động',snowBalance:'Số dư Snow',waiting:'CHỜ ĐỢI',live:'TRỰC TIẾP',winner:'Người thắng',won:'Đã thắng',promoActivated:'Promo đã kích hoạt!',snowAdded:'Snow đã được thêm',apply:'Áp dụng',success:'Thành công!',failed:'Thất bại',insufficient:'Số dư không đủ',tooMany:'Quá nhiều yêu cầu',set:'Đặt',noHistory:'Không có giao dịch' },
+    id: { tasks:'Tugas',market:'Pasar',friends:'Teman',profile:'Profil',hatchBtn:'Konversi ❄️',boostBtn:'Buat ☃️',promoCode:'Kode Promo',limited:'TERBATAS',hatchTitle:'Konversi Snow ❄️',snowToHatch:'❄️ Snow untuk dikonversi',craftFee:'Biaya pembuatan (10%)',totalRequired:'❄️ Total diperlukan',available:'Tersedia',snowflakes:'kepingan salju',hatch:'Konversi ❄️',boostTitle:'Buat Snowmen ☃️',boostNote:'Hanya bisa membeli 1 paket',starterPack:'Paket Pemula',proPack:'Paket Pro',whalePack:'Paket Paus',boostSpeed:'Kecepatan penambangan',buy:'Beli',purchased:'Dibeli ✓',cancel:'BATAL',packPurchased:'Paket dibeli!',snowmenAdded:'Snowmen ditambahkan',awesome:'Luar biasa! 🎉',tasksTitle:'Tugas',submitChannel:'Kirim Saluran',addTask:'Tambah Tugas',taskHistory:'Riwayat Tugas',join:'Bergabung',done:'Selesai',channelPost:'Posting tentang bot kami di saluran Anda dan dapatkan 5 hingga 1000 Snow.',marketTitle:'Pasar',all:'Semua',yours:'Pesanan Saya',lootBox:'Kotak Loot',createOrder:'+ Buat Pesanan',confirmOrder:'Konfirmasi Pesanan',amountSnow:'Jumlah Snow ❄️',pricePerSnow:'Harga per Snow',totalValue:'Total Nilai',noOrders:'Tidak ada pesanan',noYourOrders:'Tidak ada pesanan aktif.',createSnowOrder:'Buat pesanan Snow untuk mulai berdagang.',depositTab:'Setor',withdrawTab:'Tarik',enterAmount:'Masukkan Jumlah (TON)',sentManually:'Dikirim Manual — Periksa',paymentMethod:'Metode Pembayaran',connectWallet:'Hubungkan Dompet',disconnect:'Putuskan',manualDeposit:'atau (Manual) Alamat Setoran',memo:'Memo (Wajib — ID Anda)',memoNote:'Selalu sertakan memo. Setoran tanpa memo tidak dapat dikreditkan secara otomatis.',withdrawAmount:'Jumlah Penarikan',tonAddress:'Alamat TON',enterTonAddress:'Masukkan alamat TON',minWithdraw:'min 0.2',feeWithdraw:'biaya 5%',withdraw:'Tarik',history:'Riwayat',transactionHistory:'Riwayat Transaksi',withdrawRequested:'Penarikan Diminta',withdrawNote:'Penarikan membutuhkan waktu 1 hingga 12 jam.',gotIt:'Mengerti! 👍',loading:'Memuat...',deposit:'Setor',friendsTitle:'Teman',yourReward:'Hadiah Anda',yourFriends:'Teman Anda',freeSnowman:'+1 Snowman gratis per teman',snowHatch:'5% Snow saat mereka mengkonversi',tonBoost:'15% TON saat mereka membeli Snowmen',copy:'📋 Salin',share:'📤 Bagikan',noFriends:'Belum ada teman 🧱',leaderboard:'🏆 Papan Peringkat',referrals:'Referral',snowmen:'Snowmen',participateWin:'Ikut & menangkan TON',prizes:'🎁 Hadiah :',yourPosition:'Posisi Anda',topReferrers:'🏅 Referral Terbaik',topSnowmen:'🏅 Pemilik Snowmen Terbaik',wallet:'DOMPET',yourBalance:'Saldo Anda',activeSnowman:'Snowman Aktif',snowBalance:'Saldo Snow',waiting:'MENUNGGU',live:'LANGSUNG',winner:'Pemenang',won:'Menang',promoActivated:'Promo diaktifkan!',snowAdded:'Snow ditambahkan',apply:'Terapkan',success:'Berhasil!',failed:'Gagal',insufficient:'Saldo tidak cukup',tooMany:'Terlalu banyak permintaan',set:'Atur',noHistory:'Tidak ada transaksi' },
+    uk: { tasks:'Завдання',market:'Ринок',friends:'Друзі',profile:'Профіль',hatchBtn:'Конвертувати ❄️',boostBtn:'Створити ☃️',promoCode:'Промокод',limited:'ОБМЕЖЕНО',hatchTitle:'Конвертувати Snow ❄️',snowToHatch:'❄️ Snow для конвертації',craftFee:'Комісія (10%)',totalRequired:'❄️ Всього потрібно',available:'Доступно',snowflakes:'сніжинок',hatch:'Конвертувати ❄️',boostTitle:'Створити Snowmen ☃️',boostNote:'Можна придбати лише 1 пакет',starterPack:'Стартовий пакет',proPack:'Про пакет',whalePack:'Пакет кита',boostSpeed:'Швидкість майнінгу',buy:'Купити',purchased:'Куплено ✓',cancel:'СКАСУВАТИ',packPurchased:'Пакет куплено!',snowmenAdded:'Snowmen додано',awesome:'Чудово! 🎉',tasksTitle:'Завдання',submitChannel:'Надіслати канал',addTask:'Додати завдання',taskHistory:'Історія завдань',join:'Приєднатись',done:'Готово',channelPost:'Опублікуйте про нашого бота у своєму каналі та заробіть від 5 до 1000 Snow.',marketTitle:'Ринок',all:'Усі',yours:'Мої',lootBox:'Лутбокс',createOrder:'+ Створити ордер',confirmOrder:'Підтвердити ордер',amountSnow:'Кількість Snow ❄️',pricePerSnow:'Ціна за Snow',totalValue:'Загальна вартість',noOrders:'Немає доступних ордерів',noYourOrders:'Немає активних ордерів.',createSnowOrder:'Створіть ордер Snow для торгівлі.',depositTab:'Депозит',withdrawTab:'Виведення',enterAmount:'Введіть суму (TON)',sentManually:'Відправлено вручну — Перевірити',paymentMethod:'Спосіб оплати',connectWallet:'Підключити гаманець',disconnect:'Відключити',manualDeposit:'або (Вручну) Адреса депозиту',memo:'Коментар (Обовʼязково — ваш ID)',memoNote:'Завжди вказуйте коментар. Депозити без коментаря не зараховуються автоматично.',withdrawAmount:'Сума виведення',tonAddress:'Адреса TON',enterTonAddress:'Введіть адресу TON',minWithdraw:'мін 0.2',feeWithdraw:'комісія 5%',withdraw:'Вивести',history:'Історія',transactionHistory:'Історія транзакцій',withdrawRequested:'Запит на виведення',withdrawNote:'Виведення займає від 1 до 12 годин.',gotIt:'Зрозуміло! 👍',loading:'Завантаження...',deposit:'Поповнити',friendsTitle:'Друзі',yourReward:'Ваша нагорода',yourFriends:'Ваші друзі',freeSnowman:'+1 безкоштовний Snowman за друга',snowHatch:'5% Snow за їх конвертацію',tonBoost:'15% TON за їх купівлю Snowmen',copy:'📋 Копіювати',share:'📤 Поділитись',noFriends:'Поки немає друзів 🧱',leaderboard:'🏆 Рейтинг',referrals:'Реферали',snowmen:'Snowmen',participateWin:'Беріть участь і вигравайте TON',prizes:'🎁 Призи :',yourPosition:'Ваша позиція',topReferrers:'🏅 Топ рефералів',topSnowmen:'🏅 Топ власників Snowmen',wallet:'ГАМАНЕЦЬ',yourBalance:'Ваш баланс',activeSnowman:'Активні Snowman',snowBalance:'Баланс Snow',waiting:'ОЧІКУВАННЯ',live:'НАЖИВО',winner:'Переможець',won:'Виграв',promoActivated:'Промокод активовано!',snowAdded:'Snow додано до балансу',apply:'Застосувати',success:'Успішно!',failed:'Помилка',insufficient:'Недостатньо коштів',tooMany:'Забагато запитів',set:'Встановити',noHistory:'Немає транзакцій' },
+    fa: { tasks:'وظایف',market:'بازار',friends:'دوستان',profile:'پروفایل',hatchBtn:'تبدیل ❄️',boostBtn:'ایجاد ☃️',promoCode:'کد تخفیف',limited:'محدود',hatchTitle:'تبدیل Snow ❄️',snowToHatch:'❄️ Snow برای تبدیل',craftFee:'کارمزد ساخت (10%)',totalRequired:'❄️ مجموع مورد نیاز',available:'موجود',snowflakes:'دانه برف',hatch:'تبدیل ❄️',boostTitle:'ایجاد Snowmen ☃️',boostNote:'فقط می‌توانید 1 بسته بخرید',starterPack:'بسته مبتدی',proPack:'بسته حرفه‌ای',whalePack:'بسته نهنگ',boostSpeed:'سرعت استخراج',buy:'خرید',purchased:'خریداری شد ✓',cancel:'لغو',packPurchased:'بسته خریداری شد!',snowmenAdded:'Snowmen اضافه شد',awesome:'عالی! 🎉',tasksTitle:'وظایف',submitChannel:'ارسال کانال',addTask:'افزودن وظیفه',taskHistory:'تاریخچه وظایف',join:'پیوستن',done:'انجام شد',channelPost:'در مورد ربات ما در کانال خود پست بگذارید و از 5 تا 1000 Snow کسب کنید.',marketTitle:'بازار',all:'همه',yours:'سفارشات من',lootBox:'جعبه غنیمت',createOrder:'+ ایجاد سفارش',confirmOrder:'تأیید سفارش',amountSnow:'مقدار Snow ❄️',pricePerSnow:'قیمت هر Snow',totalValue:'ارزش کل',noOrders:'هیچ سفارشی موجود نیست',noYourOrders:'سفارش فعالی وجود ندارد.',createSnowOrder:'یک سفارش Snow برای تجارت ایجاد کنید.',depositTab:'واریز',withdrawTab:'برداشت',enterAmount:'مبلغ را وارد کنید (TON)',sentManually:'دستی ارسال شد — بررسی',paymentMethod:'روش پرداخت',connectWallet:'اتصال کیف پول',disconnect:'قطع اتصال',manualDeposit:'یا (دستی) آدرس واریز',memo:'یادداشت (الزامی — شناسه شما)',memoNote:'همیشه یادداشت را وارد کنید. واریزهای بدون یادداشت به صورت خودکار اعتبارسنجی نمی‌شوند.',withdrawAmount:'مبلغ برداشت',tonAddress:'آدرس TON',enterTonAddress:'آدرس TON را وارد کنید',minWithdraw:'حداقل 0.2',feeWithdraw:'کارمزد 5%',withdraw:'برداشت',history:'تاریخچه',transactionHistory:'تاریخچه تراکنش‌ها',withdrawRequested:'درخواست برداشت ثبت شد',withdrawNote:'برداشت‌ها ممکن است از 1 تا 12 ساعت طول بکشند.',gotIt:'متوجه شدم! 👍',loading:'در حال بارگذاری...',deposit:'واریز',friendsTitle:'دوستان',yourReward:'پاداش شما',yourFriends:'دوستان شما',freeSnowman:'+1 Snowman رایگان به ازای هر دوست',snowHatch:'5% Snow هنگام تبدیل آن‌ها',tonBoost:'15% TON هنگام خرید Snowmen',copy:'📋 کپی',share:'📤 اشتراک‌گذاری',noFriends:'هنوز دوستی نیست 🧱',leaderboard:'🏆 جدول رتبه‌بندی',referrals:'معرفی‌ها',snowmen:'Snowmen',participateWin:'شرکت کنید و TON ببرید',prizes:'🎁 جوایز :',yourPosition:'موقعیت شما',topReferrers:'🏅 برترین معرفان',topSnowmen:'🏅 برترین صاحبان Snowmen',wallet:'کیف پول',yourBalance:'موجودی شما',activeSnowman:'Snowman فعال',snowBalance:'موجودی Snow',waiting:'در انتظار',live:'زنده',winner:'برنده',won:'برد',promoActivated:'کد تخفیف فعال شد!',snowAdded:'Snow به موجودی اضافه شد',apply:'اعمال',success:'موفق!',failed:'ناموفق',insufficient:'موجودی کافی نیست',tooMany:'درخواست‌های زیاد',set:'تنظیم',noHistory:'تراکنشی وجود ندارد' },
+    pl: { tasks:'Zadania',market:'Rynek',friends:'Przyjaciele',profile:'Profil',hatchBtn:'Konwertuj ❄️',boostBtn:'Utwórz ☃️',promoCode:'Kod Promo',limited:'OGRANICZONY',hatchTitle:'Konwertuj Snow ❄️',snowToHatch:'❄️ Snow do konwersji',craftFee:'Opłata za tworzenie (10%)',totalRequired:'❄️ Łącznie wymagane',available:'Dostępne',snowflakes:'płatków',hatch:'Konwertuj ❄️',boostTitle:'Utwórz Snowmen ☃️',boostNote:'Możesz kupić tylko 1 pakiet',starterPack:'Pakiet Startowy',proPack:'Pakiet Pro',whalePack:'Pakiet Wieloryba',boostSpeed:'Prędkość wydobycia',buy:'Kup',purchased:'Kupiono ✓',cancel:'ANULUJ',packPurchased:'Pakiet kupiony!',snowmenAdded:'Snowmen dodani',awesome:'Świetnie! 🎉',tasksTitle:'Zadania',submitChannel:'Wyślij Kanał',addTask:'Dodaj Zadanie',taskHistory:'Historia Zadań',join:'Dołącz',done:'Gotowe',channelPost:'Opublikuj o naszym bocie na swoim kanale i zarabiaj od 5 do 1000 Snow.',marketTitle:'Rynek',all:'Wszystkie',yours:'Moje',lootBox:'Skrzynka',createOrder:'+ Utwórz zamówienie',confirmOrder:'Potwierdź zamówienie',amountSnow:'Ilość Snow ❄️',pricePerSnow:'Cena za Snow',totalValue:'Całkowita wartość',noOrders:'Brak dostępnych zamówień',noYourOrders:'Brak aktywnych zamówień.',createSnowOrder:'Utwórz zamówienie Snow aby handlować.',depositTab:'Wpłata',withdrawTab:'Wypłata',enterAmount:'Wprowadź kwotę (TON)',sentManually:'Wysłano ręcznie — Sprawdź',paymentMethod:'Metoda płatności',connectWallet:'Połącz portfel',disconnect:'Rozłącz',manualDeposit:'lub (Ręcznie) Adres wpłaty',memo:'Memo (Wymagane — Twoje ID)',memoNote:'Zawsze dołączaj memo. Wpłaty bez memo nie mogą być naliczone automatycznie.',withdrawAmount:'Kwota wypłaty',tonAddress:'Adres TON',enterTonAddress:'Wprowadź adres TON',minWithdraw:'min 0.2',feeWithdraw:'opłata 5%',withdraw:'Wypłać',history:'Historia',transactionHistory:'Historia transakcji',withdrawRequested:'Żądanie wypłaty',withdrawNote:'Wypłaty mogą zająć od 1 do 12 godzin.',gotIt:'Rozumiem! 👍',loading:'Ładowanie...',deposit:'Wpłać',friendsTitle:'Przyjaciele',yourReward:'Twoja nagroda',yourFriends:'Twoi znajomi',freeSnowman:'+1 darmowy Snowman za znajomego',snowHatch:'5% Snow przy ich konwersji',tonBoost:'15% TON przy ich zakupie Snowmen',copy:'📋 Kopiuj',share:'📤 Udostępnij',noFriends:'Brak znajomych 🧱',leaderboard:'🏆 Rankingi',referrals:'Polecenia',snowmen:'Snowmen',participateWin:'Weź udział i wygraj TON',prizes:'🎁 Nagrody :',yourPosition:'Twoja pozycja',topReferrers:'🏅 Najlepsi polecający',topSnowmen:'🏅 Najlepsi właściciele Snowmen',wallet:'PORTFEL',yourBalance:'Twoje saldo',activeSnowman:'Aktywny Snowman',snowBalance:'Saldo Snow',waiting:'OCZEKIWANIE',live:'NA ŻYWO',winner:'Zwycięzca',won:'Wygrał',promoActivated:'Promo aktywowane!',snowAdded:'Snow dodany do salda',apply:'Zastosuj',success:'Sukces!',failed:'Niepowodzenie',insufficient:'Niewystarczające saldo',tooMany:'Zbyt wiele żądań',set:'Ustaw',noHistory:'Brak transakcji' },
+    uz: { tasks:'Vazifalar',market:'Bozor',friends:'Doʻstlar',profile:'Profil',hatchBtn:'Konvertatsiya ❄️',boostBtn:'Yaratish ☃️',promoCode:'Promo kod',limited:'CHEKLANGAN',hatchTitle:'Snow konvertatsiya ❄️',snowToHatch:'❄️ Konvertatsiya uchun Snow',craftFee:'Yaratish to\'lovi (10%)',totalRequired:'❄️ Jami kerak',available:'Mavjud',snowflakes:'qor parchalar',hatch:'Konvertatsiya ❄️',boostTitle:'Snowmen yaratish ☃️',boostNote:'Faqat 1 paket sotib olish mumkin',starterPack:'Boshlang\'ich paket',proPack:'Pro paket',whalePack:'Kit paketi',boostSpeed:'Qazib olish tezligi',buy:'Sotib olish',purchased:'Sotib olindi ✓',cancel:'BEKOR',packPurchased:'Paket sotib olindi!',snowmenAdded:'Snowmen qoʻshildi',awesome:'Ajoyib! 🎉',tasksTitle:'Vazifalar',submitChannel:'Kanal yuborish',addTask:'Vazifa qoʻshish',taskHistory:'Vazifalar tarixi',join:'Qoʻshilish',done:'Bajarildi',channelPost:'Kanalingizda botimiz haqida post qoʻying va 5 dan 1000 gacha Snow toping.',marketTitle:'Bozor',all:'Barchasi',yours:'Menikilar',lootBox:'Loot qutisi',createOrder:'+ Buyurtma yaratish',confirmOrder:'Buyurtmani tasdiqlash',amountSnow:'Snow miqdori ❄️',pricePerSnow:'Har bir Snow narxi',totalValue:'Jami qiymat',noOrders:'Buyurtmalar yoʻq',noYourOrders:'Faol buyurtmalar yoʻq.',createSnowOrder:'Savdo uchun Snow buyurtmasi yarating.',depositTab:'Kiritish',withdrawTab:'Chiqarish',enterAmount:'Miqdorni kiriting (TON)',sentManually:'Qoʻlda yuborildi — Tekshirish',paymentMethod:'To\'lov usuli',connectWallet:'Hamyon ulash',disconnect:'Uzish',manualDeposit:'yoki (Qoʻlda) Kiritish manzili',memo:'Izoh (Majburiy — ID)',memoNote:'Izohni doim qoʻshing. Izohi yoʻq kirimlar avtomatik qoʻshilmaydi.',withdrawAmount:'Chiqarish miqdori',tonAddress:'TON manzili',enterTonAddress:'TON manzilini kiriting',minWithdraw:'min 0.2',feeWithdraw:'toʻlov 5%',withdraw:'Chiqarish',history:'Tarix',transactionHistory:'Tranzaksiyalar tarixi',withdrawRequested:'Chiqarish soʻraldi',withdrawNote:'Chiqarishlar 1 dan 12 soatgacha davom etishi mumkin.',gotIt:'Tushundim! 👍',loading:'Yuklanmoqda...',deposit:'Kiritish',friendsTitle:'Doʻstlar',yourReward:'Sizning mukofotingiz',yourFriends:'Sizning doʻstlaringiz',freeSnowman:'Har doʻst uchun +1 bepul Snowman',snowHatch:'Ular konvertatsiya qilganda 5% Snow',tonBoost:'Ular Snowmen sotib olganda 15% TON',copy:'📋 Nusxa',share:'📤 Ulashish',noFriends:'Hali doʻstlar yoʻq 🧱',leaderboard:'🏆 Reyting',referrals:'Referallar',snowmen:'Snowmen',participateWin:'Qatnashing va TON yuting',prizes:'🎁 Mukofotlar :',yourPosition:'Sizning oʻrningiz',topReferrers:'🏅 Eng yaxshi referallar',topSnowmen:'🏅 Eng koʻp Snowmen egalari',wallet:'HAMYON',yourBalance:'Balansingiz',activeSnowman:'Faol Snowman',snowBalance:'Snow balansi',waiting:'KUTISH',live:'JONLI',winner:'Gʻolib',won:'Yutdi',promoActivated:'Promo faollashtirildi!',snowAdded:'Snow balansga qoʻshildi',apply:'Qoʻllash',success:'Muvaffaqiyat!',failed:'Muvaffaqiyatsiz',insufficient:'Balans yetarli emas',tooMany:'Juda koʻp soʻrovlar',set:'Belgilash',noHistory:'Tranzaksiyalar yoʻq' },
+    th: { tasks:'งาน',market:'ตลาด',friends:'เพื่อน',profile:'โปรไฟล์',hatchBtn:'แปลง ❄️',boostBtn:'สร้าง ☃️',promoCode:'รหัสโปรโม',limited:'จำกัด',hatchTitle:'แปลง Snow ❄️',snowToHatch:'❄️ Snow ที่จะแปลง',craftFee:'ค่าธรรมเนียมการสร้าง (10%)',totalRequired:'❄️ รวมที่ต้องการ',available:'ที่มีอยู่',snowflakes:'เกล็ดหิมะ',hatch:'แปลง ❄️',boostTitle:'สร้าง Snowmen ☃️',boostNote:'ซื้อได้แค่ 1 แพ็กเกจ',starterPack:'แพ็กเกจเริ่มต้น',proPack:'แพ็กเกจโปร',whalePack:'แพ็กเกจวาฬ',boostSpeed:'ความเร็วการขุด',buy:'ซื้อ',purchased:'ซื้อแล้ว ✓',cancel:'ยกเลิก',packPurchased:'ซื้อแพ็กเกจแล้ว!',snowmenAdded:'เพิ่ม Snowmen แล้ว',awesome:'ยอดเยี่ยม! 🎉',tasksTitle:'งาน',submitChannel:'ส่งช่อง',addTask:'เพิ่มงาน',taskHistory:'ประวัติงาน',join:'เข้าร่วม',done:'เสร็จแล้ว',channelPost:'โพสต์เกี่ยวกับบอทของเราในช่องของคุณและรับ 5 ถึง 1000 Snow',marketTitle:'ตลาด',all:'ทั้งหมด',yours:'ของฉัน',lootBox:'กล่องรางวัล',createOrder:'+ สร้างคำสั่ง',confirmOrder:'ยืนยันคำสั่ง',amountSnow:'จำนวน Snow ❄️',pricePerSnow:'ราคาต่อ Snow',totalValue:'มูลค่ารวม',noOrders:'ไม่มีคำสั่ง',noYourOrders:'ไม่มีคำสั่งที่ใช้งาน',createSnowOrder:'สร้างคำสั่ง Snow เพื่อเริ่มซื้อขาย',depositTab:'ฝาก',withdrawTab:'ถอน',enterAmount:'ใส่จำนวน (TON)',sentManually:'ส่งด้วยตนเอง — ตรวจสอบ',paymentMethod:'วิธีการชำระเงิน',connectWallet:'เชื่อมต่อกระเป๋า',disconnect:'ตัดการเชื่อมต่อ',manualDeposit:'หรือ (ด้วยตนเอง) ที่อยู่ฝาก',memo:'หมายเหตุ (จำเป็น — ID ของคุณ)',memoNote:'ใส่หมายเหตุเสมอ การฝากที่ไม่มีหมายเหตุไม่สามารถเครดิตได้โดยอัตโนมัติ',withdrawAmount:'จำนวนถอน',tonAddress:'ที่อยู่ TON',enterTonAddress:'ใส่ที่อยู่ TON',minWithdraw:'ขั้นต่ำ 0.2',feeWithdraw:'ค่าธรรมเนียม 5%',withdraw:'ถอน',history:'ประวัติ',transactionHistory:'ประวัติธุรกรรม',withdrawRequested:'ร้องขอถอน',withdrawNote:'การถอนอาจใช้เวลา 1 ถึง 12 ชั่วโมง',gotIt:'เข้าใจแล้ว! 👍',loading:'กำลังโหลด...',deposit:'ฝาก',friendsTitle:'เพื่อน',yourReward:'รางวัลของคุณ',yourFriends:'เพื่อนของคุณ',freeSnowman:'+1 Snowman ฟรีต่อเพื่อน',snowHatch:'5% Snow เมื่อพวกเขาแปลง',tonBoost:'15% TON เมื่อพวกเขาซื้อ Snowmen',copy:'📋 คัดลอก',share:'📤 แชร์',noFriends:'ยังไม่มีเพื่อน 🧱',leaderboard:'🏆 กระดานผู้นำ',referrals:'การแนะนำ',snowmen:'Snowmen',participateWin:'เข้าร่วมและชนะ TON',prizes:'🎁 รางวัล :',yourPosition:'ตำแหน่งของคุณ',topReferrers:'🏅 ผู้แนะนำอันดับต้น',topSnowmen:'🏅 เจ้าของ Snowmen อันดับต้น',wallet:'กระเป๋า',yourBalance:'ยอดคงเหลือ',activeSnowman:'Snowman ที่ใช้งาน',snowBalance:'ยอด Snow',waiting:'รอ',live:'สด',winner:'ผู้ชนะ',won:'ชนะ',promoActivated:'เปิดใช้งานโปรโมชัน!',snowAdded:'เพิ่ม Snow แล้ว',apply:'ใช้',success:'สำเร็จ!',failed:'ล้มเหลว',insufficient:'ยอดไม่เพียงพอ',tooMany:'คำขอมากเกินไป',set:'ตั้งค่า',noHistory:'ไม่มีธุรกรรม' },
+    bn: { tasks:'কাজ',market:'বাজার',friends:'বন্ধুরা',profile:'প্রোফাইল',hatchBtn:'রূপান্তর ❄️',boostBtn:'তৈরি ☃️',promoCode:'প্রমো কোড',limited:'সীমিত',hatchTitle:'Snow রূপান্তর ❄️',snowToHatch:'❄️ রূপান্তরের জন্য Snow',craftFee:'তৈরির ফি (10%)',totalRequired:'❄️ মোট প্রয়োজন',available:'উপলব্ধ',snowflakes:'তুষার',hatch:'রূপান্তর ❄️',boostTitle:'Snowmen তৈরি ☃️',boostNote:'শুধু 1টি প্যাক কিনতে পারবেন',starterPack:'স্টার্টার প্যাক',proPack:'প্রো প্যাক',whalePack:'হোয়েল প্যাক',boostSpeed:'মাইনিং গতি',buy:'কিনুন',purchased:'কেনা হয়েছে ✓',cancel:'বাতিল',packPurchased:'প্যাক কেনা হয়েছে!',snowmenAdded:'Snowmen যোগ হয়েছে',awesome:'দারুণ! 🎉',tasksTitle:'কাজ',submitChannel:'চ্যানেল জমা দিন',addTask:'কাজ যোগ করুন',taskHistory:'কাজের ইতিহাস',join:'যোগ দিন',done:'হয়েছে',channelPost:'আপনার চ্যানেলে আমাদের বট সম্পর্কে পোস্ট করুন এবং 5 থেকে 1000 Snow উপার্জন করুন।',marketTitle:'বাজার',all:'সব',yours:'আমার',lootBox:'লুট বক্স',createOrder:'+ অর্ডার তৈরি',confirmOrder:'অর্ডার নিশ্চিত',amountSnow:'Snow পরিমাণ ❄️',pricePerSnow:'প্রতি Snow মূল্য',totalValue:'মোট মূল্য',noOrders:'কোনো অর্ডার নেই',noYourOrders:'কোনো সক্রিয় অর্ডার নেই।',createSnowOrder:'ট্রেড করতে Snow অর্ডার তৈরি করুন।',depositTab:'জমা',withdrawTab:'উত্তোলন',enterAmount:'পরিমাণ লিখুন (TON)',sentManually:'ম্যানুয়ালি পাঠানো হয়েছে — যাচাই করুন',paymentMethod:'পেমেন্ট পদ্ধতি',connectWallet:'ওয়ালেট সংযুক্ত করুন',disconnect:'সংযোগ বিচ্ছিন্ন',manualDeposit:'অথবা (ম্যানুয়াল) জমার ঠিকানা',memo:'মেমো (প্রয়োজনীয় — আপনার ID)',memoNote:'সর্বদা মেমো অন্তর্ভুক্ত করুন। মেমো ছাড়া জমা স্বয়ংক্রিয়ভাবে যোগ হয় না।',withdrawAmount:'উত্তোলনের পরিমাণ',tonAddress:'TON ঠিকানা',enterTonAddress:'TON ঠিকানা লিখুন',minWithdraw:'সর্বনিম্ন 0.2',feeWithdraw:'ফি 5%',withdraw:'উত্তোলন',history:'ইতিহাস',transactionHistory:'লেনদেনের ইতিহাস',withdrawRequested:'উত্তোলনের অনুরোধ',withdrawNote:'উত্তোলনে 1 থেকে 12 ঘণ্টা সময় লাগতে পারে।',gotIt:'বুঝেছি! 👍',loading:'লোড হচ্ছে...',deposit:'জমা',friendsTitle:'বন্ধুরা',yourReward:'আপনার পুরস্কার',yourFriends:'আপনার বন্ধুরা',freeSnowman:'প্রতি বন্ধুর জন্য +1 বিনামূল্যে Snowman',snowHatch:'তারা রূপান্তর করলে 5% Snow',tonBoost:'তারা Snowmen কিনলে 15% TON',copy:'📋 কপি',share:'📤 শেয়ার',noFriends:'এখনো বন্ধু নেই 🧱',leaderboard:'🏆 লিডারবোর্ড',referrals:'রেফারেল',snowmen:'Snowmen',participateWin:'অংশগ্রহণ করুন ও TON জিতুন',prizes:'🎁 পুরস্কার :',yourPosition:'আপনার অবস্থান',topReferrers:'🏅 শীর্ষ রেফারকারী',topSnowmen:'🏅 শীর্ষ Snowmen মালিক',wallet:'ওয়ালেট',yourBalance:'আপনার ব্যালেন্স',activeSnowman:'সক্রিয় Snowman',snowBalance:'Snow ব্যালেন্স',waiting:'অপেক্ষা',live:'সরাসরি',winner:'বিজয়ী',won:'জিতেছে',promoActivated:'প্রমো সক্রিয়!',snowAdded:'Snow যোগ করা হয়েছে',apply:'প্রয়োগ',success:'সফল!',failed:'ব্যর্থ',insufficient:'অপর্যাপ্ত ব্যালেন্স',tooMany:'অনেক বেশি অনুরোধ',set:'সেট',noHistory:'কোনো লেনদেন নেই' },
+    ur: { tasks:'کام',market:'مارکیٹ',friends:'دوست',profile:'پروفائل',hatchBtn:'تبدیل ❄️',boostBtn:'بنائیں ☃️',promoCode:'پرومو کوڈ',limited:'محدود',hatchTitle:'Snow تبدیل ❄️',snowToHatch:'❄️ تبدیلی کے لیے Snow',craftFee:'بنانے کی فیس (10%)',totalRequired:'❄️ کل ضروری',available:'دستیاب',snowflakes:'برف کے ذرات',hatch:'تبدیل ❄️',boostTitle:'Snowmen بنائیں ☃️',boostNote:'صرف 1 پیکج خرید سکتے ہیں',starterPack:'اسٹارٹر پیکج',proPack:'پرو پیکج',whalePack:'وہیل پیکج',boostSpeed:'مائننگ کی رفتار',buy:'خریدیں',purchased:'خریدا گیا ✓',cancel:'منسوخ',packPurchased:'پیکج خریدا گیا!',snowmenAdded:'Snowmen شامل',awesome:'شاندار! 🎉',tasksTitle:'کام',submitChannel:'چینل جمع کریں',addTask:'کام شامل کریں',taskHistory:'کاموں کی تاریخ',join:'شامل ہوں',done:'ہو گیا',channelPost:'اپنے چینل پر ہمارے بوٹ کے بارے میں پوسٹ کریں اور 5 سے 1000 Snow کمائیں۔',marketTitle:'مارکیٹ',all:'سب',yours:'میرے',lootBox:'لوٹ باکس',createOrder:'+ آرڈر بنائیں',confirmOrder:'آرڈر کی تصدیق',amountSnow:'Snow کی مقدار ❄️',pricePerSnow:'فی Snow قیمت',totalValue:'کل قیمت',noOrders:'کوئی آرڈر نہیں',noYourOrders:'کوئی فعال آرڈر نہیں۔',createSnowOrder:'تجارت کے لیے Snow آرڈر بنائیں۔',depositTab:'جمع',withdrawTab:'نکاسی',enterAmount:'رقم درج کریں (TON)',sentManually:'دستی بھیجا گیا — جانچیں',paymentMethod:'ادائیگی کا طریقہ',connectWallet:'ولیٹ جوڑیں',disconnect:'منقطع کریں',manualDeposit:'یا (دستی) جمع کا پتہ',memo:'میمو (ضروری — آپ کا ID)',memoNote:'ہمیشہ میمو شامل کریں۔ میمو کے بغیر جمع خودکار نہیں ہوتا۔',withdrawAmount:'نکاسی کی رقم',tonAddress:'TON پتہ',enterTonAddress:'TON پتہ درج کریں',minWithdraw:'کم از کم 0.2',feeWithdraw:'فیس 5%',withdraw:'نکاسی',history:'تاریخ',transactionHistory:'لین دین کی تاریخ',withdrawRequested:'نکاسی کی درخواست',withdrawNote:'نکاسی میں 1 سے 12 گھنٹے لگ سکتے ہیں۔',gotIt:'سمجھ گیا! 👍',loading:'لوڈ ہو رہا ہے...',deposit:'جمع',friendsTitle:'دوست',yourReward:'آپ کا انعام',yourFriends:'آپ کے دوست',freeSnowman:'ہر دوست کے لیے +1 مفت Snowman',snowHatch:'جب وہ تبدیل کریں 5% Snow',tonBoost:'جب وہ Snowmen خریدیں 15% TON',copy:'📋 کاپی',share:'📤 شیئر',noFriends:'ابھی کوئی دوست نہیں 🧱',leaderboard:'🏆 لیڈر بورڈ',referrals:'حوالہ جات',snowmen:'Snowmen',participateWin:'حصہ لیں اور TON جیتیں',prizes:'🎁 انعامات :',yourPosition:'آپ کی پوزیشن',topReferrers:'🏅 بہترین حوالہ دہندگان',topSnowmen:'🏅 بہترین Snowmen مالکان',wallet:'ولیٹ',yourBalance:'آپ کا بیلنس',activeSnowman:'فعال Snowman',snowBalance:'Snow بیلنس',waiting:'انتظار',live:'براہ راست',winner:'فاتح',won:'جیتا',promoActivated:'پرومو فعال!',snowAdded:'Snow بیلنس میں شامل',apply:'لاگو کریں',success:'کامیاب!',failed:'ناکام',insufficient:'ناکافی بیلنس',tooMany:'بہت زیادہ درخواستیں',set:'سیٹ',noHistory:'کوئی لین دین نہیں' },
+    my: { tasks:'တာဝန်များ',market:'ဈေးကွက်',friends:'သူငယ်ချင်းများ',profile:'ပရိုဖိုင်',hatchBtn:'ပြောင်းလဲ ❄️',boostBtn:'ဖန်တီး ☃️',promoCode:'ပရိုမိုကုဒ်',limited:'အကန့်အသတ်',hatchTitle:'Snow ပြောင်းလဲ ❄️',snowToHatch:'❄️ ပြောင်းလဲမည့် Snow',craftFee:'ဖန်တီးမှုကြေး (10%)',totalRequired:'❄️ စုစုပေါင်းလိုအပ်သည်',available:'ရရှိနိုင်',snowflakes:'နှင်းပွင့်',hatch:'ပြောင်းလဲ ❄️',boostTitle:'Snowmen ဖန်တီး ☃️',boostNote:'ပက်ကေ့ 1 ခုသာဝယ်နိုင်သည်',starterPack:'စတင်သူပက်ကေ့',proPack:'ပရိုပက်ကေ့',whalePack:'ငါးဝပ်ပက်ကေ့',boostSpeed:'တူးဖော်မှုအမြန်နှုန်း',buy:'ဝယ်',purchased:'ဝယ်ပြီး ✓',cancel:'ပယ်ဖျက်',packPurchased:'ပက်ကေ့ဝယ်ပြီ!',snowmenAdded:'Snowmen ထည့်သွင်းပြီ',awesome:'အံ့ဩဖွယ်! 🎉',tasksTitle:'တာဝန်များ',submitChannel:'ချန်နယ်တင်သွင်း',addTask:'တာဝန်ထည့်',taskHistory:'တာဝန်မှတ်တမ်း',join:'ပါဝင်',done:'ပြီးပြီ',channelPost:'သင့်ချန်နယ်တွင်ကျွန်ုပ်တို့ဘော့အကြောင်းပို့စ်တင်ပြီး Snow 5 မှ 1000 ရယူပါ',marketTitle:'ဈေးကွက်',all:'အားလုံး',yours:'ကျွန်ုပ်၏',lootBox:'ဆုလက်ဆောင်ပုံး',createOrder:'+ အမိန့်ဖန်တီး',confirmOrder:'အမိန့်အတည်ပြု',amountSnow:'Snow ပမာဏ ❄️',pricePerSnow:'Snow တစ်ခုစျေး',totalValue:'စုစုပေါင်းတန်ဖိုး',noOrders:'အမိန့်မရှိ',noYourOrders:'တက်ကြွသောအမိန့်မရှိ',createSnowOrder:'ကုန်သွယ်ရန် Snow အမိန့်ဖန်တီးပါ',depositTab:'ထည့်သွင်း',withdrawTab:'ထုတ်ယူ',enterAmount:'ပမာဏထည့်သွင်းပါ (TON)',sentManually:'လက်ဖြင့်ပို့ပြီ — စစ်ဆေး',paymentMethod:'ငွေပေးချေမှုနည်းလမ်း',connectWallet:'ပိုက်ဆံအိတ်ချိတ်ဆက်',disconnect:'ချိတ်ဆက်မှုဖြတ်တောက်',manualDeposit:'သို့မဟုတ် (လက်ဖြင့်) ထည့်သွင်းလိပ်စာ',memo:'မှတ်ချက် (လိုအပ်သည် — ID)',memoNote:'မှတ်ချက်ကိုအမြဲထည့်ပါ မှတ်ချက်မပါဘဲထည့်သွင်းမှုများကိုအလိုအလျောက်မည်မဟုတ်',withdrawAmount:'ထုတ်ယူပမာဏ',tonAddress:'TON လိပ်စာ',enterTonAddress:'TON လိပ်စာထည့်ပါ',minWithdraw:'အနည်းဆုံး 0.2',feeWithdraw:'ကြေး 5%',withdraw:'ထုတ်ယူ',history:'မှတ်တမ်း',transactionHistory:'ငွေလွှဲမှတ်တမ်း',withdrawRequested:'ထုတ်ယူမှုတောင်းဆိုပြီ',withdrawNote:'ထုတ်ယူမှုသည် 1 မှ 12 နာရီအထိကြာနိုင်သည်',gotIt:'နားလည်ပြီ! 👍',loading:'တင်နေသည်...',deposit:'ထည့်သွင်း',friendsTitle:'သူငယ်ချင်းများ',yourReward:'သင့်ဆုလာဘ်',yourFriends:'သင့်သူငယ်ချင်းများ',freeSnowman:'သူငယ်ချင်းတစ်ဦးလျှင် +1 Snowman အခမဲ့',snowHatch:'သူတို့ပြောင်းလဲသောအခါ 5% Snow',tonBoost:'သူတို့ Snowmen ဝယ်သောအခါ 15% TON',copy:'📋 ကူးယူ',share:'📤 မျှဝေ',noFriends:'သူငယ်ချင်းမရှိသေး 🧱',leaderboard:'🏆 ဂုဏ်ထူးဆောင်ဇယား',referrals:'ညွှန်ကြားချက်များ',snowmen:'Snowmen',participateWin:'ပါဝင်ပြီး TON ရယူ',prizes:'🎁 ဆုများ :',yourPosition:'သင့်အနေအထား',topReferrers:'🏅 အကောင်းဆုံးညွှန်ကြားသူများ',topSnowmen:'🏅 Snowmen အများဆုံးပိုင်ဆိုင်သူများ',wallet:'ပိုက်ဆံအိတ်',yourBalance:'သင့်လက်ကျန်',activeSnowman:'တက်ကြွသော Snowman',snowBalance:'Snow လက်ကျန်',waiting:'စောင့်နေသည်',live:'တိုက်ရိုက်',winner:'နိုင်သူ',won:'နိုင်',promoActivated:'ပရိုမိုဖွင့်ပြီ!',snowAdded:'Snow လက်ကျန်ထည့်သွင်းပြီ',apply:'အသုံးချ',success:'အောင်မြင်သည်!',failed:'မအောင်မြင်',insufficient:'လက်ကျန်မလုံလောက်',tooMany:'တောင်းဆိုမှုများလွန်း',set:'သတ်မှတ်',noHistory:'ငွေလွှဲမှတ်တမ်းမရှိ' },
 };
 
 let currentLang = localStorage.getItem('snowman_lang') || 'en';
@@ -4355,34 +4345,25 @@ function applyLang() {
 
     // Home
     q('#openHatchBtn', 'hatchBtn');
-    q('#openMintBtn', 'mintBtn');
+    q('#openBoostBtn', 'boostBtn');
     q('.promo-text', 'promoCode');
     q('.limited-text', 'limited');
 
     // Hatch
     q('.hatch-header', 'hatchTitle');
 
-    // Mint
-    q('.mint-title', 'mintTitle');
-    document.querySelectorAll('.mint-buy-btn:not([disabled])').forEach(e => e.textContent = t('buy'));
-    document.querySelectorAll('.mint-buy-btn[disabled]').forEach(e => e.textContent = t('purchased'));
-    q('.close-mint', 'cancel');
-    q('#closeMintBtn', 'cancel');
-    const mintOnly = document.querySelector('#mintModal p[style]');
-    if (mintOnly) mintOnly.textContent = t('mintOnly1');
+    // Boost
+    q('.boost-title', 'boostTitle');
+    document.querySelectorAll('.boost-buy-btn').forEach(e => e.textContent = t('buy'));
+    q('.close-boost', 'cancel');
+    q('#closeBoostBtn', 'cancel');
     document.querySelectorAll('.pack-speed').forEach((e, i) => {
-        const speeds = ['+7.00', '+30.00', '+500.00'];
-        e.textContent = `${t('miningSpeed')}: ${speeds[i] || ''} ❄️/hr`;
+        const speeds = ['x2', 'x10'];
+        e.textContent = `Multiplier: ${speeds[i] || ''}`;
     });
     document.querySelectorAll('.pack-box h3').forEach((e, i) => {
-        const packs = ['starterPack', 'proPack', 'whalePack'];
-        e.textContent = t(packs[i] || 'starterPack');
-    });
-    s('mintSuccessCard', 'packPurchased');
-    document.querySelectorAll('#mintSuccessCard div').forEach(e => {
-        if (e.textContent.trim() === 'Snowmen Added' || e.textContent.trim() === T[currentLang]?.snowmenAdded) {
-            e.textContent = t('snowmenAdded');
-        }
+        if (i === 0) e.textContent = '2x Booster';
+        else if (i === 1) e.textContent = '10x Booster';
     });
 
     // Tasks
@@ -4482,7 +4463,7 @@ function applyLang() {
     document.querySelectorAll('.friends-reward-line').forEach((e, i) => {
     if (i === 0) e.innerHTML = `☃️ ${t('freeSnowman')}`;
     else if (i === 1) e.innerHTML = `❄️ ${t('snowHatch')}`;
-    else if (i === 2) e.innerHTML = `<span class="ton-icon"></span> ${t('tonMint')}`;
+    else if (i === 2) e.innerHTML = `<span class="ton-icon"></span> ${t('tonBoost')}`;
 });
     q('#friendsCopyBtn', 'copy');
     q('#friendsShareBtn', 'share');
@@ -4608,11 +4589,11 @@ const miningRateText = document.getElementById('miningRateText');
         
         const floatingAddTaskBtn = document.getElementById('floatingAddTaskBtn');
 
-        const mintModal = document.getElementById('mintModal');
+        const boostModal = document.getElementById('boostModal');
         const hatchModal = document.getElementById('hatchModal');
 
-        const openMintBtn = document.getElementById('openMintBtn');
-        const closeMintBtn = document.getElementById('closeMintBtn');
+        const openBoostBtn = document.getElementById('openBoostBtn');
+        const closeBoostBtn = document.getElementById('closeBoostBtn');
 
         const openHatchBtn = document.getElementById('openHatchBtn');
         const closeHatchBtn = document.getElementById('closeHatchBtn');
@@ -5394,29 +5375,20 @@ function startTaskJoin(task, button) {
     }, 1000);
 }
 
-openMintBtn?.addEventListener('click', async () => {
-    const data = await loadMintStatus();
-    const bought = data?.bought || [];
-    document.querySelectorAll('.mint-buy-btn').forEach(btn => {
-        const pack = btn.dataset.pack;
-        if (bought.includes(pack)) {
-            btn.textContent = 'Purchased ✓';
-            btn.disabled = true;
-        } else {
-            btn.disabled = false;
-            btn.textContent = 'Buy';
-        }
-    });
-    mintModal.style.display = 'flex';
+openBoostBtn?.addEventListener('click', async () => {
+    const data = await loadBoostStatus();
+    const currentBoostEl = document.getElementById('boostCurrentValue');
+    if (currentBoostEl) currentBoostEl.textContent = `${Number(data?.boost || miningState.miningBoost || 1).toFixed(2)}x`;
+    boostModal.style.display = 'flex';
 });
 
-closeMintBtn?.addEventListener('click', () => mintModal.style.display = 'none');
+closeBoostBtn?.addEventListener('click', () => boostModal.style.display = 'none');
 
-document.querySelectorAll('.mint-buy-btn').forEach(btn => {
+document.querySelectorAll('.boost-buy-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
         const pack = btn.dataset.pack;
         const ton = Number(btn.dataset.ton);
-        const snowmen = Number(btn.dataset.snowmen);
+        const factor = Number(btn.dataset.factor);
         const tgUser = getTgUser();
 
         if (miningState.tonBalance < ton) {
@@ -5428,7 +5400,7 @@ document.querySelectorAll('.mint-buy-btn').forEach(btn => {
         btn.textContent = 'Processing...';
 
         try {
-            const res = await fetch(`${API_BASE}/api/mint`, {
+            const res = await fetch(`${API_BASE}/api/boost`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ user_id: tgUser.id, pack })
@@ -5442,25 +5414,26 @@ document.querySelectorAll('.mint-buy-btn').forEach(btn => {
                 return;
             }
 
-            btn.textContent = 'Purchased ✓';
+            const packNames = { boost2x: '2x Booster', boost10x: '10x Booster' };
+            const rate = Number(data.speed_per_hour || miningState.speedPerHour || 0).toFixed(2);
 
-            const speedMap = { starter: 7, pro: 30, whale: 500 };
-            const packNames = { starter: 'Starter Pack', pro: 'Pro Pack', whale: 'Whale Pack' };
+            document.getElementById('boostSuccessPackName').textContent = packNames[pack] || 'Booster';
+            document.getElementById('boostSuccessSummary').textContent = `+${factor}x`;
+            document.getElementById('boostSuccessRate').textContent = `${rate} ❄️/hr ⚡`;
 
-            document.getElementById('mintSuccessPackName').textContent = packNames[pack];
-            document.getElementById('mintSuccessSnowmen').textContent = `+${snowmen.toLocaleString()} ☃️`;
-            document.getElementById('mintSuccessSpeed').textContent = `+${speedMap[pack]} ❄️/hr Mining Speed`;
-
-            mintModal.style.display = 'none';
-            const overlay = document.getElementById('mintSuccessOverlay');
-            overlay.style.display = 'flex';
+            boostModal.style.display = 'none';
+            const overlay = document.getElementById('boostSuccessOverlay');
+            if (overlay) overlay.style.display = 'flex';
 
             await refreshUserState();
-            await loadMintStatus(true);
+            await loadBoostStatus(true);
         } catch(e) {
             alert('Purchase failed');
             btn.disabled = false;
             btn.textContent = `Buy — ${ton} TON`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Buy';
         }
     });
 });
@@ -5498,7 +5471,7 @@ hatchPctBtns.forEach((btn) => {
 finalHatchBtn?.addEventListener('click', submitHatch);
 
         window.addEventListener('click', (event) => {
-            if (event.target === mintModal) mintModal.style.display = 'none';
+            if (event.target === boostModal) boostModal.style.display = 'none';
             if (event.target === hatchModal) hatchModal.style.display = 'none';
             if (event.target === pvpScreen) pvpScreen.classList.remove('show');
         });
@@ -5828,19 +5801,19 @@ async function loadLeaderboard(force = false) {
     }
 }
 
-async function loadMintStatus(force = false) {
+async function loadBoostStatus(force = false) {
     try {
         const tgUser = getTgUser();
         const data = await fetchSection(
-            'mint_status',
-            `${API_BASE}/api/mint/status?user_id=${tgUser.id}`,
+            'boost_status',
+            `${API_BASE}/api/boost/status?user_id=${tgUser.id}`,
             { headers: getAuthHeaders() },
             force ? 0 : 300000
         );
-        appBootstrap = { ...(appBootstrap || {}), mint: data };
+        appBootstrap = { ...(appBootstrap || {}), boost: data };
         return data;
     } catch (error) {
-        console.error('loadMintStatus failed', error);
+        console.error('loadBoostStatus failed', error);
         return null;
     }
 }
@@ -5984,6 +5957,7 @@ const miningState = {
     snowBalance: 0,
     tonBalance: 0,
     speedPerHour: 0,
+    miningBoost: 1,
     lastMinedAt: Date.now(),
     nextRewardInMs: 0,
     serverTimeOffsetMs: 0
@@ -5999,7 +5973,8 @@ function formatClock(ms) {
 function renderMiningUI() {
     const snowman = String(miningState.snowmanCount);
     const snow = String(Math.floor(miningState.snowBalance));
-    const rate = `${Number(miningState.speedPerHour).toFixed(2)} ❄️/hr`;
+    const boostSuffix = Number(miningState.miningBoost || 1) > 1 ? ' ⚡' : '';
+    const rate = `${Number(miningState.speedPerHour).toFixed(2)} ❄️/hr${boostSuffix}`;
     const ton = Number(miningState.tonBalance || 0).toFixed(2);
     
     if (snowmanValue) snowmanValue.textContent = snowman;
@@ -6045,6 +6020,7 @@ async function loadMiningState(force = false) {
     miningState.username = user.username || tgUser.username || '';
     miningState.snowBalance = user.snow_balance || 0;
     miningState.speedPerHour = user.speed_per_hour || 0;
+    miningState.miningBoost = user.mining_boost || 1;
     miningState.lastMinedAt = user.last_mined_at || Date.now();
     miningState.nextRewardInMs = user.next_reward_in_ms || 0;
     miningState.tonBalance = user.ton_balance || 0;
@@ -6052,6 +6028,8 @@ async function loadMiningState(force = false) {
     renderMiningUI();
     tickMiningTimer();
     updateHatchUI();
+    const boostCurrentValue = document.getElementById('boostCurrentValue');
+    if (boostCurrentValue) boostCurrentValue.textContent = `${Number(miningState.miningBoost || 1).toFixed(2)}x`;
 
     const bar = document.querySelector('.minting-bar');
     if (bar && appBootstrap.total_snowmen !== undefined) {
@@ -6487,7 +6465,7 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
                 <div style="font-size:14px;color:#B2DAFF;margin-bottom:6px;">❄️ ${snowAmount.toLocaleString()} Snow listed</div>
                 <div style="font-size:13px;color:#9EC8E0;margin-bottom:20px;">Fee: ${data.fee} ❄️ deducted</div>
                 <button onclick="document.getElementById('marketSuccessOverlay').remove()" style="width:100%;padding:12px;border:none;border-radius:20px;background:linear-gradient(135deg,#3CC7FF,#129FDF);color:white;font-size:16px;font-weight:900;cursor:pointer;">
-                    Awesome! 🎉
+                    Great! ⚡
                 </button>
             </div>`;
         document.body.appendChild(successOverlay);
