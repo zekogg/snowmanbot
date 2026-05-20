@@ -6058,6 +6058,8 @@ if (cachedBootstrap) {
     setLoadingProgress(100, 'Welcome back!');
     applyBootstrapData(cachedBootstrap);
     setTimeout(() => hideLoadingScreen(), 2000);
+
+    refreshUserState().catch(() => {});
 } else {
     setLoadingProgress(20, 'Connecting...');
     
