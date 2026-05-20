@@ -6057,9 +6057,10 @@ const cachedBootstrap = readBootstrap();
 if (cachedBootstrap) {
     setLoadingProgress(100, 'Welcome back!');
     applyBootstrapData(cachedBootstrap);
-    setTimeout(() => hideLoadingScreen(), 2000);
 
-    refreshUserState().catch(() => {});
+    bootstrapApp(true).catch(() => {});
+
+    setTimeout(() => hideLoadingScreen(), 2000);
 } else {
     setLoadingProgress(20, 'Connecting...');
     
