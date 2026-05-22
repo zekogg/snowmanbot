@@ -6038,7 +6038,10 @@ async function loadMiningState(force = false) {
     miningState.miningBoost = user.mining_boost || 1;
     miningState.lastMinedAt = user.last_mined_at || Date.now();
     miningState.nextRewardInMs = user.next_reward_in_ms || 0;
-    miningState.timerEndsAt = Date.now() + Number(miningState.nextRewardInMs || 0);
+    const serverTime = Number(appBootstrap.server_time || Date.now());
+   const elapsedSinceServer = Date.now() - serverTime;
+   const remaining = Math.max(0, Number(user.next_reward_in_ms || 0) - elapsedSinceServer);
+    miningState.timerEndsAt = Date.now() + remaining;
     miningState.timerSyncing = false;
     miningState.tonBalance = user.ton_balance || 0;
 
