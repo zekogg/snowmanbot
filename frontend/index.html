@@ -5681,14 +5681,15 @@ async function pvpPoll() {
 }
         }
 
-        if if (pvpPollTimer) clearTimeout(pvpPollTimer);
-pvpPollTimer = setTimeout(pvpPoll, getPvpPollInterval(data.round, bets));
-} catch (e) {
-    if (e.name === 'AbortError') return;
-    console.error('pvp poll', e);
-    if (pvpPollTimer) clearTimeout(pvpPollTimer);
-    pvpPollTimer = setTimeout(pvpPoll, 15000);
-}
+        if (pvpPollTimer) clearTimeout(pvpPollTimer);
+        pvpPollTimer = setTimeout(pvpPoll, getPvpPollInterval(data.round, bets));
+
+   } catch(e) {
+        if (e.name === 'AbortError') return;
+        console.error('pvp poll', e);
+        if (pvpPollTimer) clearTimeout(pvpPollTimer);
+        pvpPollTimer = setTimeout(pvpPoll, 15000);
+    }
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -5699,8 +5700,6 @@ document.addEventListener('visibilitychange', () => {
         }
         return;
     }
-
-    bootstrapApp(true).catch(() => {});
 
     if (pvpScreen?.classList.contains('show') && !pvpPollTimer) {
         pvpPoll();
@@ -6016,11 +6015,11 @@ function tickMiningTimer() {
 
     miningState.timerSyncing = true;
 
-    bootstrapApp(true)
-    .catch(() => {})
-    .finally(() => {
-        miningState.timerSyncing = false;
-    });
+    refreshUserState()
+        .catch(() => {})
+        .finally(() => {
+            miningState.timerSyncing = false;
+        });
 }
 
 async function loadMiningState(force = false) {
@@ -6039,10 +6038,7 @@ async function loadMiningState(force = false) {
     miningState.miningBoost = user.mining_boost || 1;
     miningState.lastMinedAt = user.last_mined_at || Date.now();
     miningState.nextRewardInMs = user.next_reward_in_ms || 0;
-    const serverTime = Number(appBootstrap.server_time || Date.now());
-   const elapsedSinceServer = Date.now() - serverTime;
-   const remaining = Math.max(0, Number(user.next_reward_in_ms || 0) - elapsedSinceServer);
-    miningState.timerEndsAt = Date.now() + remaining;
+    miningState.timerEndsAt = Date.now() + Number(miningState.nextRewardInMs || 0);
     miningState.timerSyncing = false;
     miningState.tonBalance = user.ton_balance || 0;
 
