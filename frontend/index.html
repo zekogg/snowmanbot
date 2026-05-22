@@ -5681,15 +5681,14 @@ async function pvpPoll() {
 }
         }
 
-        if (pvpPollTimer) clearTimeout(pvpPollTimer);
-        pvpPollTimer = setTimeout(pvpPoll, getPvpPollInterval(data.round, bets));
-
-   } catch(e) {
-        if (e.name === 'AbortError') return;
-        console.error('pvp poll', e);
-        if (pvpPollTimer) clearTimeout(pvpPollTimer);
-        pvpPollTimer = setTimeout(pvpPoll, 15000);
-    }
+        if if (pvpPollTimer) clearTimeout(pvpPollTimer);
+pvpPollTimer = setTimeout(pvpPoll, getPvpPollInterval(data.round, bets));
+} catch (e) {
+    if (e.name === 'AbortError') return;
+    console.error('pvp poll', e);
+    if (pvpPollTimer) clearTimeout(pvpPollTimer);
+    pvpPollTimer = setTimeout(pvpPoll, 15000);
+}
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -5711,7 +5710,7 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('focus', () => {
     bootstrapApp(true).catch(() => {});
 });
-        
+
 pvpSetBtn?.addEventListener('click', async () => {
     const tgUser = getTgUser();
     let amount = parseInt(pvpAmountInput?.value.trim(), 10);
