@@ -5707,10 +5707,6 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-window.addEventListener('focus', () => {
-    bootstrapApp(true).catch(() => {});
-});
-
 pvpSetBtn?.addEventListener('click', async () => {
     const tgUser = getTgUser();
     let amount = parseInt(pvpAmountInput?.value.trim(), 10);
