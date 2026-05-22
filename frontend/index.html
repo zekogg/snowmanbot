@@ -5701,11 +5701,17 @@ document.addEventListener('visibilitychange', () => {
         return;
     }
 
+    bootstrapApp(true).catch(() => {});
+
     if (pvpScreen?.classList.contains('show') && !pvpPollTimer) {
         pvpPoll();
     }
 });
 
+window.addEventListener('focus', () => {
+    bootstrapApp(true).catch(() => {});
+});
+        
 pvpSetBtn?.addEventListener('click', async () => {
     const tgUser = getTgUser();
     let amount = parseInt(pvpAmountInput?.value.trim(), 10);
@@ -6015,11 +6021,11 @@ function tickMiningTimer() {
 
     miningState.timerSyncing = true;
 
-    refreshUserState()
-        .catch(() => {})
-        .finally(() => {
-            miningState.timerSyncing = false;
-        });
+    bootstrapApp(true)
+    .catch(() => {})
+    .finally(() => {
+        miningState.timerSyncing = false;
+    });
 }
 
 async function loadMiningState(force = false) {
