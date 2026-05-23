@@ -4726,11 +4726,13 @@ function readBootstrap() {
 }
 
 function writeBootstrap(data) {
-    appBootstrap = data;
+    const now = Date.now();
+    const dataToSave = { ...data, _saved_at: now };
+    appBootstrap = dataToSave;
     try {
         localStorage.setItem(getBootstrapKey(), JSON.stringify({
-            ts: Date.now(),
-            data
+            ts: now,
+            data: dataToSave
         }));
     } catch {}
 }
@@ -4879,15 +4881,16 @@ async function bootstrapApp(force = false) {
         const cached = readBootstrap();
         if (cached) {
             applyBootstrapData(cached);
+            bootstrapApp(true).catch(() => {});
             return cached;
         }
     }
 
     if (bootstrapPromise) return bootstrapPromise;
     if (force) {
-    appBootstrap = null;
-}
-    
+        appBootstrap = null;
+    }
+
     bootstrapPromise = (async () => {
         const tgUser = getTgUser();
         const params = new URLSearchParams({
@@ -4906,15 +4909,14 @@ async function bootstrapApp(force = false) {
 
         const data = await response.json();
         writeBootstrap(data);
-        applyBootstrapData(data);
-        return data;
+        applyBootstrapData(appBootstrap);
+        return appBootstrap;
     })().finally(() => {
         bootstrapPromise = null;
     });
 
     return bootstrapPromise;
 }
-
 async function refreshUserState() {
     const tgUser = getTgUser();
     const params = new URLSearchParams({
@@ -4932,19 +4934,13 @@ async function refreshUserState() {
     }
 
     const data = await response.json();
-    const snapshot = {
-        ...(appBootstrap || {}),
-        user: data.user,
-        total_snowmen: data.total_snowmen,
-        server_time: data.server_time
-    };
 
-    appBootstrap = snapshot;
     writeBootstrap({
         server_time: data.server_time,
         total_snowmen: data.total_snowmen,
         user: data.user
     });
+
     loadMiningState();
     return data;
 }
@@ -5968,7 +5964,9 @@ const miningState = {
     nextRewardInMs: 0,
     timerEndsAt: Date.now(),
     timerSyncing: false,
-    serverTimeOffsetMs: 0
+    serverTimeOffsetMs: 0,
+    bootstrapClientTime: Date.now(),
+    elapsedAtBootstrap: 0,
 };
 
 function formatClock(ms) {
@@ -6008,13 +6006,26 @@ function renderMiningUI() {
 function tickMiningTimer() {
     if (!miningUI.timer) return;
 
-    const serverNow = Date.now() + Number(miningState.serverTimeOffsetMs || 0);
-const remaining = Math.max(
-    0,
-    Math.ceil(Number(miningState.timerEndsAt || serverNow) - serverNow)
-);
-
+    // ✅ المؤقت الصحيح
+    const remaining = Math.max(0, Math.ceil(miningState.timerEndsAt - Date.now()));
     miningUI.timer.textContent = formatClock(remaining);
+
+    // ✅ الرصيد الحي: يتحدث كل ثانية
+    if (miningState.speedPerHour > 0) {
+        const elapsedSinceBootstrap = Math.max(0, Date.now() - miningState.bootstrapClientTime);
+        // إجمالي الوقت من آخر إضافة في DB حتى الآن
+        const totalElapsed = miningState.elapsedAtBootstrap + elapsedSinceBootstrap;
+        // Snow مكتسبة لم تُضاف للـ DB بعد
+        const pendingSnow = (totalElapsed / HOUR_MS) * miningState.speedPerHour;
+        const displaySnow = Math.floor(miningState.snowBalance + pendingSnow);
+
+        if (snowBalanceValue) snowBalanceValue.textContent = String(displaySnow);
+        if (profileSnowBalanceValue) profileSnowBalanceValue.textContent = String(displaySnow);
+
+        // ✅ تحديث hatch modal إذا كان مفتوحاً
+        const hatchModalOpen = document.getElementById('hatchModal')?.style.display === 'flex';
+        if (hatchModalOpen) updateHatchUI();
+    }
 
     if (remaining > 0) return;
     if ((miningState.speedPerHour || 0) <= 0) return;
@@ -6023,10 +6034,10 @@ const remaining = Math.max(
     miningState.timerSyncing = true;
 
     bootstrapApp(true)
-    .catch(() => {})
-    .finally(() => {
-        miningState.timerSyncing = false;
-    });
+        .catch(() => {})
+        .finally(() => {
+            miningState.timerSyncing = false;
+        });
 }
 
 async function loadMiningState(force = false) {
@@ -6035,7 +6046,12 @@ async function loadMiningState(force = false) {
     const user = appBootstrap.user || {};
     const tgUser = getTgUser();
 
-    miningState.serverTimeOffsetMs = Number(appBootstrap.server_time || Date.now()) - Date.now();
+    const serverTime = Number(appBootstrap.server_time || Date.now());
+    // ✅ _saved_at = وقت الجلب من السيرفر (client clock)
+    const savedAt = Number(appBootstrap._saved_at || Date.now());
+    // ✅ كم مضى من الوقت منذ جُلبت البيانات
+    const elapsedSinceBootstrap = Math.max(0, Date.now() - savedAt);
+
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
     miningState.displayName = user.display_name || tgUser.first_name || 'Player';
@@ -6043,18 +6059,29 @@ async function loadMiningState(force = false) {
     miningState.snowBalance = user.snow_balance || 0;
     miningState.speedPerHour = user.speed_per_hour || 0;
     miningState.miningBoost = user.mining_boost || 1;
-    miningState.lastMinedAt = user.last_mined_at || Date.now();
-    miningState.nextRewardInMs = user.next_reward_in_ms || 0;
-    const serverNow = Date.now() + Number(miningState.serverTimeOffsetMs || 0);
-    miningState.timerEndsAt = serverNow + Number(miningState.nextRewardInMs || 0);
-    miningState.timerSyncing = false;
+    miningState.lastMinedAt = user.last_mined_at || savedAt;
     miningState.tonBalance = user.ton_balance || 0;
+    miningState.timerSyncing = false;
+    miningState.serverTimeOffsetMs = serverTime - savedAt;
+
+    const rawNextRewardInMs = Number(user.next_reward_in_ms || 0);
+    const adjustedNextRewardInMs = Math.max(0, rawNextRewardInMs - elapsedSinceBootstrap);
+    miningState.nextRewardInMs = adjustedNextRewardInMs;
+    miningState.timerEndsAt = Date.now() + adjustedNextRewardInMs;
+    miningState.bootstrapClientTime = savedAt;
+    miningState.elapsedAtBootstrap = Math.max(
+        0,
+        serverTime - Number(user.last_mined_at || serverTime)
+    );
 
     renderMiningUI();
     tickMiningTimer();
     updateHatchUI();
+
     const boostCurrentValue = document.getElementById('boostCurrentValue');
-    if (boostCurrentValue) boostCurrentValue.textContent = `${Number(miningState.miningBoost || 1).toFixed(2)}x`;
+    if (boostCurrentValue) {
+        boostCurrentValue.textContent = `${Number(miningState.miningBoost || 1).toFixed(2)}x`;
+    }
 
     const bar = document.querySelector('.minting-bar');
     if (bar && appBootstrap.total_snowmen !== undefined) {
