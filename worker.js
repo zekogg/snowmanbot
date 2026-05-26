@@ -1,6 +1,10 @@
 const WEB_APP_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/";
 const HOUR_MS = 60 * 60 * 1000;
 
+const INVESTMENT_LOCK_MS = 24 * HOUR_MS;
+const MIN_INVESTMENT_TON = 2;
+const INVESTMENT_PROFIT_RATE = 0.04;
+
 let schemaInitialized = false;
 let leaderboardCache = null;
 let leaderboardCacheTime = 0;
@@ -201,6 +205,17 @@ async function ensureSchema(env) {
   `).run().catch(() => {});
 
 await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS ton_investments (
+      user_id INTEGER PRIMARY KEY,
+      total_invested REAL NOT NULL DEFAULT 0,
+      started_at INTEGER NOT NULL DEFAULT 0,
+      ends_at INTEGER NOT NULL DEFAULT 0,
+      last_claimed_at INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL DEFAULT 0
+    )
+  `).run().catch(() => {});
+  
+await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS market_listings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       seller_id INTEGER NOT NULL,
@@ -383,9 +398,15 @@ async function processPvpWinner(env, round, bets) {
 async function getUser(env, userId) {
   return await env.DB
     .prepare(
-      `SELECT user_id, username, display_name, snow_balance, snowman_count,
-              mining_boost, last_mined_at, updated_at, ton_balance
-       FROM users WHERE user_id = ?`
+      `SELECT u.user_id, u.username, u.display_name, u.snow_balance, u.snowman_count,
+              u.mining_boost, u.last_mined_at, u.updated_at, u.ton_balance,
+              COALESCE(t.total_invested, 0) AS total_invested,
+              COALESCE(t.started_at, 0) AS investment_started_at,
+              COALESCE(t.ends_at, 0) AS investment_ends_at,
+              COALESCE(t.last_claimed_at, 0) AS investment_last_claimed_at
+       FROM users u
+       LEFT JOIN ton_investments t ON t.user_id = u.user_id
+       WHERE u.user_id = ?`
     )
     .bind(userId)
     .first();
@@ -791,6 +812,23 @@ function computeMiningState(user, now = Date.now()) {
     earnedNow,
     nextLastMinedAt,
     nextRewardInMs: speedPerHour > 0 ? Math.max(0, HOUR_MS - remainder) : 0
+  };
+}
+
+function computeInvestmentState(user, now = Date.now()) {
+  const totalInvested = Number(user?.total_invested || 0);
+  const startedAt = Number(user?.investment_started_at || 0);
+  const endsAt = Number(user?.investment_ends_at || 0);
+  const dailyProfit = Number((totalInvested * INVESTMENT_PROFIT_RATE).toFixed(2));
+  const nextClaimInMs = totalInvested > 0 ? Math.max(0, endsAt - now) : 0;
+
+  return {
+    totalInvested,
+    startedAt,
+    endsAt,
+    dailyProfit,
+    nextClaimInMs,
+    claimable: totalInvested > 0 && nextClaimInMs === 0
   };
 }
 
@@ -2077,7 +2115,138 @@ if (result.meta.changes === 0) {
       }
     }
   
+if (url.pathname === "/api/invest/start" && request.method === "POST") {
+  try {
+    await ensureSchema(env);
 
+    const body = await request.json();
+    const auth = await requireSessionUser(request, env, body.user_id);
+    if (!auth.ok) return json({ error: auth.error }, 401);
+
+    const userId = auth.userId;
+    const amount = Math.round(Number(body.amount || 0) * 100) / 100;
+
+    if (!Number.isFinite(amount) || amount < MIN_INVESTMENT_TON) {
+      return json({ error: "Minimum investment is 2 TON" }, 400);
+    }
+
+    const now = Date.now();
+
+    const debit = await env.DB.prepare(
+      `UPDATE users
+       SET ton_balance = ton_balance - ?, updated_at = ?
+       WHERE user_id = ? AND ton_balance >= ?`
+    ).bind(amount, now, userId, amount).run();
+
+    if (debit.meta.changes === 0) {
+      return json({ error: "Not enough TON" }, 400);
+    }
+
+    await env.DB.prepare(
+      `INSERT INTO ton_investments
+        (user_id, total_invested, started_at, ends_at, last_claimed_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET
+         total_invested = ton_investments.total_invested + excluded.total_invested,
+         started_at = excluded.started_at,
+         ends_at = excluded.ends_at,
+         updated_at = excluded.updated_at`
+    ).bind(userId, amount, now, now + INVESTMENT_LOCK_MS, 0, now).run();
+
+    const updatedUser = await getUser(env, userId);
+
+    return json({
+      ok: true,
+      user: {
+        user_id: Number(updatedUser.user_id),
+        username: updatedUser.username || null,
+        display_name: updatedUser.display_name || null,
+        snow_balance: Number(updatedUser.snow_balance || 0),
+        snowman_count: Number(updatedUser.snowman_count || 0),
+        mining_boost: Number(updatedUser.mining_boost || 1),
+        last_mined_at: Number(updatedUser.last_mined_at || 0),
+        updated_at: Number(updatedUser.updated_at || 0),
+        ton_balance: Number(updatedUser.ton_balance || 0),
+        total_invested: Number(updatedUser.total_invested || 0),
+        investment_started_at: Number(updatedUser.investment_started_at || 0),
+        investment_ends_at: Number(updatedUser.investment_ends_at || 0),
+        investment_last_claimed_at: Number(updatedUser.investment_last_claimed_at || 0)
+      }
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/invest/claim" && request.method === "POST") {
+  try {
+    await ensureSchema(env);
+
+    const body = await request.json();
+    const auth = await requireSessionUser(request, env, body.user_id);
+    if (!auth.ok) return json({ error: auth.error }, 401);
+
+    const userId = auth.userId;
+    const now = Date.now();
+
+    const investment = await env.DB.prepare(
+      `SELECT * FROM ton_investments WHERE user_id = ?`
+    ).bind(userId).first();
+
+    const totalInvested = Number(investment?.total_invested || 0);
+    const endsAt = Number(investment?.ends_at || 0);
+
+    if (totalInvested <= 0) {
+      return json({ error: "No active investment" }, 400);
+    }
+
+    if (now < endsAt) {
+      return json({ error: "Claim is not ready yet" }, 400);
+    }
+
+    const profit = Math.round(totalInvested * INVESTMENT_PROFIT_RATE * 100) / 100;
+    const nextEndsAt = now + INVESTMENT_LOCK_MS;
+
+    await env.DB.prepare(
+      `UPDATE users
+       SET ton_balance = ton_balance + ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(profit, now, userId).run();
+
+    await env.DB.prepare(
+      `UPDATE ton_investments
+       SET started_at = ?, ends_at = ?, last_claimed_at = ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(now, nextEndsAt, now, now, userId).run();
+
+    const updatedUser = await getUser(env, userId);
+    const investmentState = computeInvestmentState(updatedUser, now);
+
+    return json({
+      ok: true,
+      profit,
+      user: {
+        user_id: Number(updatedUser.user_id),
+        username: updatedUser.username || null,
+        display_name: updatedUser.display_name || null,
+        snow_balance: Number(updatedUser.snow_balance || 0),
+        snowman_count: Number(updatedUser.snowman_count || 0),
+        mining_boost: Number(updatedUser.mining_boost || 1),
+        last_mined_at: Number(updatedUser.last_mined_at || 0),
+        updated_at: Number(updatedUser.updated_at || 0),
+        ton_balance: Number(updatedUser.ton_balance || 0),
+        total_invested: Number(updatedUser.total_invested || 0),
+        investment_started_at: Number(updatedUser.investment_started_at || 0),
+        investment_ends_at: Number(updatedUser.investment_ends_at || 0),
+        investment_last_claimed_at: Number(updatedUser.investment_last_claimed_at || 0)
+      },
+      investment: investmentState
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+    
 if (url.pathname === "/api/bootstrap" && request.method === "GET") {
   const isValid = await verifyTelegramAuth(request, env);
   if (!isValid) return json({ error: "Unauthorized" }, 401);
