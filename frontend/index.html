@@ -1601,7 +1601,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     justify-content: center;
     background: rgba(2, 10, 20, 0.72);
     backdrop-filter: blur(12px);
-    padding: 16px;
+    padding: 8px;
 }
 
 .investment-modal.show {
@@ -1614,7 +1614,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border: 1px solid rgba(60, 199, 255, 0.24);
     border-radius: 28px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
-    padding: 18px 18px 20px;
+    padding: 9px 9px 10px;
     position: relative;
     overflow: hidden;
 }
@@ -1667,7 +1667,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 .investment-badge {
     flex: 0 0 auto;
     border-radius: 999px;
-    padding: 8px 12px;
+    padding: 4px 6px;
     background: rgba(255, 184, 0, 0.12);
     color: #FFD56A;
     border: 1px solid rgba(255, 196, 73, 0.24);
@@ -1729,7 +1729,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.07);
-    padding: 14px 12px;
+    padding: 7px 6px;
 }
 
 .investment-stat span {
@@ -1749,7 +1749,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border-radius: 20px;
     background: rgba(60, 199, 255, 0.08);
     border: 1px solid rgba(60, 199, 255, 0.12);
-    padding: 14px 12px;
+    padding: 7px 6px;
     margin-bottom: 14px;
 }
 
@@ -1770,7 +1770,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.07);
-    padding: 14px 12px 12px;
+    padding: 7px 6px 6px;
     margin-bottom: 14px;
 }
 
@@ -1786,7 +1786,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     border: 1px solid rgba(60, 199, 255, 0.18);
     background: rgba(0, 0, 0, 0.22);
     border-radius: 16px;
-    padding: 14px 14px;
+    padding: 7px 7px;
     color: #fff;
     font-size: 16px;
     font-weight: 700;
@@ -4479,7 +4479,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <script>
     // ======== وضع الصيانة (Maintenance Mode) ========
-const MAINTENANCE = true; // false للتعطيل
+const MAINTENANCE = false; // false للتعطيل
 if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495986) {
     // إخفاء أيقونة eruda إن وجدت
     if (window.eruda) {
