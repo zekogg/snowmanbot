@@ -4697,7 +4697,7 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
         let appBootstrap = null;
         let bootstrapPromise = null;
 
-const BOOTSTRAP_KEY = 'snowman_bootstrap_v2';
+const BOOTSTRAP_KEY = 'snowman_bootstrap_v3';
         
 function getBootstrapKey() {
     const user = getTgUser();
@@ -6010,23 +6010,10 @@ function tickMiningTimer() {
     const remaining = Math.max(0, Math.ceil(miningState.timerEndsAt - Date.now()));
     miningUI.timer.textContent = formatClock(remaining);
 
-    // ✅ الرصيد الحي: يتحدث كل ثانية
     if (miningState.speedPerHour > 0) {
-        const elapsedSinceBootstrap = Math.max(0, Date.now() - miningState.bootstrapClientTime);
-        // إجمالي الوقت من آخر إضافة في DB حتى الآن
-        const totalElapsed = miningState.elapsedAtBootstrap + elapsedSinceBootstrap;
-        // Snow مكتسبة لم تُضاف للـ DB بعد
-        const pendingSnow = (totalElapsed / HOUR_MS) * miningState.speedPerHour;
-        const displaySnow = Math.floor(miningState.snowBalance + pendingSnow);
-
-        if (snowBalanceValue) snowBalanceValue.textContent = String(displaySnow);
-        if (profileSnowBalanceValue) profileSnowBalanceValue.textContent = String(displaySnow);
-
-        // ✅ تحديث hatch modal إذا كان مفتوحاً
-        const hatchModalOpen = document.getElementById('hatchModal')?.style.display === 'flex';
-        if (hatchModalOpen) updateHatchUI();
-    }
-
+    const hatchModalOpen = document.getElementById('hatchModal')?.style.display === 'flex';
+    if (hatchModalOpen) updateHatchUI();
+}
     if (remaining > 0) return;
     if ((miningState.speedPerHour || 0) <= 0) return;
     if (miningState.timerSyncing) return;
@@ -6047,32 +6034,28 @@ async function loadMiningState(force = false) {
     const tgUser = getTgUser();
 
     const serverTime = Number(appBootstrap.server_time || Date.now());
-    // ✅ _saved_at = وقت الجلب من السيرفر (client clock)
     const savedAt = Number(appBootstrap._saved_at || Date.now());
-    // ✅ كم مضى من الوقت منذ جُلبت البيانات
     const elapsedSinceBootstrap = Math.max(0, Date.now() - savedAt);
 
     miningState.userId = user.user_id || tgUser.id;
     miningState.snowmanCount = user.snowman_count || 0;
     miningState.displayName = user.display_name || tgUser.first_name || 'Player';
     miningState.username = user.username || tgUser.username || '';
-    miningState.snowBalance = user.snow_balance || 0;
-    miningState.speedPerHour = user.speed_per_hour || 0;
-    miningState.miningBoost = user.mining_boost || 1;
-    miningState.lastMinedAt = user.last_mined_at || savedAt;
-    miningState.tonBalance = user.ton_balance || 0;
+    miningState.snowBalance = Number(user.snow_balance || 0);
+    miningState.speedPerHour = Number(user.speed_per_hour || 0);
+    miningState.miningBoost = Number(user.mining_boost || 1);
+    miningState.lastMinedAt = Number(user.last_mined_at || savedAt);
+    miningState.tonBalance = Number(user.ton_balance || 0);
     miningState.timerSyncing = false;
     miningState.serverTimeOffsetMs = serverTime - savedAt;
 
     const rawNextRewardInMs = Number(user.next_reward_in_ms || 0);
     const adjustedNextRewardInMs = Math.max(0, rawNextRewardInMs - elapsedSinceBootstrap);
+
     miningState.nextRewardInMs = adjustedNextRewardInMs;
     miningState.timerEndsAt = Date.now() + adjustedNextRewardInMs;
     miningState.bootstrapClientTime = savedAt;
-    miningState.elapsedAtBootstrap = Math.max(
-        0,
-        serverTime - Number(user.last_mined_at || serverTime)
-    );
+    miningState.elapsedAtBootstrap = 0;
 
     renderMiningUI();
     tickMiningTimer();
@@ -6088,7 +6071,7 @@ async function loadMiningState(force = false) {
         bar.textContent = `${formatMintCount(appBootstrap.total_snowmen)} / 25M`;
     }
 }
-
+        
 function hideLoadingScreen() {
     const screen = document.getElementById('loadingScreen');
     if (screen) {
