@@ -875,7 +875,7 @@ async function settleUserMining(env, userId, username = null, displayName = null
       speed_per_hour: finalComputed.speedPerHour,
       earned_now: finalComputed.earnedNow,
       next_reward_in_ms: finalComputed.nextRewardInMs,
-      ton_balance: Number(user.ton_balance || 0)
+      ton_balance: Number(user.ton_balance || 0),
       total_invested: Number(user.total_invested || 0),
       investment_started_at: Number(user.investment_started_at || 0),
       investment_ends_at: Number(user.investment_ends_at || 0),
