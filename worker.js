@@ -2257,10 +2257,6 @@ if (url.pathname === "/api/bootstrap" && request.method === "GET") {
     const sessionUserId = await getUserIdFromRequest(request);
     const userIdParam = url.searchParams.get("user_id");
     const userId = Number(userIdParam);
-total_invested: Number(user.total_invested || 0),
-investment_started_at: Number(user.investment_started_at || 0),
-investment_ends_at: Number(user.investment_ends_at || 0),
-investment_last_claimed_at: Number(user.investment_last_claimed_at || 0),
     
     if (!userIdParam || Number.isNaN(userId) || userId <= 0) {
       return json({ error: "Invalid user_id. Please provide a numeric ID." }, 400);
