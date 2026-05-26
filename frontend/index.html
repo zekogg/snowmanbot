@@ -4101,7 +4101,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
         <div class="investment-timer-box">
             <div class="investment-timer-label">Next claim in</div>
-            <div class="investment-timer" id="investmentTimer">24:00:00</div>
+            <div class="investment-timer" id="investmentTimer">'00:01:00'</div>
         </div>
 
         <div class="investment-input-box">
@@ -6393,7 +6393,7 @@ const miningState = {
     elapsedAtBootstrap: 0,
 };
 
-const INVESTMENT_LOCK_MS = 24 * HOUR_MS;
+const INVESTMENT_LOCK_MS = 1 * 60 * 1000;
 const MIN_INVESTMENT_TON = 2;
 const INVESTMENT_PROFIT_RATE = 0.04;
 
@@ -6455,7 +6455,7 @@ function renderInvestmentUI() {
     }
 
     if (investmentUI.timer) {
-        investmentUI.timer.textContent = hasActiveInvestment ? formatHMS(remaining) : '24:00:00';
+        investmentUI.timer.textContent = hasActiveInvestment ? formatHMS(remaining) : ''00:01:00'';
     }
 
     if (investmentUI.claimBtn) {
