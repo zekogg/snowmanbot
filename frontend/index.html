@@ -1510,6 +1510,360 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 }
 
+#openInvestmentBtn {
+    position: fixed;
+    left: 50%;
+    top: 52%;
+    transform: translate(-50%, -50%);
+    width: 128px;
+    height: 128px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    z-index: 860;
+    cursor: pointer;
+}
+
+.investment-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: investmentBob 3.6s ease-in-out infinite;
+    filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.35));
+}
+
+.investment-water {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    height: 28px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(89, 220, 255, 0.18), rgba(17, 110, 160, 0.55));
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.08);
+}
+
+.investment-water::before,
+.investment-water::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 10px 8px, rgba(255,255,255,0.55) 0 3px, transparent 3.5px);
+    background-size: 22px 10px;
+    animation: investmentWave 2.4s linear infinite;
+    opacity: 0.8;
+}
+
+.investment-water::after {
+    transform: translateX(11px);
+    opacity: 0.45;
+    animation-duration: 3.4s;
+}
+
+.investment-boat-emoji {
+    position: relative;
+    z-index: 2;
+    font-size: 58px;
+    line-height: 1;
+    animation: investmentSail 4.2s ease-in-out infinite;
+    text-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes investmentBob {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+    50% { transform: translate(-50%, -50%) translateY(-8px); }
+}
+
+@keyframes investmentSail {
+    0%, 100% { transform: translateX(-4px) rotate(-1deg); }
+    50% { transform: translateX(6px) rotate(2deg); }
+}
+
+@keyframes investmentWave {
+    from { background-position: 0 0; }
+    to { background-position: 44px 0; }
+}
+
+#openInvestmentBtn:active {
+    transform: translate(-50%, -50%) scale(0.96);
+}
+
+.investment-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1900;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 10, 20, 0.72);
+    backdrop-filter: blur(12px);
+    padding: 16px;
+}
+
+.investment-modal.show {
+    display: flex;
+}
+
+.investment-card {
+    width: min(92vw, 440px);
+    background: linear-gradient(180deg, rgba(10, 24, 40, 0.98), rgba(4, 12, 22, 0.98));
+    border: 1px solid rgba(60, 199, 255, 0.24);
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+    padding: 18px 18px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.investment-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(126, 230, 255, 0.14), transparent 55%);
+    pointer-events: none;
+}
+
+.investment-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.investment-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-right: 44px;
+}
+
+.investment-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #EAFBFF;
+    line-height: 1.05;
+}
+
+.investment-subtitle {
+    font-size: 13px;
+    color: #9DC8DE;
+    margin-top: 4px;
+}
+
+.investment-badge {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: rgba(255, 184, 0, 0.12);
+    color: #FFD56A;
+    border: 1px solid rgba(255, 196, 73, 0.24);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.investment-hero {
+    position: relative;
+    height: 120px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(9, 33, 52, 0.96), rgba(5, 16, 28, 0.96));
+    border: 1px solid rgba(60, 199, 255, 0.14);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.investment-water-line {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: 18px;
+    height: 30px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(91, 223, 255, 0.16), rgba(34, 127, 175, 0.72));
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.investment-water-line::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 10px 9px, rgba(255,255,255,0.55) 0 3px, transparent 3.4px);
+    background-size: 24px 10px;
+    animation: investmentWave 2.5s linear infinite;
+    opacity: 0.8;
+}
+
+.investment-hero-boat {
+    position: absolute;
+    left: 50%;
+    top: 42px;
+    transform: translateX(-50%);
+    font-size: 58px;
+    animation: investmentSail 4.2s ease-in-out infinite;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
+}
+
+.investment-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.investment-stat {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 14px 12px;
+}
+
+.investment-stat span {
+    display: block;
+    font-size: 12px;
+    color: #A0C3D8;
+    margin-bottom: 6px;
+}
+
+.investment-stat strong {
+    font-size: 18px;
+    color: #FFFFFF;
+}
+
+.investment-timer-box {
+    text-align: center;
+    border-radius: 20px;
+    background: rgba(60, 199, 255, 0.08);
+    border: 1px solid rgba(60, 199, 255, 0.12);
+    padding: 14px 12px;
+    margin-bottom: 14px;
+}
+
+.investment-timer-label {
+    font-size: 12px;
+    color: #9CC6DA;
+    margin-bottom: 8px;
+}
+
+.investment-timer {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #EAFBFF;
+}
+
+.investment-input-box {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 14px 12px 12px;
+    margin-bottom: 14px;
+}
+
+.investment-input-box label {
+    display: block;
+    font-size: 12px;
+    color: #9CC6DA;
+    margin-bottom: 8px;
+}
+
+.investment-input-box input {
+    width: 100%;
+    border: 1px solid rgba(60, 199, 255, 0.18);
+    background: rgba(0, 0, 0, 0.22);
+    border-radius: 16px;
+    padding: 14px 14px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    outline: none;
+}
+
+.investment-balance {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #B2DAFF;
+}
+
+.investment-status {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #A6C8DA;
+    min-height: 16px;
+}
+
+.investment-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.investment-start-btn,
+.investment-claim-btn {
+    height: 52px;
+    border: none;
+    border-radius: 18px;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.investment-start-btn {
+    background: linear-gradient(180deg, #26c6ff 0%, #1388c9 100%);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(28, 158, 216, 0.22);
+}
+
+.investment-claim-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.52);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    transition: all 0.2s ease;
+}
+
+.investment-claim-btn.ready {
+    background: linear-gradient(180deg, #FFE68A 0%, #FFB800 100%);
+    color: #3B2300;
+    border-color: rgba(255, 220, 120, 0.38);
+    box-shadow: 0 10px 24px rgba(255, 184, 0, 0.28);
+}
+
+.investment-start-btn:disabled,
+.investment-claim-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    #openInvestmentBtn {
+        width: 112px;
+        height: 112px;
+        top: 54%;
+    }
+
+    .investment-title {
+        font-size: 22px;
+    }
+
+    .investment-timer {
+        font-size: 26px;
+    }
+}
+        
 .league-btn {
     position: fixed;
     right: 15px;
@@ -3416,6 +3770,13 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <button class="btn btn-boost" id="openBoostBtn" type="button">Boost ⚡</button>
 </div>
 
+<button id="openInvestmentBtn" type="button" aria-label="Open investment">
+    <div class="investment-stage">
+        <div class="investment-water"></div>
+        <div class="investment-boat-emoji">🛥️</div>
+    </div>
+</button>
+    
 <button class="promo-btn" id="promoBtn" type="button">
     <div class="promo-icon-circle">
         <span class="promo-emoji">🎁</span>
@@ -3710,6 +4071,53 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     </div>
 </div>
 
+<div id="investmentModal" class="investment-modal" aria-hidden="true">
+    <div class="investment-card">
+        <button class="investment-close" id="closeInvestmentBtn" type="button">×</button>
+
+        <div class="investment-header">
+            <div>
+                <div class="investment-title">TON Investment</div>
+                <div class="investment-subtitle">24h cycle · 4% daily profit</div>
+            </div>
+            <div class="investment-badge">Min 2 TON</div>
+        </div>
+
+        <div class="investment-hero">
+            <div class="investment-water-line"></div>
+            <div class="investment-hero-boat">🛥️</div>
+        </div>
+
+        <div class="investment-stats">
+            <div class="investment-stat">
+                <span>Total invested</span>
+                <strong id="investmentTotalInvested">0 TON</strong>
+            </div>
+            <div class="investment-stat">
+                <span>Daily profit</span>
+                <strong id="investmentProfitText">0 TON</strong>
+            </div>
+        </div>
+
+        <div class="investment-timer-box">
+            <div class="investment-timer-label">Next claim in</div>
+            <div class="investment-timer" id="investmentTimer">24:00:00</div>
+        </div>
+
+        <div class="investment-input-box">
+            <label for="investmentAmountInput">Amount (TON)</label>
+            <input id="investmentAmountInput" type="number" min="2" step="0.1" placeholder="2.00">
+            <div class="investment-balance" id="investmentBalanceText">0 TON available</div>
+            <div class="investment-status" id="investmentStatusText"></div>
+        </div>
+
+        <div class="investment-actions">
+            <button class="investment-start-btn" id="investmentStartBtn" type="button">Start</button>
+            <button class="investment-claim-btn" id="investmentClaimBtn" type="button" disabled>Claim</button>
+        </div>
+    </div>
+</div>
+    
 <!-- ===== الشاشات المنبثقة (تم إضافة كلاس screen-overlay) ===== -->
 <div id="tasksScreen" class="tasks-screen screen-overlay" aria-hidden="true">
     <button id="taskHistoryBtn" class="task-history-btn" type="button">⏱</button>
@@ -4675,7 +5083,10 @@ transferModal?.addEventListener('click', (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeTransferModal();
+    if (event.key === 'Escape') {
+        closeTransferModal();
+        closeInvestmentModal();
+    }
 });
 
 document.querySelectorAll('[data-copy-target]').forEach((button) => {
@@ -5054,6 +5465,19 @@ profileNavBtn?.addEventListener('click', () => {
     setActiveNav(profileNavBtn);
 });
 
+openInvestmentBtn?.addEventListener('click', openInvestmentModal);
+closeInvestmentBtn?.addEventListener('click', closeInvestmentModal);
+
+investmentModal?.addEventListener('click', (event) => {
+    if (event.target === investmentModal) {
+        closeInvestmentModal();
+    }
+});
+
+investmentAmountInput?.addEventListener('input', renderInvestmentUI);
+investmentStartBtn?.addEventListener('click', startInvestment);
+investmentClaimBtn?.addEventListener('click', claimInvestment);
+    
         marketModes.forEach(btn => {
             btn.addEventListener('click', () => {
                 const mode = btn.getAttribute('data-market-mode');
@@ -5969,6 +6393,179 @@ const miningState = {
     elapsedAtBootstrap: 0,
 };
 
+const INVESTMENT_LOCK_MS = 24 * HOUR_MS;
+const MIN_INVESTMENT_TON = 2;
+const INVESTMENT_PROFIT_RATE = 0.04;
+
+const investmentUI = {
+    button: document.getElementById('openInvestmentBtn'),
+    modal: document.getElementById('investmentModal'),
+    close: document.getElementById('closeInvestmentBtn'),
+    amount: document.getElementById('investmentAmountInput'),
+    total: document.getElementById('investmentTotalInvested'),
+    profit: document.getElementById('investmentProfitText'),
+    timer: document.getElementById('investmentTimer'),
+    balance: document.getElementById('investmentBalanceText'),
+    status: document.getElementById('investmentStatusText'),
+    startBtn: document.getElementById('investmentStartBtn'),
+    claimBtn: document.getElementById('investmentClaimBtn')
+};
+
+const investmentState = {
+    userId: null,
+    totalInvested: 0,
+    startedAt: 0,
+    endsAt: 0,
+    lastClaimedAt: 0,
+    tonBalance: 0,
+    serverTimeOffsetMs: 0
+};
+
+function formatHMS(ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function getSyncedNow() {
+    return Date.now() + Number(investmentState.serverTimeOffsetMs || 0);
+}
+
+function renderInvestmentUI() {
+    const total = Math.max(0, Number(investmentState.totalInvested || 0));
+    const profit = Number((total * INVESTMENT_PROFIT_RATE).toFixed(2));
+    const balance = Math.max(0, Number(investmentState.tonBalance || 0));
+    const now = getSyncedNow();
+    const remaining = Math.max(0, Number(investmentState.endsAt || 0) - now);
+    const hasActiveInvestment = total > 0;
+    const claimReady = hasActiveInvestment && remaining === 0;
+
+    if (investmentUI.total) {
+        investmentUI.total.textContent = `${formatTonValue(total)} TON`;
+    }
+
+    if (investmentUI.profit) {
+        investmentUI.profit.textContent = `${formatTonValue(profit)} TON`;
+    }
+
+    if (investmentUI.balance) {
+        investmentUI.balance.textContent = `${formatTonValue(balance)} TON available`;
+    }
+
+    if (investmentUI.timer) {
+        investmentUI.timer.textContent = hasActiveInvestment ? formatHMS(remaining) : '24:00:00';
+    }
+
+    if (investmentUI.claimBtn) {
+        investmentUI.claimBtn.classList.toggle('ready', claimReady);
+        investmentUI.claimBtn.disabled = !claimReady;
+    }
+
+    if (investmentUI.startBtn) {
+        const rawAmount = Number(investmentUI.amount?.value || 0);
+        const validAmount = Number.isFinite(rawAmount) && rawAmount >= MIN_INVESTMENT_TON;
+        investmentUI.startBtn.disabled = !validAmount || rawAmount > balance;
+    }
+
+    if (investmentUI.status) {
+        investmentUI.status.textContent = hasActiveInvestment
+            ? (claimReady ? 'Claim is ready.' : 'Earning is active.')
+            : 'Start with at least 2 TON.';
+    }
+}
+
+function tickInvestmentTimer() {
+    renderInvestmentUI();
+}
+
+function openInvestmentModal() {
+    if (!investmentUI.modal) return;
+    if (investmentUI.modal.classList.contains('show')) return;
+
+    if (investmentUI.amount && !investmentUI.amount.value) {
+        investmentUI.amount.value = String(MIN_INVESTMENT_TON);
+    }
+
+    investmentUI.modal.classList.add('show');
+    renderInvestmentUI();
+    investmentUI.amount?.focus();
+}
+
+function closeInvestmentModal() {
+    investmentUI.modal?.classList.remove('show');
+}
+
+async function startInvestment() {
+    const amount = Math.round(Number(investmentUI.amount?.value || 0) * 100) / 100;
+
+    if (!Number.isFinite(amount) || amount < MIN_INVESTMENT_TON) {
+        alert('Minimum investment is 2 TON');
+        return;
+    }
+
+    if (amount > Number(investmentState.tonBalance || 0)) {
+        alert(`You need ${amount} TON. Your balance: ${Number(investmentState.tonBalance || 0).toFixed(2)} TON`);
+        return;
+    }
+
+    investmentUI.startBtn && (investmentUI.startBtn.disabled = true);
+
+    try {
+        const tgUser = getTgUser();
+        const response = await fetch(`${API_BASE}/api/invest/start`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                user_id: tgUser.id,
+                amount
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data?.error || 'Failed to start investment');
+        }
+
+        await refreshUserState();
+        investmentUI.status && (investmentUI.status.textContent = 'Investment started successfully.');
+    } catch (error) {
+        alert(error.message || 'Failed to start investment');
+    } finally {
+        renderInvestmentUI();
+    }
+}
+
+async function claimInvestment() {
+    if (!investmentUI.claimBtn || investmentUI.claimBtn.disabled) return;
+
+    investmentUI.claimBtn.disabled = true;
+
+    try {
+        const tgUser = getTgUser();
+        const response = await fetch(`${API_BASE}/api/invest/claim`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                user_id: tgUser.id
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data?.error || 'Failed to claim profit');
+        }
+
+        await refreshUserState();
+        investmentUI.status && (investmentUI.status.textContent = `Claimed ${formatTonValue(data.profit || 0)} TON.`);
+    } catch (error) {
+        alert(error.message || 'Failed to claim profit');
+    } finally {
+        renderInvestmentUI();
+    }
+}
+    
 function formatClock(ms) {
     const totalSeconds = Math.max(0, Math.floor(ms / 1000));
     const minutes = Math.floor(totalSeconds / 60);
@@ -6046,6 +6643,13 @@ async function loadMiningState(force = false) {
     miningState.miningBoost = Number(user.mining_boost || 1);
     miningState.lastMinedAt = Number(user.last_mined_at || savedAt);
     miningState.tonBalance = Number(user.ton_balance || 0);
+   investmentState.userId = miningState.userId;
+    investmentState.totalInvested = Number(user.total_invested || 0);
+    investmentState.startedAt = Number(user.investment_started_at || 0);
+    investmentState.endsAt = Number(user.investment_ends_at || 0);
+    investmentState.lastClaimedAt = Number(user.investment_last_claimed_at || 0);
+    investmentState.tonBalance = miningState.tonBalance;
+    investmentState.serverTimeOffsetMs = miningState.serverTimeOffsetMs; 
     miningState.timerSyncing = false;
     miningState.serverTimeOffsetMs = serverTime - savedAt;
 
@@ -6060,7 +6664,8 @@ async function loadMiningState(force = false) {
     renderMiningUI();
     tickMiningTimer();
     updateHatchUI();
-
+   renderInvestmentUI();
+    
     const boostCurrentValue = document.getElementById('boostCurrentValue');
     if (boostCurrentValue) {
         boostCurrentValue.textContent = `${Number(miningState.miningBoost || 1).toFixed(2)}x`;
@@ -6115,6 +6720,7 @@ if (cachedBootstrap) {
         
 setInterval(() => {
     tickMiningTimer();
+    tickInvestmentTimer();
 }, 1000);
 
 function formatMintCount(n) {
