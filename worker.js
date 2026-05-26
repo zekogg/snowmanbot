@@ -876,6 +876,10 @@ async function settleUserMining(env, userId, username = null, displayName = null
       earned_now: finalComputed.earnedNow,
       next_reward_in_ms: finalComputed.nextRewardInMs,
       ton_balance: Number(user.ton_balance || 0)
+      total_invested: Number(user.total_invested || 0),
+      investment_started_at: Number(user.investment_started_at || 0),
+      investment_ends_at: Number(user.investment_ends_at || 0),
+      investment_last_claimed_at: Number(user.investment_last_claimed_at || 0)
     },
     server_time: now
   };
@@ -1063,7 +1067,7 @@ if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_re
       ).bind(refId, chatId).run();
 
       await env.DB.prepare(
-        `UPDATE users SET snowman_count = snowman_count + 1, last_mined_at = ?, updated_at = ? WHERE user_id = ?`
+         `UPDATE users SET snowman_count = snowman_count + 1, updated_at = ? WHERE user_id = ?`
       ).bind(Date.now(), Date.now(), refId).run();
     }
   }
