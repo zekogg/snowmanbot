@@ -767,78 +767,80 @@ async function handleTaskComplete(env, userId, body) {
 function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
   const miningBoost = Number(user.mining_boost || 1);
-   // القاعدة كما هي: تحتاج 350 لتبدأ التعدين (سرعة 1/ساعة)
   const baseSpeed = snowmanCount / 350;
   const speedPerHour = baseSpeed * miningBoost;
 
-  const lastMinedAt = Number(user.last_mined_at || now);
+  const lastMinedAt = Number(user.last_mined_at || 0);
+  if (!lastMinedAt || speedPerHour <= 0) {
+    return {
+      speedPerHour,
+      earnedNow: 0,
+      nextLastMinedAt: lastMinedAt || now,
+      nextRewardInMs: speedPerHour > 0 ? HOUR_MS : 0
+    };
+  }
+
   const elapsed = Math.max(0, now - lastMinedAt);
   const fullHours = Math.floor(elapsed / HOUR_MS);
   const earnedNow = fullHours * speedPerHour;
-
   const nextLastMinedAt = lastMinedAt + (fullHours * HOUR_MS);
   const remainder = elapsed % HOUR_MS;
-  const nextRewardInMs = speedPerHour > 0 ? HOUR_MS - remainder : 0;
 
   return {
     speedPerHour,
     earnedNow,
     nextLastMinedAt,
-    nextRewardInMs
+    nextRewardInMs: speedPerHour > 0 ? Math.max(0, HOUR_MS - remainder) : 0
   };
 }
 
 async function settleUserMining(env, userId, username = null, displayName = null) {
   await ensureSchema(env);
+
   let user = await createUserIfMissing(env, userId, username, displayName);
   const now = Date.now();
-  const computed = computeMiningState(user, now);  
+  const computed = computeMiningState(user, now);
 
-  if (computed.earnedNow > 0) {
-    await env.DB
-      .prepare(
-        `UPDATE users
-         SET snow_balance = snow_balance + ?,
-             last_mined_at = ?,
-             updated_at = ?
-         WHERE user_id = ?`
-      )
-      .bind(computed.earnedNow, computed.nextLastMinedAt, now, userId)
-      .run();
+  const earned = Number((computed.earnedNow || 0).toFixed(6));
+
+  if (earned > 0) {
+    await env.DB.prepare(
+      `UPDATE users
+       SET snow_balance = snow_balance + ?,
+           last_mined_at = ?,
+           updated_at = ?
+       WHERE user_id = ?`
+    ).bind(earned, computed.nextLastMinedAt, now, userId).run();
 
     user = await getUser(env, userId);
-
-  } else if (!user.last_mined_at || user.last_mined_at === 0) {
-    await env.DB
-      .prepare(
-        `UPDATE users
-         SET last_mined_at = ?, updated_at = ?
-         WHERE user_id = ?`
-      )
-      .bind(now, now, userId)
-      .run();
+  } else if (!Number(user.last_mined_at || 0)) {
+    await env.DB.prepare(
+      `UPDATE users
+       SET last_mined_at = ?, updated_at = ?
+       WHERE user_id = ?`
+    ).bind(now, now, userId).run();
 
     user = await getUser(env, userId);
   }
 
   const finalComputed = computeMiningState(user, now);
 
-return {
-  user: {
-    user_id: Number(user.user_id),
-    username: user.username || null,
-    display_name: user.display_name || null,
-    snow_balance: Number(user.snow_balance || 0),
-    snowman_count: Number(user.snowman_count || 0),
-    mining_boost: Number(user.mining_boost || 1),
-    last_mined_at: Number(user.last_mined_at || 0),
-    speed_per_hour: finalComputed.speedPerHour,
-    earned_now: finalComputed.earnedNow,
-    next_reward_in_ms: finalComputed.nextRewardInMs,
-    ton_balance: Number(user.ton_balance || 0),
-  },
-  server_time: now
-};
+  return {
+    user: {
+      user_id: Number(user.user_id),
+      username: user.username || null,
+      display_name: user.display_name || null,
+      snow_balance: Number(user.snow_balance || 0),
+      snowman_count: Number(user.snowman_count || 0),
+      mining_boost: Number(user.mining_boost || 1),
+      last_mined_at: Number(user.last_mined_at || 0),
+      speed_per_hour: finalComputed.speedPerHour,
+      earned_now: finalComputed.earnedNow,
+      next_reward_in_ms: finalComputed.nextRewardInMs,
+      ton_balance: Number(user.ton_balance || 0)
+    },
+    server_time: now
+  };
 }
 
 export default {
