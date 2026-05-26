@@ -4071,8 +4071,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <script>
     // ======== وضع الصيانة (Maintenance Mode) ========
-const MAINTENANCE = false; // false للتعطيل
-if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 1018495986) {
+const MAINTENANCE = true; // false للتعطيل
+if (MAINTENANCE && window.Telegram?.WebApp?.initDataUnsafe?.user?.id !== 101849598) {
     // إخفاء أيقونة eruda إن وجدت
     if (window.eruda) {
         eruda.destroy?.() || (eruda._el && eruda._el.remove());
