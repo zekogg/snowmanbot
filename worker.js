@@ -1,7 +1,7 @@
 const WEB_APP_URL = "https://snowmanbot-api.zekobusiness0.workers.dev/";
 const HOUR_MS = 60 * 60 * 1000;
 
-const INVESTMENT_LOCK_MS = 1 * 60 * 1000;
+const INVESTMENT_LOCK_MS = 24 * HOUR_MS;
 const MIN_INVESTMENT_TON = 2;
 const INVESTMENT_PROFIT_RATE = 0.04;
 
