@@ -1833,7 +1833,7 @@ if (url.pathname === "/api/withdraw" && request.method === "POST") {
     const user = await getUser(env, userId);
     if (!user) return json({ error: "User not found" }, 404);
 
-    const fee = parseFloat((amount * 0.05).toFixed(4));
+    const fee = parseFloat((amount * 0.10).toFixed(4));
     const netAmount = parseFloat((amount - fee).toFixed(4));
     const now = Date.now();
 
