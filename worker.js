@@ -788,7 +788,7 @@ async function handleTaskComplete(env, userId, body) {
 function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
   const miningBoost = Number(user.mining_boost || 1);
-  const baseSpeed = snowmanCount / 350;
+  const baseSpeed = snowmanCount / 700;
   const speedPerHour = baseSpeed * miningBoost;
 
   const lastMinedAt = Number(user.last_mined_at || 0);
