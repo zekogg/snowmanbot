@@ -3761,7 +3761,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 <div class="minting-section" id="mainMintSection">
     <div class="limited-text">LIMITED</div>
     <div class="minting-container">
-        <div class="minting-bar">0 / 25M</div>
+        <div class="minting-bar">0 / 2M</div>
     </div>
 </div>
 
@@ -6673,7 +6673,7 @@ async function loadMiningState(force = false) {
 
     const bar = document.querySelector('.minting-bar');
     if (bar && appBootstrap.total_snowmen !== undefined) {
-        bar.textContent = `${formatMintCount(appBootstrap.total_snowmen)} / 25M`;
+        bar.textContent = `${formatMintCount(appBootstrap.total_snowmen)} / 2M`;
     }
 }
         
