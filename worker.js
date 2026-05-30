@@ -108,6 +108,271 @@ async function checkRateLimit(env, userId, action, maxPerMinute = 10) {
     return true;
 }
 
+const BROADCAST_BATCH_SIZE = 120;
+const BROADCAST_CONCURRENCY = 5;
+const BROADCAST_MAX_RUNTIME_MS = 20000;
+const BROADCAST_LOCK_MS = 60000;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let index = 0;
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const current = index++;
+      if (current >= items.length) break;
+      results[current] = await mapper(items[current], current);
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
+}
+
+async function telegramRequest(env, method, payload) {
+  const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {}
+
+  return { response, data };
+}
+
+async function isBroadcastAdmin(env, userId) {
+  const adminUserId = Number(env.ADMIN_USER_ID || env.ADMIN_CHANNEL_ID);
+  return Number.isFinite(adminUserId) && Number(userId) === adminUserId;
+}
+
+async function sendBroadcastToUser(env, userId, text, photoValue) {
+  const payload = { chat_id: userId };
+  const method = photoValue ? "sendPhoto" : "sendMessage";
+
+  if (photoValue) {
+    payload.photo = photoValue;
+    payload.caption = text;
+  } else {
+    payload.text = text;
+  }
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { response, data } = await telegramRequest(env, method, payload);
+
+    if (response.ok && data?.ok !== false) {
+      return { ok: true };
+    }
+
+    const code = Number(data?.error_code || response.status || 0);
+    const desc = String(data?.description || "");
+    const retryAfter = Number(data?.parameters?.retry_after || 0);
+
+    if (code === 403 || /blocked|forbidden/i.test(desc)) {
+      return { ok: false, blocked: true };
+    }
+
+    if (code === 429 && retryAfter > 0 && attempt < 2) {
+      await sleep((retryAfter + 1) * 1000);
+      continue;
+    }
+
+    if (code >= 500 && attempt < 1) {
+      await sleep(1000);
+      continue;
+    }
+
+    return { ok: false, failed: true, description: desc || "Telegram send failed" };
+  }
+
+  return { ok: false, failed: true, description: "Telegram send failed after retries" };
+}
+
+async function createBroadcastJob(env, creatorUserId, text, photoValue) {
+  const now = Date.now();
+  const countRow = await env.DB.prepare(`SELECT COUNT(*) AS total FROM users`).first();
+  const totalUsers = Number(countRow?.total || 0);
+
+  const insert = await env.DB.prepare(`
+    INSERT INTO broadcast_jobs (
+      creator_user_id, message_text, photo_value, total_users,
+      sent_count, failed_count, blocked_count, cursor_user_id,
+      status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, 0, 0, 0, 0, 'pending', ?, ?)
+  `).bind(creatorUserId, text, photoValue || null, totalUsers, now, now).run();
+
+  return insert.meta.last_row_id;
+}
+
+async function acquireBroadcastLock(env) {
+  const now = Date.now();
+  const result = await env.DB.prepare(`
+    UPDATE broadcast_state
+    SET lock_until = ?, updated_at = ?
+    WHERE id = 1 AND lock_until < ?
+  `).bind(now + BROADCAST_LOCK_MS, now, now).run();
+
+  return Number(result.meta.changes || 0) > 0;
+}
+
+async function releaseBroadcastLock(env) {
+  await env.DB.prepare(`
+    UPDATE broadcast_state
+    SET lock_until = 0, updated_at = ?
+    WHERE id = 1
+  `).bind(Date.now()).run().catch(() => {});
+}
+
+async function processBroadcastQueue(env) {
+  await ensureSchema(env);
+
+  const locked = await acquireBroadcastLock(env);
+  if (!locked) return { locked: false };
+
+  const started = Date.now();
+
+  try {
+    while (Date.now() - started < BROADCAST_MAX_RUNTIME_MS) {
+      const job = await env.DB.prepare(`
+        SELECT *
+        FROM broadcast_jobs
+        WHERE status IN ('pending', 'running')
+        ORDER BY created_at ASC
+        LIMIT 1
+      `).first();
+
+      if (!job) return { done: true };
+
+      if (job.status === "pending") {
+        await env.DB.prepare(`
+          UPDATE broadcast_jobs
+          SET status = 'running',
+              started_at = COALESCE(started_at, ?),
+              updated_at = ?
+          WHERE job_id = ?
+        `).bind(Date.now(), Date.now(), job.job_id).run();
+      }
+
+      const cursor = Number(job.cursor_user_id || 0);
+
+      const batch = await env.DB.prepare(`
+        SELECT user_id
+        FROM users
+        WHERE user_id > ?
+        ORDER BY user_id ASC
+        LIMIT ?
+      `).bind(cursor, BROADCAST_BATCH_SIZE).all();
+
+      const ids = (batch.results || [])
+        .map(row => Number(row.user_id))
+        .filter(Number.isFinite);
+
+      if (!ids.length) {
+        await env.DB.prepare(`
+          UPDATE broadcast_jobs
+          SET status = 'done',
+              finished_at = ?,
+              updated_at = ?
+          WHERE job_id = ?
+        `).bind(Date.now(), Date.now(), job.job_id).run();
+
+        const summaryChatId = Number(env.ADMIN_USER_ID || env.ADMIN_CHANNEL_ID);
+        if (Number.isFinite(summaryChatId)) {
+          await telegramRequest(env, "sendMessage", {
+            chat_id: summaryChatId,
+            text:
+              `Broadcast finished.\n` +
+              `Job ID: ${job.job_id}\n` +
+              `Sent: ${job.sent_count || 0}\n` +
+              `Failed: ${job.failed_count || 0}\n` +
+              `Blocked: ${job.blocked_count || 0}`
+          }).catch(() => {});
+        }
+
+        continue;
+      }
+
+      const outcomes = await mapWithConcurrency(ids, BROADCAST_CONCURRENCY, async (uid) => {
+        return await sendBroadcastToUser(env, uid, job.message_text, job.photo_value);
+      });
+
+      let sent = 0;
+      let failed = 0;
+      let blocked = 0;
+
+      for (const outcome of outcomes) {
+        if (outcome?.ok) sent += 1;
+        else if (outcome?.blocked) blocked += 1;
+        else failed += 1;
+      }
+
+      const lastUserId = ids[ids.length - 1];
+      const nextSent = Number(job.sent_count || 0) + sent;
+      const nextFailed = Number(job.failed_count || 0) + failed;
+      const nextBlocked = Number(job.blocked_count || 0) + blocked;
+      const hasMore = ids.length === BROADCAST_BATCH_SIZE;
+
+      if (hasMore) {
+        await env.DB.prepare(`
+          UPDATE broadcast_jobs
+          SET sent_count = ?,
+              failed_count = ?,
+              blocked_count = ?,
+              cursor_user_id = ?,
+              status = 'running',
+              updated_at = ?
+          WHERE job_id = ?
+        `).bind(nextSent, nextFailed, nextBlocked, lastUserId, Date.now(), job.job_id).run();
+      } else {
+        await env.DB.prepare(`
+          UPDATE broadcast_jobs
+          SET sent_count = ?,
+              failed_count = ?,
+              blocked_count = ?,
+              cursor_user_id = ?,
+              status = 'done',
+              finished_at = ?,
+              updated_at = ?
+          WHERE job_id = ?
+        `).bind(nextSent, nextFailed, nextBlocked, lastUserId, Date.now(), Date.now(), job.job_id).run();
+
+        const summaryChatId = Number(env.ADMIN_USER_ID || env.ADMIN_CHANNEL_ID);
+        if (Number.isFinite(summaryChatId)) {
+          await telegramRequest(env, "sendMessage", {
+            chat_id: summaryChatId,
+            text:
+              `Broadcast finished.\n` +
+              `Job ID: ${job.job_id}\n` +
+              `Sent: ${nextSent}\n` +
+              `Failed: ${nextFailed}\n` +
+              `Blocked: ${nextBlocked}`
+          }).catch(() => {});
+        }
+      }
+    }
+
+    return { running: true };
+  } finally {
+    await releaseBroadcastLock(env);
+  }
+}
+
+async function listBroadcastJobs(env, limit = 10) {
+  return await env.DB.prepare(`
+    SELECT *
+    FROM broadcast_jobs
+    ORDER BY created_at DESC
+    LIMIT ?
+  `).bind(limit).all();
+}
+
 async function ensureSchema(env) {
   if (schemaInitialized) return;
   await env.DB.prepare(`
@@ -330,6 +595,39 @@ await env.DB.prepare(`
     END
   `).run().catch(() => {});
 
+await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS broadcast_jobs (
+      job_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      creator_user_id INTEGER NOT NULL,
+      message_text TEXT NOT NULL,
+      photo_value TEXT,
+      total_users INTEGER NOT NULL DEFAULT 0,
+      sent_count INTEGER NOT NULL DEFAULT 0,
+      failed_count INTEGER NOT NULL DEFAULT 0,
+      blocked_count INTEGER NOT NULL DEFAULT 0,
+      cursor_user_id INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending',
+      last_error TEXT,
+      created_at INTEGER NOT NULL,
+      started_at INTEGER,
+      finished_at INTEGER,
+      updated_at INTEGER NOT NULL
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS broadcast_state (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      lock_until INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL DEFAULT 0
+    )
+  `).run().catch(() => {});
+
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO broadcast_state (id, lock_until, updated_at)
+    VALUES (1, 0, 0)
+  `).run().catch(() => {});
+  
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_referred_by ON users(referred_by)`).run().catch(() => {});
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_snowman_count ON users(snowman_count DESC)`).run().catch(() => {});
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_task_completions_user ON task_completions(user_id)`).run().catch(() => {});
@@ -886,7 +1184,7 @@ async function settleUserMining(env, userId, username = null, displayName = null
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     // معالجة طلبات OPTIONS (مهمة جداً للمتصفحات لتجنب أخطاء الـ CORS)
@@ -2037,6 +2335,65 @@ if (url.pathname === "/api/tasks/complete" && request.method === "POST") {
     return json({ error: error.message }, 400);
   }
 }
+
+if (url.pathname === "/api/admin/me" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+
+  const userId = await getUserIdFromRequest(request);
+  if (!userId) return json({ error: "Unauthorized" }, 401);
+
+  const isAdmin = await isBroadcastAdmin(env, userId);
+  return json({ is_admin: isAdmin });
+}
+
+if (url.pathname === "/api/admin/broadcast/create" && request.method === "POST") {
+  try {
+    const body = await request.json();
+    const auth = await requireSessionUser(request, env, body.user_id);
+    if (!auth.ok) return json({ error: auth.error }, 401);
+
+    const allowed = await isBroadcastAdmin(env, auth.userId);
+    if (!allowed) return json({ error: "Forbidden" }, 403);
+
+    const text = String(body.text || "").trim();
+    const photo = String(body.photo || "").trim();
+
+    if (!text) return json({ error: "Message is required" }, 400);
+
+    if (photo && text.length > 900) {
+      return json({ error: "Caption is too long for a photo. Use 900 characters or less." }, 400);
+    }
+
+    if (!photo && text.length > 3500) {
+      return json({ error: "Message is too long. Use 3500 characters or less." }, 400);
+    }
+
+    const jobId = await createBroadcastJob(env, auth.userId, text, photo);
+
+    if (ctx?.waitUntil) {
+      ctx.waitUntil(processBroadcastQueue(env));
+    }
+
+    return json({ ok: true, job_id: jobId });
+  } catch (error) {
+    return json({ error: error.message }, 400);
+  }
+}
+
+if (url.pathname === "/api/admin/broadcast/list" && request.method === "GET") {
+  const isValid = await verifyTelegramAuth(request, env);
+  if (!isValid) return json({ error: "Unauthorized" }, 401);
+
+  const userId = await getUserIdFromRequest(request);
+  if (!userId) return json({ error: "Unauthorized" }, 401);
+
+  const allowed = await isBroadcastAdmin(env, userId);
+  if (!allowed) return json({ error: "Forbidden" }, 403);
+
+  const jobs = await listBroadcastJobs(env, 10);
+  return json({ jobs: jobs.results || [] });
+}
     
 if (url.pathname === "/api/hatch" && request.method === "POST") {
   const isValid = await verifyTelegramAuth(request, env);
@@ -2317,5 +2674,9 @@ if (url.pathname === "/api/me" && request.method === "GET") {
 }
     
 return env.ASSETS.fetch(request);
+  },
+
+  scheduled(event, env, ctx) {
+    ctx.waitUntil(processBroadcastQueue(env));
   }
 };
