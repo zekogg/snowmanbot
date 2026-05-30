@@ -134,18 +134,29 @@ async function mapWithConcurrency(items, limit, mapper) {
 }
 
 async function telegramRequest(env, method, payload) {
-  const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  let data = null;
   try {
-    data = await response.json();
-  } catch {}
+    const response = await fetch(
+      `https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
 
-  return { response, data };
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {}
+
+    return { response, data };
+  } catch (e) {
+    // إرجاع response وهمي بدل الـ throw
+    return {
+      response: { ok: false, status: 0 },
+      data: { ok: false, error_code: 0, description: String(e?.message || "fetch failed") }
+    };
+  }
 }
 
 async function isBroadcastAdmin(env, userId) {
@@ -250,6 +261,18 @@ async function processBroadcastQueue(env) {
 
       if (!job) return { done: true };
 
+      // ← إضافة: كشف الـ jobs المعلقة أكثر من 5 دقائق
+      if (
+        job.status === "running" &&
+        job.updated_at &&
+        Date.now() - Number(job.updated_at) > 5 * 60 * 1000
+      ) {
+        await env.DB.prepare(`
+          UPDATE broadcast_jobs SET status = 'pending', updated_at = ? WHERE job_id = ?
+        `).bind(Date.now(), job.job_id).run().catch(() => {});
+        continue;
+      }
+
       if (job.status === "pending") {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
@@ -277,9 +300,7 @@ async function processBroadcastQueue(env) {
       if (!ids.length) {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
-          SET status = 'done',
-              finished_at = ?,
-              updated_at = ?
+          SET status = 'done', finished_at = ?, updated_at = ?
           WHERE job_id = ?
         `).bind(Date.now(), Date.now(), job.job_id).run();
 
@@ -288,29 +309,38 @@ async function processBroadcastQueue(env) {
           await telegramRequest(env, "sendMessage", {
             chat_id: summaryChatId,
             text:
-              `Broadcast finished.\n` +
-              `Job ID: ${job.job_id}\n` +
-              `Sent: ${job.sent_count || 0}\n` +
-              `Failed: ${job.failed_count || 0}\n` +
-              `Blocked: ${job.blocked_count || 0}`
+              `Broadcast finished.\nJob ID: ${job.job_id}\n` +
+              `Sent: ${job.sent_count || 0}\nFailed: ${job.failed_count || 0}\nBlocked: ${job.blocked_count || 0}`
           }).catch(() => {});
         }
-
         continue;
       }
 
-      const outcomes = await mapWithConcurrency(ids, BROADCAST_CONCURRENCY, async (uid) => {
-        return await sendBroadcastToUser(env, uid, job.message_text, job.photo_value);
-      });
+      // ← إضافة try-catch على المعالجة الكاملة للـ batch
+      let sent = 0, failed = 0, blocked = 0;
+      try {
+        const outcomes = await mapWithConcurrency(
+          ids,
+          BROADCAST_CONCURRENCY,
+          async (uid) => {
+            try {
+              return await sendBroadcastToUser(
+                env, uid, job.message_text, job.photo_value
+              );
+            } catch (e) {
+              return { ok: false, failed: true, description: String(e?.message) };
+            }
+          }
+        );
 
-      let sent = 0;
-      let failed = 0;
-      let blocked = 0;
-
-      for (const outcome of outcomes) {
-        if (outcome?.ok) sent += 1;
-        else if (outcome?.blocked) blocked += 1;
-        else failed += 1;
+        for (const outcome of outcomes) {
+          if (outcome?.ok) sent += 1;
+          else if (outcome?.blocked) blocked += 1;
+          else failed += 1;
+        }
+      } catch (e) {
+        // إذا فشل mapWithConcurrency كله، تجاوز الـ batch وكمّل
+        failed = ids.length;
       }
 
       const lastUserId = ids[ids.length - 1];
@@ -322,24 +352,15 @@ async function processBroadcastQueue(env) {
       if (hasMore) {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
-          SET sent_count = ?,
-              failed_count = ?,
-              blocked_count = ?,
-              cursor_user_id = ?,
-              status = 'running',
-              updated_at = ?
+          SET sent_count = ?, failed_count = ?, blocked_count = ?,
+              cursor_user_id = ?, status = 'running', updated_at = ?
           WHERE job_id = ?
         `).bind(nextSent, nextFailed, nextBlocked, lastUserId, Date.now(), job.job_id).run();
       } else {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
-          SET sent_count = ?,
-              failed_count = ?,
-              blocked_count = ?,
-              cursor_user_id = ?,
-              status = 'done',
-              finished_at = ?,
-              updated_at = ?
+          SET sent_count = ?, failed_count = ?, blocked_count = ?,
+              cursor_user_id = ?, status = 'done', finished_at = ?, updated_at = ?
           WHERE job_id = ?
         `).bind(nextSent, nextFailed, nextBlocked, lastUserId, Date.now(), Date.now(), job.job_id).run();
 
@@ -348,11 +369,8 @@ async function processBroadcastQueue(env) {
           await telegramRequest(env, "sendMessage", {
             chat_id: summaryChatId,
             text:
-              `Broadcast finished.\n` +
-              `Job ID: ${job.job_id}\n` +
-              `Sent: ${nextSent}\n` +
-              `Failed: ${nextFailed}\n` +
-              `Blocked: ${nextBlocked}`
+              `Broadcast finished.\nJob ID: ${job.job_id}\n` +
+              `Sent: ${nextSent}\nFailed: ${nextFailed}\nBlocked: ${nextBlocked}`
           }).catch(() => {});
         }
       }
@@ -375,6 +393,8 @@ async function listBroadcastJobs(env, limit = 10) {
 
 async function ensureSchema(env) {
   if (schemaInitialized) return;
+  schemaInitialized = true; // ← ضعها مبكراً لمنع التداخل
+
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS users (
       user_id INTEGER PRIMARY KEY,
@@ -386,7 +406,7 @@ async function ensureSchema(env) {
       last_mined_at INTEGER NOT NULL DEFAULT 0,
       updated_at INTEGER NOT NULL DEFAULT 0
     )
-  `).run();
+  `).run().catch(() => {}); // ← أضف catch
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS tasks (
@@ -406,7 +426,7 @@ async function ensureSchema(env) {
       published_at INTEGER,
       rejected_at INTEGER
     )
-  `).run();
+  `).run().catch(() => {}); // ← أضف catch
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS task_completions (
@@ -416,7 +436,7 @@ async function ensureSchema(env) {
       completed_at INTEGER NOT NULL,
       UNIQUE(task_id, user_id)
     )
-  `).run();
+  `).run().catch(() => {}); // ← أضف catch
 
   await env.DB.prepare(
     `ALTER TABLE users ADD COLUMN ton_balance REAL NOT NULL DEFAULT 0`
@@ -637,14 +657,19 @@ await env.DB.prepare(`
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_ton_deposits_user_created ON ton_deposits(user_id, created_at DESC)`).run().catch(() => {});
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_pvp_rounds_status_id ON pvp_rounds(status, id DESC)`).run().catch(() => {});
 
-  const statsRow = await env.DB.prepare(`SELECT updated_at FROM app_stats WHERE key = 'total_snowmen'`).first();
+  const statsRow = await env.DB.prepare(
+    `SELECT updated_at FROM app_stats WHERE key = 'total_snowmen'`
+  ).first().catch(() => null); // ← أضف catch
+
   if (!statsRow || Number(statsRow.updated_at || 0) === 0) {
-    const totalRow = await env.DB.prepare(`SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`).first();
-    await env.DB.prepare(`UPDATE app_stats SET value = ?, updated_at = ? WHERE key = 'total_snowmen'`)
-      .bind(Number(totalRow?.total || 0), Date.now())
-      .run();
+    const totalRow = await env.DB.prepare(
+      `SELECT COALESCE(SUM(snowman_count), 0) as total FROM users`
+    ).first().catch(() => ({ total: 0 })); // ← أضف catch
+
+    await env.DB.prepare(
+      `UPDATE app_stats SET value = ?, updated_at = ? WHERE key = 'total_snowmen'`
+    ).bind(Number(totalRow?.total || 0), Date.now()).run().catch(() => {});
   }
-  schemaInitialized = true;
 }
 
 async function getPvpBets(env, roundId) {
