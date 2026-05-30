@@ -2166,7 +2166,7 @@ if (url.pathname === "/api/withdraw" && request.method === "POST") {
 
     if (!isValidTonAddress(tonAddress)) return json({ error: "Invalid TON address" }, 400);
     if (!userId || !tonAddress) return json({ error: "Missing params" }, 400);
-    if (amount < 0.2) return json({ error: "Minimum withdrawal is 0.2 TON" }, 400);
+    if (amount < 0.5) return json({ error: "Minimum withdrawal is 0.5 TON" }, 400);
 
     if (!await checkRateLimit(env, userId, "withdraw", 3)) {
       return json({ error: "Too many requests" }, 429);
