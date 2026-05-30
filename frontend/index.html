@@ -2360,6 +2360,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     padding: 22px 18px 18px;
     position: relative;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    max-height: 85dvh;
+    overflow-y: auto;
 }
 
 .task-modal-close {
@@ -4500,8 +4502,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             <strong id="broadcastStatusText">Idle</strong>
         </div>
 
-        <div id="broadcastHistoryBox" style="max-height:160px; overflow:auto; margin:10px 0 12px; padding-right:4px;"></div>
-
+        <div id="broadcastHistoryBox" style="max-height:130px; overflow-y:auto; overflow-x:hidden; margin:10px 0 12px; padding-right:4px; flex-shrink:0;"></div>
+        
         <button class="task-create-btn" id="sendBroadcastBtn" type="button">Start Broadcast</button>
     </div>
 </div>
