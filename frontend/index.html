@@ -3956,7 +3956,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div class="transfer-panel" id="withdrawPanel">
     <div class="transfer-section">
         <div class="transfer-section-title">Withdraw Amount</div>
-        <input class="transfer-amount-input" id="withdrawAmountInput" type="number" min="0.2" step="0.01" placeholder="0.2">
+        <input class="transfer-amount-input" id="withdrawAmountInput" type="number" min="0.2" step="0.01" placeholder="0.5">
         <div class="transfer-withdraw-foot">
             <span>min 0.5</span>
             <span>fee 10%</span>
@@ -7008,7 +7008,7 @@ document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
     const statusMsg = document.getElementById('withdrawStatusMsg');
 
     if (!amount || amount < 0.2) {
-        if (statusMsg) statusMsg.textContent = 'Minimum withdrawal is 0.2 TON';
+        if (statusMsg) statusMsg.textContent = 'Minimum withdrawal is 0.5 TON';
         return;
     }
     if (!tonAddress) {
