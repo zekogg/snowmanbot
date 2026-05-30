@@ -2402,6 +2402,24 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     outline: none;
 }
 
+.task-modal-field textarea {
+    width: 100%;
+    min-height: 150px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(60, 199, 255, 0.25);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 15px;
+    outline: none;
+    resize: vertical;
+}
+
+.task-modal-field textarea::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+        
 .task-modal-field input::placeholder {
     color: rgba(255, 255, 255, 0.38);
 }
@@ -4315,6 +4333,12 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 </div>
 </div>
 
+<div class="profile-card" id="adminBroadcastCard" style="display:none; margin-top:12px;">
+    <button class="market-create-btn" id="openBroadcastModalBtn" type="button" style="width:100%;">
+        Broadcast
+    </button>
+</div>
+    
 <div id="pvpScreen" class="pvp-screen" aria-hidden="true">
   <div class="pvp-header">
     <button class="pvp-history-btn" id="pvpHistoryBtn" type="button">📜</button>
@@ -4450,6 +4474,33 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     </div>
 </div>
 
+<div id="broadcastModal" class="task-modal">
+    <div class="task-modal-content">
+        <button class="task-modal-close" id="closeBroadcastModalBtn" type="button">×</button>
+
+        <h2 class="task-modal-title">Broadcast</h2>
+
+        <div class="task-modal-field">
+            <label>Message</label>
+            <textarea id="broadcastText" placeholder="Write the broadcast message here"></textarea>
+        </div>
+
+        <div class="task-modal-field">
+            <label>Image URL or Telegram file_id</label>
+            <input type="text" id="broadcastImageInput" placeholder="https://... or file_id">
+        </div>
+
+        <div class="task-total-box" style="margin-top:10px;">
+            <span>Status:</span>
+            <strong id="broadcastStatusText">Idle</strong>
+        </div>
+
+        <div id="broadcastHistoryBox" style="max-height:160px; overflow:auto; margin:10px 0 12px; padding-right:4px;"></div>
+
+        <button class="task-create-btn" id="sendBroadcastBtn" type="button">Start Broadcast</button>
+    </div>
+</div>
+    
 <div id="promoModal" class="promo-modal">
     <div class="promo-modal-content">
         <button class="promo-modal-close" id="closePromoModalBtn">✕</button>
@@ -5053,6 +5104,136 @@ const openDepositBtn = document.getElementById('openDepositBtn');
 const profileDepositBtn = document.getElementById('profileDepositBtn');
 const profileWithdrawBtn = document.getElementById('profileWithdrawBtn');
 
+const adminBroadcastCard = document.getElementById('adminBroadcastCard');
+const openBroadcastModalBtn = document.getElementById('openBroadcastModalBtn');
+const closeBroadcastModalBtn = document.getElementById('closeBroadcastModalBtn');
+const broadcastModal = document.getElementById('broadcastModal');
+const broadcastText = document.getElementById('broadcastText');
+const broadcastImageInput = document.getElementById('broadcastImageInput');
+const sendBroadcastBtn = document.getElementById('sendBroadcastBtn');
+const broadcastStatusText = document.getElementById('broadcastStatusText');
+const broadcastHistoryBox = document.getElementById('broadcastHistoryBox');
+
+async function renderBroadcastJobs() {
+    if (!broadcastHistoryBox) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/broadcast/list`, {
+            headers: getAuthHeaders()
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            broadcastHistoryBox.innerHTML = `<div style="text-align:center; color:#ff9a9a; font-size:13px;">${data.error || 'Failed to load'}</div>`;
+            return;
+        }
+
+        const jobs = data.jobs || [];
+
+        if (!jobs.length) {
+            broadcastHistoryBox.innerHTML = `<div style="text-align:center; color:#9EC8E0; font-size:13px;">No broadcasts yet</div>`;
+            return;
+        }
+
+        broadcastHistoryBox.innerHTML = jobs.map(job => {
+            const created = job.created_at ? new Date(Number(job.created_at)).toLocaleString() : '';
+            return `
+                <div style="padding:10px 12px; border:1px solid rgba(60,199,255,0.20); border-radius:14px; margin-bottom:8px; background:rgba(255,255,255,0.05);">
+                    <div style="font-size:13px; font-weight:800; margin-bottom:4px;">#${job.job_id} · ${job.status}</div>
+                    <div style="font-size:12px; color:#B2DAFF;">Sent: ${job.sent_count || 0} | Failed: ${job.failed_count || 0} | Blocked: ${job.blocked_count || 0}</div>
+                    <div style="font-size:11px; color:#7aa8c6; margin-top:4px;">${created}</div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        broadcastHistoryBox.innerHTML = `<div style="text-align:center; color:#ff9a9a; font-size:13px;">Failed to load</div>`;
+    }
+}
+
+async function refreshBroadcastAccess() {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/me`, {
+            headers: getAuthHeaders()
+        });
+
+        const data = await res.json();
+
+        if (data.is_admin) {
+            if (adminBroadcastCard) adminBroadcastCard.style.display = 'block';
+            await renderBroadcastJobs();
+        }
+    } catch {}
+}
+
+openBroadcastModalBtn?.addEventListener('click', async () => {
+    broadcastModal?.classList.add('show');
+    broadcastStatusText && (broadcastStatusText.textContent = 'Ready');
+    await renderBroadcastJobs();
+});
+
+closeBroadcastModalBtn?.addEventListener('click', () => {
+    broadcastModal?.classList.remove('show');
+});
+
+broadcastModal?.addEventListener('click', (e) => {
+    if (e.target === broadcastModal) {
+        broadcastModal.classList.remove('show');
+    }
+});
+
+sendBroadcastBtn?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    const text = String(broadcastText?.value || '').trim();
+    const photo = String(broadcastImageInput?.value || '').trim();
+
+    if (!text) {
+        if (broadcastStatusText) broadcastStatusText.textContent = 'Message is required';
+        return;
+    }
+
+    if (photo && text.length > 900) {
+        if (broadcastStatusText) broadcastStatusText.textContent = 'Caption too long';
+        return;
+    }
+
+    if (!photo && text.length > 3500) {
+        if (broadcastStatusText) broadcastStatusText.textContent = 'Message too long';
+        return;
+    }
+
+    if (broadcastStatusText) broadcastStatusText.textContent = 'Sending...';
+    if (sendBroadcastBtn) sendBroadcastBtn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/broadcast/create`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                user_id: tgUser.id,
+                text,
+                photo: photo || ''
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (broadcastStatusText) broadcastStatusText.textContent = data.error || 'Failed';
+            return;
+        }
+
+        if (broadcastStatusText) broadcastStatusText.textContent = `Queued #${data.job_id}`;
+        broadcastText.value = '';
+        broadcastImageInput.value = '';
+        await renderBroadcastJobs();
+    } catch (e) {
+        if (broadcastStatusText) broadcastStatusText.textContent = 'Failed';
+    } finally {
+        if (sendBroadcastBtn) sendBroadcastBtn.disabled = false;
+    }
+});
+        
 function setTransferMode(mode) {
     const depositMode = mode === 'deposit';
     depositTabBtn?.classList.toggle('active', depositMode);
@@ -7369,8 +7550,9 @@ document.querySelectorAll('.loot-buy-btn').forEach(btn => {
 });
         
 applyLang();
-        
 
+refreshBroadcastAccess();
+        
 showHomeScreen();
 });
 
