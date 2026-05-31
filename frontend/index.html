@@ -4411,41 +4411,72 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
 
 <div id="exchangeModal" class="exchange-modal" aria-hidden="true">
     <div class="exchange-modal-card">
-
-        <div class="phase-top">
-            <div class="phase-top-title">Phase 1</div>
-            <div class="phase-top-sub">(Coming Soon)</div>
-        </div>
-
         <button class="exchange-modal-close" id="closeExchangeModalBtn" type="button">×</button>
-        
-        <div class="exchange-box">
-            <div class="exchange-label">FROM</div>
-            <div class="exchange-row-main">
-                <div class="exchange-asset">
-                    <span class="exchange-asset-icon">❄️</span>
-                    <span class="exchange-asset-name">Snow</span>
-                </div>
-                <span class="exchange-asset-value">0</span>
+
+        <div style="text-align:center; margin-bottom:18px; padding-top:6px;">
+            <div style="font-size:24px; font-weight:900; color:#EAFBFF; letter-spacing:1px;">❄️ Exchange</div>
+            <div style="font-size:13px; color:#9DC8DE; margin-top:5px; font-weight:700;">
+                1000 ❄️ Snow = 1 <span class="ton-icon" style="width:14px;height:14px;vertical-align:middle;"></span> TON
             </div>
-            <div class="exchange-balance">Balance: 0 Snow</div>
         </div>
 
-        <div class="exchange-switch">↓</div>
-
-        <div class="exchange-box">
-            <div class="exchange-label">TO</div>
-            <div class="exchange-row-main">
-                <div class="exchange-asset">
-                    <span class="exchange-asset-icon"><span class="ton-icon"></span></span>
-                    <span class="exchange-asset-name">Ton</span>
+        <!-- قسم التفعيل -->
+        <div id="exchangeActivateSection">
+            <div style="text-align:center; padding:18px 14px; background:rgba(255,184,0,0.08); border:1px solid rgba(255,184,0,0.22); border-radius:18px; margin-bottom:14px;">
+                <div style="font-size:40px; margin-bottom:10px;">🔐</div>
+                <div style="font-size:16px; font-weight:900; color:#FFD166; margin-bottom:8px;">Activate Exchange</div>
+                <div style="font-size:13px; color:#B2DAFF; line-height:1.6;">
+                    Pay <strong style="color:#FFD166;">5 TON</strong> once to unlock<br>the exchange feature forever.
                 </div>
-                <span class="exchange-asset-value">0</span>
             </div>
-            <div class="exchange-balance">Balance: 0 Ton</div>
+            <div id="exchangeActivateStatus" style="text-align:center; font-size:13px; color:#FF6B6B; min-height:16px; margin-bottom:10px;"></div>
+            <button id="exchangeActivateBtn" type="button"
+                style="width:100%; height:54px; border:none; border-radius:18px; background:linear-gradient(180deg,#FFD166 0%,#FFB800 100%); color:#2a1a00; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 8px 22px rgba(255,184,0,0.32);">
+                🔓 Activate — 5 TON
+            </button>
         </div>
 
-        <button class="exchange-action" type="button">Exchange Now</button>
+        <!-- قسم التبادل -->
+        <div id="exchangeSwapSection" style="display:none;">
+            <div class="exchange-box">
+                <div class="exchange-label">FROM</div>
+                <div class="exchange-row-main">
+                    <div class="exchange-asset">
+                        <span class="exchange-asset-icon">❄️</span>
+                        <span class="exchange-asset-name" style="font-size:20px;">Snow</span>
+                    </div>
+                    <input id="exchangeSnowInput" type="number" min="100" step="100" placeholder="100"
+                        style="width:120px; background:transparent; border:none; border-bottom:2px solid rgba(60,199,255,0.5); color:#7ee6ff; font-size:26px; font-weight:900; text-align:right; outline:none; padding:2px 0;">
+                </div>
+                <div style="margin-top:8px; font-size:13px; font-weight:700; color:rgba(210,240,255,0.7);">
+                    Balance: <span id="exchangeSnowBalanceText">0</span> ❄️
+                </div>
+            </div>
+
+            <div style="text-align:center; padding:10px 0; color:#9DC8DE; font-size:13px; font-weight:700;">
+                ↓ &nbsp; 1000 ❄️ = 1 TON &nbsp; ↓
+            </div>
+
+            <div class="exchange-box">
+                <div class="exchange-label">TO</div>
+                <div class="exchange-row-main">
+                    <div class="exchange-asset">
+                        <span class="exchange-asset-icon"><span class="ton-icon" style="width:28px;height:28px;"></span></span>
+                        <span class="exchange-asset-name" style="font-size:20px;">TON</span>
+                    </div>
+                    <span class="exchange-asset-value" id="exchangeTonPreview" style="font-size:26px;">0</span>
+                </div>
+                <div style="margin-top:8px; font-size:13px; font-weight:700; color:rgba(210,240,255,0.7);">
+                    Balance: <span id="exchangeTonBalanceText">0</span> TON
+                </div>
+            </div>
+
+            <div id="exchangeSwapStatus" style="text-align:center; font-size:13px; min-height:18px; margin:10px 0 6px; color:#FF6B6B;"></div>
+            <button id="exchangeSwapBtn" type="button"
+                style="width:100%; height:54px; border:none; border-radius:18px; background:linear-gradient(180deg,#67d9ff 0%,#1c9ed8 100%); color:white; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 8px 22px rgba(28,158,216,0.3); margin-top:4px;">
+                Exchange Now
+            </button>
+        </div>
     </div>
 </div>
 
@@ -6107,6 +6138,7 @@ pvpBtn?.addEventListener('click', () => {
 
 function showExchangeModal() {
     if (exchangeModal) exchangeModal.style.display = 'flex';
+    updateExchangeModal();
 }
 
 function hideExchangeModal() {
@@ -6118,6 +6150,141 @@ closeExchangeModalBtn?.addEventListener('click', hideExchangeModal);
 
 window.addEventListener('click', (event) => {
     if (event.target === exchangeModal) hideExchangeModal();
+});
+
+// ====== Exchange Functions ======
+
+function updateExchangeModal() {
+    const unlocked = miningState.exchangeUnlocked === 1;
+    const activateSection = document.getElementById('exchangeActivateSection');
+    const swapSection = document.getElementById('exchangeSwapSection');
+    if (activateSection) activateSection.style.display = unlocked ? 'none' : 'block';
+    if (swapSection) swapSection.style.display = unlocked ? 'block' : 'none';
+
+    const snowBalEl = document.getElementById('exchangeSnowBalanceText');
+    const tonBalEl = document.getElementById('exchangeTonBalanceText');
+    if (snowBalEl) snowBalEl.textContent = Math.floor(miningState.snowBalance).toLocaleString();
+    if (tonBalEl) tonBalEl.textContent = Number(miningState.tonBalance || 0).toFixed(2);
+}
+
+document.getElementById('exchangeSnowInput')?.addEventListener('input', () => {
+    const snow = Math.floor(Number(document.getElementById('exchangeSnowInput')?.value || 0));
+    const ton = snow >= 100 ? (snow / 1000).toFixed(3) : '0';
+    const preview = document.getElementById('exchangeTonPreview');
+    if (preview) preview.textContent = ton;
+});
+
+document.getElementById('exchangeActivateBtn')?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    const statusEl = document.getElementById('exchangeActivateStatus');
+    const btn = document.getElementById('exchangeActivateBtn');
+
+    if (miningState.tonBalance < 5) {
+        if (statusEl) statusEl.textContent = `Need 5 TON. You have ${miningState.tonBalance.toFixed(2)} TON`;
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    if (statusEl) statusEl.textContent = '';
+
+    try {
+        const res = await fetch(`${API_BASE}/api/exchange/activate`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: tgUser.id })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (statusEl) statusEl.textContent = data.error || 'Activation failed';
+            btn.disabled = false;
+            btn.textContent = '🔓 Activate — 5 TON';
+            return;
+        }
+
+        miningState.exchangeUnlocked = 1;
+        await refreshUserState();
+        updateExchangeModal();
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;pointer-events:none;';
+        overlay.innerHTML = `
+            <div style="background:rgba(10,25,40,0.97);border:2px solid #FFD166;border-radius:24px;padding:28px 24px;text-align:center;min-width:250px;animation:mintPop 0.3s ease;">
+                <div style="font-size:50px;margin-bottom:10px;">🔓</div>
+                <div style="font-size:20px;font-weight:900;color:#FFD166;margin-bottom:8px;">Exchange Activated!</div>
+                <div style="font-size:14px;color:#B2DAFF;">You can now exchange Snow for TON anytime.</div>
+            </div>`;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 3500);
+    } catch (e) {
+        if (statusEl) statusEl.textContent = 'Request failed. Try again.';
+        btn.disabled = false;
+        btn.textContent = '🔓 Activate — 5 TON';
+    }
+});
+
+document.getElementById('exchangeSwapBtn')?.addEventListener('click', async () => {
+    const tgUser = getTgUser();
+    const statusEl = document.getElementById('exchangeSwapStatus');
+    const btn = document.getElementById('exchangeSwapBtn');
+    const snowAmount = Math.floor(Number(document.getElementById('exchangeSnowInput')?.value || 0));
+
+    if (!snowAmount || snowAmount < 100) {
+        if (statusEl) statusEl.textContent = 'Minimum 100 Snow';
+        return;
+    }
+    if (snowAmount > Math.floor(miningState.snowBalance)) {
+        if (statusEl) statusEl.textContent = 'Not enough Snow';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    if (statusEl) statusEl.textContent = '';
+
+    try {
+        const res = await fetch(`${API_BASE}/api/exchange/swap`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: tgUser.id, snow_amount: snowAmount })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (statusEl) statusEl.textContent = data.error || 'Exchange failed';
+            btn.disabled = false;
+            btn.textContent = 'Exchange Now';
+            return;
+        }
+
+        const input = document.getElementById('exchangeSnowInput');
+        if (input) input.value = '';
+        const preview = document.getElementById('exchangeTonPreview');
+        if (preview) preview.textContent = '0';
+
+        await refreshUserState();
+        updateExchangeModal();
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;pointer-events:none;';
+        overlay.innerHTML = `
+            <div style="background:rgba(10,25,40,0.97);border:2px solid #3CC7FF;border-radius:24px;padding:28px 24px;text-align:center;min-width:260px;animation:mintPop 0.3s ease;">
+                <div style="font-size:44px;margin-bottom:10px;">💱</div>
+                <div style="font-size:18px;font-weight:900;color:#7ee6ff;margin-bottom:10px;">Exchange Complete!</div>
+                <div style="font-size:24px;font-weight:900;color:#ff8888;">-${snowAmount.toLocaleString()} ❄️</div>
+                <div style="font-size:24px;font-weight:900;color:#FFD166;margin-top:6px;">+${data.ton_received} TON</div>
+            </div>`;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 4000);
+
+        btn.disabled = false;
+        btn.textContent = 'Exchange Now';
+    } catch (e) {
+        if (statusEl) statusEl.textContent = 'Request failed. Try again.';
+        btn.disabled = false;
+        btn.textContent = 'Exchange Now';
+    }
 });
 
 const PVP_COLORS = ['#3CC7FF','#FF6B6B','#FFD166','#06D6A0','#9F66FF','#FF9F1C'];
@@ -6579,6 +6746,7 @@ const miningState = {
     serverTimeOffsetMs: 0,
     bootstrapClientTime: Date.now(),
     elapsedAtBootstrap: 0,
+    exchangeUnlocked: 0,
 };
 
 const INVESTMENT_LOCK_MS = 24 * HOUR_MS;
@@ -6831,6 +6999,7 @@ async function loadMiningState(force = false) {
     miningState.miningBoost = Number(user.mining_boost || 1);
     miningState.lastMinedAt = Number(user.last_mined_at || savedAt);
     miningState.tonBalance = Number(user.ton_balance || 0);
+    miningState.exchangeUnlocked = Number(user.exchange_unlocked || 0);
    investmentState.userId = miningState.userId;
     investmentState.totalInvested = Number(user.total_invested || 0);
     investmentState.startedAt = Number(user.investment_started_at || 0);
