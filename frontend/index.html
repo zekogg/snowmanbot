@@ -4421,20 +4421,49 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         </div>
 
         <!-- قسم التفعيل -->
-        <div id="exchangeActivateSection">
-            <div style="text-align:center; padding:18px 14px; background:rgba(255,184,0,0.08); border:1px solid rgba(255,184,0,0.22); border-radius:18px; margin-bottom:14px;">
-                <div style="font-size:40px; margin-bottom:10px;">🔐</div>
-                <div style="font-size:16px; font-weight:900; color:#FFD166; margin-bottom:8px;">Activate Exchange</div>
-                <div style="font-size:13px; color:#B2DAFF; line-height:1.6;">
-                    Pay <strong style="color:#FFD166;">5 TON</strong> once to unlock<br>the exchange feature forever.
-                </div>
+<div id="exchangeActivateSection">
+
+    <div class="exchange-box" style="margin-bottom:12px;">
+        <div class="exchange-label">FROM</div>
+        <div class="exchange-row-main">
+            <div class="exchange-asset">
+                <span class="exchange-asset-icon">❄️</span>
+                <span class="exchange-asset-name" style="font-size:20px;">Snow</span>
             </div>
-            <div id="exchangeActivateStatus" style="text-align:center; font-size:13px; color:#FF6B6B; min-height:16px; margin-bottom:10px;"></div>
-            <button id="exchangeActivateBtn" type="button"
-                style="width:100%; height:54px; border:none; border-radius:18px; background:linear-gradient(180deg,#FFD166 0%,#FFB800 100%); color:#2a1a00; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 8px 22px rgba(255,184,0,0.32);">
-                🔓 Activate — 5 TON
-            </button>
+            <input id="exchangeSnowInputLocked" type="number" min="100" step="100" placeholder="100"
+                style="width:120px; background:transparent; border:none; border-bottom:2px solid rgba(60,199,255,0.5); color:#7ee6ff; font-size:26px; font-weight:900; text-align:right; outline:none; padding:2px 0;">
         </div>
+    </div>
+
+    <div style="text-align:center; padding:4px 0 8px; color:#9DC8DE; font-size:13px; font-weight:700;">
+        ↓ &nbsp; 1000 ❄️ = 1 TON &nbsp; ↓
+    </div>
+
+    <div class="exchange-box" style="margin-bottom:14px;">
+        <div class="exchange-label">TO</div>
+        <div class="exchange-row-main">
+            <div class="exchange-asset">
+                <span class="exchange-asset-icon"><span class="ton-icon" style="width:28px;height:28px;"></span></span>
+                <span class="exchange-asset-name" style="font-size:20px;">TON</span>
+            </div>
+            <span class="exchange-asset-value" id="exchangeTonPreviewLocked" style="font-size:26px; color:#7ee6ff;">0</span>
+        </div>
+    </div>
+
+    <div style="text-align:center; padding:14px; background:rgba(255,184,0,0.08); border:1px solid rgba(255,184,0,0.22); border-radius:18px; margin-bottom:14px;">
+        <div style="font-size:32px; margin-bottom:8px;">🔐</div>
+        <div style="font-size:15px; font-weight:900; color:#FFD166; margin-bottom:6px;">Activate Exchange</div>
+        <div style="font-size:13px; color:#B2DAFF; line-height:1.6;">
+            Pay <strong style="color:#FFD166;">5 TON</strong> once to unlock<br>the exchange feature forever.
+        </div>
+    </div>
+
+    <div id="exchangeActivateStatus" style="text-align:center; font-size:13px; color:#FF6B6B; min-height:16px; margin-bottom:10px;"></div>
+    <button id="exchangeActivateBtn" type="button"
+        style="width:100%; height:54px; border:none; border-radius:18px; background:linear-gradient(180deg,#FFD166 0%,#FFB800 100%); color:#2a1a00; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 8px 22px rgba(255,184,0,0.32);">
+        🔓 Activate — 5 TON
+    </button>
+</div>
 
         <!-- قسم التبادل -->
         <div id="exchangeSwapSection" style="display:none;">
@@ -6172,6 +6201,13 @@ document.getElementById('exchangeSnowInput')?.addEventListener('input', () => {
     const ton = snow >= 100 ? (snow / 1000).toFixed(3) : '0';
     const preview = document.getElementById('exchangeTonPreview');
     if (preview) preview.textContent = ton;
+});
+
+document.getElementById('exchangeSnowInputLocked')?.addEventListener('input', () => {
+    const snow = Math.floor(Number(document.getElementById('exchangeSnowInputLocked')?.value || 0));
+    const ton = snow >= 100 ? (snow / 1000).toFixed(3) : '0';
+    const previewLocked = document.getElementById('exchangeTonPreviewLocked');
+    if (previewLocked) previewLocked.textContent = ton;
 });
 
 document.getElementById('exchangeActivateBtn')?.addEventListener('click', async () => {
