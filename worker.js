@@ -108,10 +108,12 @@ async function checkRateLimit(env, userId, action, maxPerMinute = 10) {
     return true;
 }
 
-const BROADCAST_BATCH_SIZE = 120;
-const BROADCAST_CONCURRENCY = 5;
+const BROADCAST_BATCH_SIZE = 4;
+const BROADCAST_CONCURRENCY = 1;
 const BROADCAST_MAX_RUNTIME_MS = 20000;
 const BROADCAST_LOCK_MS = 60000;
+const BROADCAST_REQUEST_DELAY_MS = 200;
+const BROADCAST_MAX_BATCHES_PER_RUN = 1;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -248,9 +250,13 @@ async function processBroadcastQueue(env) {
   if (!locked) return { locked: false };
 
   const started = Date.now();
+  let batchesProcessed = 0;
 
   try {
-    while (Date.now() - started < BROADCAST_MAX_RUNTIME_MS) {
+    while (
+      Date.now() - started < BROADCAST_MAX_RUNTIME_MS &&
+      batchesProcessed < BROADCAST_MAX_BATCHES_PER_RUN
+    ) {
       const job = await env.DB.prepare(`
         SELECT *
         FROM broadcast_jobs
@@ -261,14 +267,16 @@ async function processBroadcastQueue(env) {
 
       if (!job) return { done: true };
 
-      // ← إضافة: كشف الـ jobs المعلقة أكثر من 5 دقائق
       if (
         job.status === "running" &&
         job.updated_at &&
         Date.now() - Number(job.updated_at) > 5 * 60 * 1000
       ) {
         await env.DB.prepare(`
-          UPDATE broadcast_jobs SET status = 'pending', updated_at = ? WHERE job_id = ?
+          UPDATE broadcast_jobs
+          SET status = 'pending',
+              updated_at = ?
+          WHERE job_id = ?
         `).bind(Date.now(), job.job_id).run().catch(() => {});
         continue;
       }
@@ -300,7 +308,9 @@ async function processBroadcastQueue(env) {
       if (!ids.length) {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
-          SET status = 'done', finished_at = ?, updated_at = ?
+          SET status = 'done',
+              finished_at = ?,
+              updated_at = ?
           WHERE job_id = ?
         `).bind(Date.now(), Date.now(), job.job_id).run();
 
@@ -310,37 +320,36 @@ async function processBroadcastQueue(env) {
             chat_id: summaryChatId,
             text:
               `Broadcast finished.\nJob ID: ${job.job_id}\n` +
-              `Sent: ${job.sent_count || 0}\nFailed: ${job.failed_count || 0}\nBlocked: ${job.blocked_count || 0}`
+              `Sent: ${job.sent_count || 0}\n` +
+              `Failed: ${job.failed_count || 0}\n` +
+              `Blocked: ${job.blocked_count || 0}`
           }).catch(() => {});
         }
+
         continue;
       }
 
-      // ← إضافة try-catch على المعالجة الكاملة للـ batch
-      let sent = 0, failed = 0, blocked = 0;
-      try {
-        const outcomes = await mapWithConcurrency(
-          ids,
-          BROADCAST_CONCURRENCY,
-          async (uid) => {
-            try {
-              return await sendBroadcastToUser(
-                env, uid, job.message_text, job.photo_value
-              );
-            } catch (e) {
-              return { ok: false, failed: true, description: String(e?.message) };
-            }
-          }
-        );
+      let sent = 0;
+      let failed = 0;
+      let blocked = 0;
 
-        for (const outcome of outcomes) {
+      for (const uid of ids) {
+        try {
+          const outcome = await sendBroadcastToUser(
+            env,
+            uid,
+            job.message_text,
+            job.photo_value
+          );
+
           if (outcome?.ok) sent += 1;
           else if (outcome?.blocked) blocked += 1;
           else failed += 1;
+        } catch {
+          failed += 1;
         }
-      } catch (e) {
-        // إذا فشل mapWithConcurrency كله، تجاوز الـ batch وكمّل
-        failed = ids.length;
+
+        await sleep(BROADCAST_REQUEST_DELAY_MS);
       }
 
       const lastUserId = ids[ids.length - 1];
@@ -352,15 +361,24 @@ async function processBroadcastQueue(env) {
       if (hasMore) {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
-          SET sent_count = ?, failed_count = ?, blocked_count = ?,
-              cursor_user_id = ?, status = 'running', updated_at = ?
+          SET sent_count = ?,
+              failed_count = ?,
+              blocked_count = ?,
+              cursor_user_id = ?,
+              status = 'running',
+              updated_at = ?
           WHERE job_id = ?
         `).bind(nextSent, nextFailed, nextBlocked, lastUserId, Date.now(), job.job_id).run();
       } else {
         await env.DB.prepare(`
           UPDATE broadcast_jobs
-          SET sent_count = ?, failed_count = ?, blocked_count = ?,
-              cursor_user_id = ?, status = 'done', finished_at = ?, updated_at = ?
+          SET sent_count = ?,
+              failed_count = ?,
+              blocked_count = ?,
+              cursor_user_id = ?,
+              status = 'done',
+              finished_at = ?,
+              updated_at = ?
           WHERE job_id = ?
         `).bind(nextSent, nextFailed, nextBlocked, lastUserId, Date.now(), Date.now(), job.job_id).run();
 
@@ -370,13 +388,17 @@ async function processBroadcastQueue(env) {
             chat_id: summaryChatId,
             text:
               `Broadcast finished.\nJob ID: ${job.job_id}\n` +
-              `Sent: ${nextSent}\nFailed: ${nextFailed}\nBlocked: ${nextBlocked}`
+              `Sent: ${nextSent}\n` +
+              `Failed: ${nextFailed}\n` +
+              `Blocked: ${nextBlocked}`
           }).catch(() => {});
         }
       }
+
+      batchesProcessed += 1;
     }
 
-    return { running: true };
+    return { running: true, batchesProcessed };
   } finally {
     await releaseBroadcastLock(env);
   }
