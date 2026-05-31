@@ -108,12 +108,12 @@ async function checkRateLimit(env, userId, action, maxPerMinute = 10) {
     return true;
 }
 
-const BROADCAST_BATCH_SIZE = 4;
+const BROADCAST_BATCH_SIZE = 10;
 const BROADCAST_CONCURRENCY = 1;
 const BROADCAST_MAX_RUNTIME_MS = 20000;
 const BROADCAST_LOCK_MS = 60000;
-const BROADCAST_REQUEST_DELAY_MS = 200;
-const BROADCAST_MAX_BATCHES_PER_RUN = 1;
+const BROADCAST_REQUEST_DELAY_MS = 100;
+const BROADCAST_MAX_BATCHES_PER_RUN = 3;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
