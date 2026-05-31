@@ -3985,7 +3985,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div style="font-size:55px; margin-bottom:12px;">💸</div>
         <div style="font-size:22px; font-weight:900; color:#7ee6ff; margin-bottom:10px;">Withdraw Requested</div>
         <div style="font-size:14px; color:#B2DAFF; margin-bottom:24px; line-height:1.6;">
-            Withdrawals may take from<br><strong>1 hour to 12 hours</strong><br>to arrive in your wallet.
+            Withdrawals in Queue System<br><strong>72 hours Left</strong><br>to arrive in your wallet.
         </div>
         <button onclick="document.getElementById('withdrawSuccessOverlay').style.display='none'"
             style="width:100%; padding:14px; border:none; border-radius:20px; background:linear-gradient(135deg,#3CC7FF,#129FDF); color:white; font-size:18px; font-weight:900; cursor:pointer;">
@@ -4668,7 +4668,7 @@ const T = {
         withdraw: 'Withdraw', history: 'History',
         transactionHistory: 'Transaction History',
         withdrawRequested: 'Withdraw Requested',
-        withdrawNote: 'Withdrawals may take from 1 hour to 12 hours to arrive in your wallet.',
+        withdrawNote: 'Withdrawals in Queue System 72 hours Left to arrive in your wallet.',
         gotIt: 'Got it! 👍', loading: 'Loading...', deposit: 'Deposit',
         // Friends
         friendsTitle: 'Friends', yourReward: 'Your Reward', yourFriends: 'Your Friends',
@@ -6174,7 +6174,7 @@ function hideExchangeModal() {
     if (exchangeModal) exchangeModal.style.display = 'none';
 }
 
-exchangeBtn?.addEventListener('click', () => alert('🔧 Under Maintenance'));
+exchangeBtn?.addEventListener('click', showExchangeModal);
 closeExchangeModalBtn?.addEventListener('click', hideExchangeModal);
 
 window.addEventListener('click', (event) => {
