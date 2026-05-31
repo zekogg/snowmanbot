@@ -446,6 +446,10 @@ async function ensureSchema(env) {
     `ALTER TABLE users ADD COLUMN wallet_address TEXT`
   ).run().catch(() => {});
 
+await env.DB.prepare(
+  `ALTER TABLE users ADD COLUMN exchange_unlocked INTEGER NOT NULL DEFAULT 0`
+).run().catch(() => {});
+  
   await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS ton_deposits (
         tx_hash TEXT PRIMARY KEY,
@@ -723,6 +727,7 @@ async function getUser(env, userId) {
     .prepare(
       `SELECT u.user_id, u.username, u.display_name, u.snow_balance, u.snowman_count,
               u.mining_boost, u.last_mined_at, u.updated_at, u.ton_balance,
+              u.exchange_unlocked,
               COALESCE(t.total_invested, 0) AS total_invested,
               COALESCE(t.started_at, 0) AS investment_started_at,
               COALESCE(t.ends_at, 0) AS investment_ends_at,
@@ -1199,6 +1204,7 @@ async function settleUserMining(env, userId, username = null, displayName = null
       earned_now: finalComputed.earnedNow,
       next_reward_in_ms: finalComputed.nextRewardInMs,
       ton_balance: Number(user.ton_balance || 0),
+      exchange_unlocked: Number(user.exchange_unlocked || 0),
       total_invested: Number(user.total_invested || 0),
       investment_started_at: Number(user.investment_started_at || 0),
       investment_ends_at: Number(user.investment_ends_at || 0),
@@ -2695,6 +2701,98 @@ if (url.pathname === "/api/me" && request.method === "GET") {
     return json(result);
   } catch (error) {
     return json({ error: error.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/exchange/activate" && request.method === "POST") {
+  try {
+    await ensureSchema(env);
+    const body = await request.json();
+    const auth = await requireSessionUser(request, env, body.user_id);
+    if (!auth.ok) return json({ error: auth.error }, 401);
+
+    const userId = auth.userId;
+
+    if (!await checkRateLimit(env, userId, "exchange_activate", 3)) {
+      return json({ error: "Too many requests" }, 429);
+    }
+
+    const ACTIVATION_FEE = 5;
+    const now = Date.now();
+
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+
+    if (Number(user.exchange_unlocked || 0) === 1) {
+      return json({ error: "Exchange already activated" }, 400);
+    }
+
+    const result = await env.DB.prepare(
+      `UPDATE users
+       SET ton_balance = ton_balance - ?,
+           exchange_unlocked = 1,
+           updated_at = ?
+       WHERE user_id = ? AND ton_balance >= ?`
+    ).bind(ACTIVATION_FEE, now, userId, ACTIVATION_FEE).run();
+
+    if (result.meta.changes === 0) {
+      return json({ error: "Not enough TON. You need 5 TON to activate exchange." }, 400);
+    }
+
+    return json({ ok: true, exchange_unlocked: true });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+if (url.pathname === "/api/exchange/swap" && request.method === "POST") {
+  try {
+    await ensureSchema(env);
+    const body = await request.json();
+    const auth = await requireSessionUser(request, env, body.user_id);
+    if (!auth.ok) return json({ error: auth.error }, 401);
+
+    const userId = auth.userId;
+    const snowAmount = Math.floor(Number(body.snow_amount || 0));
+
+    if (!await checkRateLimit(env, userId, "exchange_swap", 5)) {
+      return json({ error: "Too many requests" }, 429);
+    }
+
+    if (!Number.isFinite(snowAmount) || snowAmount < 100) {
+      return json({ error: "Minimum exchange is 100 Snow" }, 400);
+    }
+
+    const user = await getUser(env, userId);
+    if (!user) return json({ error: "User not found" }, 404);
+
+    if (Number(user.exchange_unlocked || 0) !== 1) {
+      return json({ error: "Exchange not activated. Pay 5 TON to activate." }, 400);
+    }
+
+    const RATE = 1000; // 1000 Snow = 1 TON
+    const tonAmount = parseFloat((snowAmount / RATE).toFixed(6));
+    const now = Date.now();
+
+    const result = await env.DB.prepare(
+      `UPDATE users
+       SET snow_balance = snow_balance - ?,
+           ton_balance = ton_balance + ?,
+           updated_at = ?
+       WHERE user_id = ? AND snow_balance >= ? AND exchange_unlocked = 1`
+    ).bind(snowAmount, tonAmount, now, userId, snowAmount).run();
+
+    if (result.meta.changes === 0) {
+      return json({ error: "Not enough Snow or exchange not activated" }, 400);
+    }
+
+    return json({
+      ok: true,
+      snow_spent: snowAmount,
+      ton_received: tonAmount
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
   }
 }
     
