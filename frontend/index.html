@@ -3989,7 +3989,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div class="pack-box" id="packBox_boost2x">
             <h3>2x Booster</h3>
             <div class="pack-row">
-                <button class="boost-buy-btn" data-pack="boost2x" data-ton="1" data-factor="2" type="button">Buy</button>
+                <button class="boost-buy-btn" data-pack="boost2x" data-ton="10" data-factor="2" type="button">Buy</button>
                 <p class="pack-price" style="margin:0;">10 TON ➔ 2x Speed</p>
             </div>
             <p class="pack-speed">Multiplier: x2</p>
@@ -3997,7 +3997,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         <div class="pack-box" id="packBox_boost10x" style="margin-bottom:18px;">
             <h3>10x Booster</h3>
             <div class="pack-row">
-                <button class="boost-buy-btn" data-pack="boost10x" data-ton="4" data-factor="10" type="button">Buy</button>
+                <button class="boost-buy-btn" data-pack="boost10x" data-ton="49" data-factor="10" type="button">Buy</button>
                 <p class="pack-price" style="margin:0;">49 TON ➔ 10x Speed</p>
             </div>
             <p class="pack-speed">Multiplier: x10</p>
@@ -6136,7 +6136,7 @@ function hideExchangeModal() {
     if (exchangeModal) exchangeModal.style.display = 'none';
 }
 
-exchangeBtn?.addEventListener('click', showExchangeModal);
+exchangeBtn?.addEventListener('click', () => alert('⏰ Phase 2 Coming later this Month'));
 closeExchangeModalBtn?.addEventListener('click', hideExchangeModal);
 
 window.addEventListener('click', (event) => {
