@@ -946,7 +946,7 @@ async function handleTaskCreate(env, userId, body, sourceType) {
 
   let costSnow = 0;
   if (sourceType === "add_task") {
-    costSnow = Math.round((targetUsers * 100) / 30);
+    costSnow = targetUsers * 1;
     await deductSnow(env, userId, costSnow);
   }
 
@@ -1138,7 +1138,7 @@ async function handleTaskComplete(env, userId, body) {
 function computeMiningState(user, now = Date.now()) {
   const snowmanCount = Number(user.snowman_count || 0);
   const miningBoost = Number(user.mining_boost || 1);
-  const baseSpeed = snowmanCount / 700;
+  const baseSpeed = snowmanCount / 1000;
   const speedPerHour = baseSpeed * miningBoost;
 
   const lastMinedAt = Number(user.last_mined_at || 0);
@@ -1418,7 +1418,7 @@ if (callbackData.startsWith("task_approve:") || callbackData.startsWith("task_re
       ).bind(refId, chatId).run();
 
       await env.DB.prepare(
-         `UPDATE users SET snowman_count = snowman_count + 1, updated_at = ? WHERE user_id = ?`
+         `UPDATE users SET snow_balance = snow_balance + 1, updated_at = ? WHERE user_id = ?`
       ).bind(Date.now(), Date.now(), refId).run();
     }
   }
@@ -2069,7 +2069,7 @@ if (!isValid) return json({ error: "Unauthorized" }, 401);
 
     if (!userId) return json({ error: "Missing user_id" }, 400);
     if (snowAmount < 100) return json({ error: "Minimum 100 Snow" }, 400);
-    if (pricePerSnow < 0.00005) return json({ error: "Minimum price 0.00005 TON per Snow" }, 400);
+    if (pricePerSnow < 0.001) return json({ error: "Minimum price 0.001 TON per Snow" }, 400);
 
     const user = await getUser(env, userId);
     if (!user) return json({ error: "User not found" }, 404);
