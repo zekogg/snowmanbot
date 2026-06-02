@@ -3990,7 +3990,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             <h3>2x Booster</h3>
             <div class="pack-row">
                 <button class="boost-buy-btn" data-pack="boost2x" data-ton="1" data-factor="2" type="button">Buy</button>
-                <p class="pack-price" style="margin:0;">1 TON ➔ 2x Speed</p>
+                <p class="pack-price" style="margin:0;">10 TON ➔ 2x Speed</p>
             </div>
             <p class="pack-speed">Multiplier: x2</p>
         </div>
@@ -3998,7 +3998,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
             <h3>10x Booster</h3>
             <div class="pack-row">
                 <button class="boost-buy-btn" data-pack="boost10x" data-ton="4" data-factor="10" type="button">Buy</button>
-                <p class="pack-price" style="margin:0;">4 TON ➔ 10x Speed</p>
+                <p class="pack-price" style="margin:0;">49 TON ➔ 10x Speed</p>
             </div>
             <p class="pack-speed">Multiplier: x10</p>
         </div>
@@ -4050,7 +4050,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         </div>
         <ul class="calc-list">
             <li class="calc-item"><span>Base Snowflakes</span><span id="hatchBaseValue">-</span></li>
-            <li class="calc-item"><span>Craft fee (10%)</span><span id="hatchFeeValue">-</span></li>
+            <li class="calc-item"><span>Craft fee (50%)</span><span id="hatchFeeValue">-</span></li>
             <li class="calc-item total"><span>❄️ Total required</span><span id="hatchTotalValue">-</span></li>
         </ul>
         <button class="final-hatch-btn" type="button">Hatch ❄️</button>
@@ -4199,8 +4199,8 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
     <input type="number" class="form-input" id="marketSnowInput" placeholder="100" min="100">
 </div>
 <div class="form-group">
-    <label>Price per Snow <span class="ton-icon"></span> <span style="font-size:11px; color:#9EC8E0;">(min. 0.00005)</span></label>
-    <input type="number" class="form-input" id="marketPriceInput" placeholder="0.00005" min="0.00005" step="0.00001">
+    <label>Price per Snow <span class="ton-icon"></span> <span style="font-size:11px; color:#9EC8E0;">(min. 0.001)</span></label>
+    <input type="number" class="form-input" id="marketPriceInput" placeholder="0.001" min="0.001" step="0.00001">
 </div>
 <div class="form-group">
     <label>Total Value</label>
@@ -4232,7 +4232,7 @@ button:focus-visible, .pct-btn:focus-visible, .nav-icon:focus-visible {
         </div>
     </div>
     <div class="friends-reward-card">
-        <div class="friends-reward-line">☃️ +1 free SnowMan per Friend</div>
+        <div class="friends-reward-line">❄️ +1 free Snow per Friend</div>
         <div class="friends-reward-line">❄️ 5% Snow when they Hatch</div>
         <div class="friends-reward-line"><span class="ton-icon"></span> 15% TON when they buy SnowMans </div>
     </div>
@@ -4601,7 +4601,7 @@ const T = {
         hatchBtn: 'Hatch ❄️', boostBtn: 'Boost ⚡', promoCode: 'Promo Code', limited: 'LIMITED',
         // Hatch
         hatchTitle: 'Hatch Snow ❄️', snowToHatch: '❄️ Snow to Hatch',
-        craftFee: 'Craft fee (10%)', totalRequired: '❄️ Total required',
+        craftFee: 'Craft fee (50%)', totalRequired: '❄️ Total required',
         available: 'Available', snowflakes: 'snowflakes', hatch: 'Hatch ❄️',
         // Boost
         boostTitle: 'Mining Booster ⚡', boostNote: 'Stackable. Multiple purchases allowed.',
@@ -4634,7 +4634,7 @@ const T = {
         gotIt: 'Got it! 👍', loading: 'Loading...', deposit: 'Deposit',
         // Friends
         friendsTitle: 'Friends', yourReward: 'Your Reward', yourFriends: 'Your Friends',
-        freeSnowman: '+1 free SnowMan per Friend', snowHatch: '5% Snow when they Hatch',
+        freeSnowman: '+1 free Snow per Friend', snowHatch: '5% Snow when they Hatch',
         tonBoost: '15% TON when they buy SnowMans',
         copy: '📋 Copy', share: '📤 Share', noFriends: 'No friends yet 🧱',
         // Leaderboard
@@ -4909,7 +4909,7 @@ function applyLang() {
     const marketPriceLabel = document.querySelector('label[for="marketPriceInput"]');
     const marketTotalLabel = document.querySelector('label[for="marketTotalValue"]');
     if (marketAmountLabel) marketAmountLabel.textContent = `${t('amountSnow')} (min. 100)`;
-    if (marketPriceLabel) marketPriceLabel.textContent = `${t('pricePerSnow')} (min. 0.00005)`;
+    if (marketPriceLabel) marketPriceLabel.textContent = `${t('pricePerSnow')} (min. 0.001)`;
     if (marketTotalLabel) marketTotalLabel.textContent = t('totalValue');
 
     // Deposit/Withdraw
@@ -5086,7 +5086,7 @@ const miningRateText = document.getElementById('miningRateText');
         const openHatchBtn = document.getElementById('openHatchBtn');
         const closeHatchBtn = document.getElementById('closeHatchBtn');
         
-const HATCH_FEE_RATE = 0.10;
+const HATCH_FEE_RATE = 0.50;
 const MIN_HATCH_AMOUNT = 100;
 
 const hatchAmountInput = document.getElementById('hatchAmountInput');
@@ -5709,7 +5709,7 @@ investmentClaimBtn?.addEventListener('click', claimInvestment);
     if (addTaskModal) addTaskModal.style.display = 'flex';
 });
 function calculateTaskCost(users) {
-    const pricePerUser = 100 / 30;
+    const pricePerUser = 1;
     return users * pricePerUser;
 }
 
@@ -7433,7 +7433,7 @@ document.getElementById('marketConfirmBtn')?.addEventListener('click', async () 
     const statusEl = document.getElementById('marketCreateStatus');
 
     if (snowAmount < 100) { if (statusEl) statusEl.textContent = 'Minimum 100 Snow'; return; }
-    if (pricePerSnow < 0.00005) { if (statusEl) statusEl.textContent = 'Minimum price 0.00005 TON'; return; }
+    if (pricePerSnow < 0.001) { if (statusEl) statusEl.textContent = 'Minimum price 0.001'; return; }
 
     const btn = document.getElementById('marketConfirmBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
